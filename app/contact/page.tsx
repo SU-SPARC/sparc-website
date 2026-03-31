@@ -7,6 +7,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
+import { FaDiscord } from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
 
 export default function ContactPage() {
   return (
@@ -32,7 +34,10 @@ export default function ContactPage() {
         <section className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
           <Card size="sm">
             <CardHeader className="mb-2 border-b-0 pb-0">
-              <CardTitle className="text-sm sm:text-base">Email</CardTitle>
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                <MdEmail className="size-5" />
+                Email
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
               <p>Contact us anytime at our official club email address: sparc@studentorgs.suffolk.edu</p>
@@ -44,14 +49,17 @@ export default function ContactPage() {
 
           <Card size="sm">
             <CardHeader className="mb-2 border-b-0 pb-0">
-              <CardTitle className="text-sm sm:text-base">Social / Discord</CardTitle>
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                <FaDiscord className="size-5" />
+                Discord Server
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
               <p>
-                We are planning to set up a Discord server soon for community discussions, project collaboration, and event announcements. Stay tuned for an invite link coming soon!
+                We planned to start up a Discord server for community discussions, project collaboration, and event announcements. Join now to connect with other members, ask questions, and stay updated on all things SPARC!
               </p>
-              <Button size="sm" variant="outline" className="text-xs">
-                Join Discord
+              <Button asChild size="sm" variant="outline" className="text-xs">
+                <a href="https://discord.gg/W8veDYAku6">Join Discord</a>
               </Button>
             </CardContent>
           </Card>

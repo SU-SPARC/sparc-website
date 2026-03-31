@@ -70,13 +70,22 @@ const team = [
     blurb:
       "Hi, I'm a software engineer studying Computer Science at Suffolk University. I am obsessed with building meaningful products that help people.",
   },
-   {
+  {
     name: "Bexultan Abila",
     role: "Founding Member · Class of 2027",
-    image: "/Bex2.JPG",
+    image: "/bex.jpg",
     linkedin: "https://www.linkedin.com/in/beksabila/",
     blurb:
       "Aspiring software engineer focused on scalable architecture, clean code, and continuous technical growth.",
+  },
+  {
+    name: "Allan Nguyen",
+    role: "Founding Member · Class of 2027",
+    image: "/allan.jpeg",
+    website: "https://www.allandng.com/",
+    linkedin: "https://www.linkedin.com/in/allan-nguyen-b2236529b/",
+    blurb:
+      "Hey, I'm a Computer Science Student at Suffolk University.",
   },
 ];
 
@@ -155,7 +164,7 @@ export default function TeamPage() {
               <CardContent className="relative z-10 text-[11px] sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
                 {member.blurb}
               </CardContent>
-              
+
             </Card>
           ))}
         </section>

@@ -5,21 +5,21 @@ export default function EventsPage() {
   const upcomingEvents = [
     {
       title: "SPARC Website Development II",
-      date: "April 1, 2026",
+      date: "April 2, 2026",
       type: "Development",
       description:
         "Part 2: Join us for a dev discussion on the development of the SPARC website, where members will share their ideas and plans for building and maintaining the site. This is a great opportunity to get involved in web development and contribute to our online presence!",
     },
+  ];
+
+  const pastHighlights = [
     {
       title: "SPARC Website Development I",
-      date: "March 30, 2026",
+      date: "March 31, 2026",
       type: "Development",
       description:
         "Part 1: Join us for a dev discussion on the development of the SPARC website, where members will share their ideas and plans for building and maintaining the site. This is a great opportunity to get involved in web development and contribute to our online presence!",
     },
-  ];
-
-  const pastHighlights = [
     {
       title: "SPARC Website Intro Panel",
       date: "February 12, 2026",

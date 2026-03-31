@@ -1,42 +1,44 @@
 import Image from "next/image";
-import Link from "next/link";
 import WritingText from "@/components/ui/writing-text";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
-const quickLinks = [
+const newsletter = [
   {
-    href: "/about",
-    title: "About",
-    description: "Learn SPARC's mission, focus areas, and story.",
+    title: "SPARC launches spring AI project tracks",
+    description: "Professor Zhipeng Huang from Suffolk University shares insights on the transformative impact of AI in education, research, and industry. Discover how AI is reshaping learning experiences, driving innovation, and preparing students for the future of work in this exclusive interview.",
+    date: "Sun, 23 Mar 2026",
     image: "/sparc-3.jpg",
   },
   {
-    href: "/contact",
-    title: "Contact",
-    description: "Reach out by email and stay updated on community channels.",
+    title: "Students share model demos at campus showcase",
+    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
+    date: "Fri, 20 Mar 2026",
     image: "/sparc-contact.jpeg",
   },
   {
-    href: "/events",
-    title: "Events",
-    description: "See upcoming workshops, panels, and past highlights.",
+    title: "Weekly lab dives into LLM evaluation workflows",
+    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
+    date: "Tue, 17 Mar 2026",
     image: "/sparc-events.jpeg",
   },
   {
-    href: "/join",
-    title: "Join",
-    description: "Apply to SPARC and learn how recruitment works.",
+    title: "Contributing members recognized at spring meetup",
+    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
+    date: "Sat, 14 Mar 2026",
     image: "/sparc-join.jpeg",
   },
   {
-    href: "/projects",
-    title: "Projects",
-    description: "Explore hands-on projects and proposals from members.",
+    title: "New AI research project collaborations announced",
+    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
+    date: "Wed, 11 Mar 2026",
     image: "/sparc-projects.jpeg",
   },
   {
-    href: "/team",
-    title: "Team",
-    description: "Meet the student leaders and founding members of SPARC.",
+    title: "SPARC hosts open workshop on prompt engineering",
+    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
+    date: "Mon, 9 Mar 2026",
     image: "/sparc-2.jpg",
   },
 ];
@@ -67,34 +69,56 @@ export default function Home() {
           />
         </div>
 
-        <section className="space-y-3">
-          <h2 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
-            Explore Pages
-          </h2>
-          <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {quickLinks.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="group overflow-hidden rounded-xl border border-zinc-200 bg-white/80 text-xs shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:text-sm dark:border-zinc-800 dark:bg-zinc-900/80 dark:focus-visible:ring-zinc-600 dark:focus-visible:ring-offset-zinc-950"
-                aria-label={`Go to ${item.title} page`}
-              >
-                <div className="relative h-28 sm:h-32">
+        <section className="space-y-4">
+
+
+          <div className="flex flex-col justify-between gap-4 rounded-xl border border-zinc-200/80 bg-white/75 p-4 dark:border-zinc-800 dark:bg-zinc-950/60">
+            <div className="space-y-1">
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+                Latest Updates
+              </p>
+              <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold tracking-tight">
+                News Articles
+              </h1>
+              <p className="max-w-xl text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                Stay up to date with the latest news, events, and project highlights from SPARC. 
+              </p>
+            </div>
+
+            {/* Scrolling carousel */}
+            <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {newsletter.map((item, i) => (
+                <div
+                  key={i}
+                  className="relative flex-none w-56 sm:w-64 h-48 sm:h-56 rounded-2xl overflow-hidden snap-start cursor-pointer group"
+                >
                   <Image
                     unoptimized
                     src={item.image}
-                    alt={`${item.title} page image`}
+                    alt={item.title}
                     fill
-                    className="object-cover transition duration-300 group-hover:scale-[1.03]"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/35 via-black/5 to-transparent" />
+                  {/* dark overlay */}
+                  <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/20 to-black/70" />
+                  {/* title top */}
+                  <p className="absolute top-3 left-3 right-3 text-white text-xs sm:text-sm font-semibold leading-snug line-clamp-3 ">
+                    {item.title}
+                  </p>
+                  {/* date bottom */}
+                  <p className="absolute bottom-3 left-3 text-white text-[10px] sm:text-xs">
+                    {item.date}
+                  </p>
                 </div>
-                <div className="space-y-2 p-3 sm:p-4">
-                  <h3 className="text-xs sm:text-sm font-semibold">{item.title}</h3>
-                  <p className="text-[11px] sm:text-xs text-zinc-600 dark:text-zinc-400">{item.description}</p>
-                </div>
+              ))}
+            </div>
+
+            <Button asChild size="sm" className="w-fit">
+              <Link href="/events">
+                See Events
+                <ArrowRight className="size-4" />
               </Link>
-            ))}
+            </Button>
           </div>
         </section>
       </div>

@@ -51,7 +51,7 @@ export default function ContactPage() {
             <CardHeader className="mb-2 border-b-0 pb-0">
               <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <FaDiscord className="size-5" />
-                Discord Server
+                Community Server
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">

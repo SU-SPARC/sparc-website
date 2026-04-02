@@ -87,6 +87,22 @@ const team = [
     blurb:
       "Hey, I'm a Computer Science Student at Suffolk University.",
   },
+  {
+    name: "Anthony Sek",
+    role: "Founding Member · Class of 2027",
+    image: "/anthony.jpeg",
+    linkedin: "https://www.linkedin.com/in/anthony1sek/",
+    blurb:
+      "Hey, I'm a Computer Science Student at Suffolk University.",
+  },
+  {
+    name: "Yunus Abdurahman",
+    role: "Founding Member · Class of 2027",
+    image: "/yunus.jpeg",
+    linkedin: "https://www.linkedin.com/in/yunus-abdurahman/",
+    blurb:
+      "Hey, I'm a Computer Science Student at Suffolk University.",
+  },
 ];
 
 export default function TeamPage() {

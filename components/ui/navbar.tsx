@@ -42,7 +42,7 @@ const navItems = [
     href: "/join",
     label: "Join",
     description: "Apply to SPARC and learn how recruitment works.",
-    image: "/sparc-join.jpeg",
+    image: "/sparc-7.jpeg",
   },
   {
     href: "/contact",

@@ -28,7 +28,7 @@ const newsletter = [
     title: "Contributing members recognized at spring meetup",
     description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
     date: "Sat, 14 Mar 2026",
-    image: "/sparc-join.jpeg",
+    image: "/sparc-7.jpeg",
   },
   {
     title: "New AI research project collaborations announced",
@@ -53,7 +53,6 @@ const gallery = [
   "/sparc-6.jpeg",
   "/sparc-7.jpeg",
   "/sparc-8.jpeg",
-  "/sparc-join.jpeg",
   "/sparc-contact.jpeg",
   "/sparc-events.jpeg",
   "/sparc-projects.jpeg",

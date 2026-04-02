@@ -3,6 +3,7 @@ import WritingText from "@/components/ui/writing-text";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import HeroSlideshow from "@/components/ui/hero-slideshow";
 
 const newsletter = [
   {
@@ -43,6 +44,21 @@ const newsletter = [
   },
 ];
 
+const gallery = [
+  "/sparc-1.jpg",
+  "/sparc-2.jpg",
+  "/sparc-3.jpg",
+  "/sparc-4.jpeg",
+  "/sparc-5.jpeg",
+  "/sparc-6.jpeg",
+  "/sparc-7.jpeg",
+  "/sparc-8.jpeg",
+  "/sparc-join.jpeg",
+  "/sparc-contact.jpeg",
+  "/sparc-events.jpeg",
+  "/sparc-projects.jpeg",
+];
+
 export default function Home() {
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
@@ -59,19 +75,9 @@ export default function Home() {
           </div>
         </section>
 
-        <div className="relative h-48 sm:h-56 rounded-2xl bg-transparent md:h-64">
-          <Image
-            unoptimized
-            src="/sparc-1.jpg"
-            alt="SPARC Hero Image"
-            fill
-            className="rounded-2xl object-cover"
-          />
-        </div>
+        <HeroSlideshow images={gallery} />
 
         <section className="space-y-4">
-
-
           <div className="flex flex-col justify-between gap-4 rounded-xl border border-zinc-200/80 bg-white/75 p-4 dark:border-zinc-800 dark:bg-zinc-950/60">
             <div className="space-y-1">
               <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">

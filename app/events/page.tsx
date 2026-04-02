@@ -7,6 +7,7 @@ export default function EventsPage() {
       title: "SPARC Website Development II",
       date: "April 2, 2026",
       type: "Development",
+      location: "73 Tremont Room 8065",
       description:
         "Part 2: Join us for a dev discussion on the development of the SPARC website, where members will share their ideas and plans for building and maintaining the site. This is a great opportunity to get involved in web development and contribute to our online presence!",
     },
@@ -17,6 +18,7 @@ export default function EventsPage() {
       title: "SPARC Website Development I",
       date: "March 31, 2026",
       type: "Development",
+      location: "73 Tremont Room 8065",
       description:
         "Part 1: Join us for a dev discussion on the development of the SPARC website, where members will share their ideas and plans for building and maintaining the site. This is a great opportunity to get involved in web development and contribute to our online presence!",
     },
@@ -24,6 +26,7 @@ export default function EventsPage() {
       title: "SPARC Website Intro Panel",
       date: "February 12, 2026",
       type: "Panel",
+      location: "73 Tremont Room 8065",
       description:
         "Join us for an introductory panel discussion about the SPARC website and how members can get involved.",
     },
@@ -31,6 +34,7 @@ export default function EventsPage() {
       title: "Professor Z. Huang's Guest Lecture on ML",
       date: "February 5, 2026",
       type: "Guest",
+      location: "73 Tremont Room 8065",
       description:
         "We had the privilege of having Professor Z. Huang, a professor in the Computer Science department, for a guest lecture on machine learning research. Professor Huang shared insights from their latest work in natural language processing and engaged in a lively Q&A session with our members. It was an inspiring event that sparked great discussions and motivated many of us to dive deeper into ML research.",
     }
@@ -53,6 +57,28 @@ export default function EventsPage() {
     },
   ];
 
+  const EventCard = ({ event }: { event: (typeof upcomingEvents)[0] }) => (
+    <Card key={event.title}>
+      <CardHeader>
+        <CardTitle className="text-sm sm:text-base">{event.title}</CardTitle>
+        <CardDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
+          <span>{event.date}</span>
+          <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] sm:text-[11px] font-medium text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 w-fit">
+            {event.type}
+          </span>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          {event.location}
+        </p>
+        <p className="text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
+          {event.description}
+        </p>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
       <div className="flex min-h-screen flex-col text-zinc-900 dark:text-zinc-50 gap-y-6 sm:gap-y-8">
@@ -73,7 +99,7 @@ export default function EventsPage() {
         <div className="relative h-48 sm:h-56 rounded-lg bg-transparent md:h-64">
           <Image
             unoptimized
-            src="/sparc-events.jpeg"
+            src="/sparc-6.jpeg"
             alt="SPARC Event Image"
             fill
             className="rounded-2xl object-cover"
@@ -87,22 +113,7 @@ export default function EventsPage() {
             </h2>
             <div className="space-y-3 sm:space-y-4">
               {upcomingEvents.map((event) => (
-                <Card key={event.title}>
-                  <CardHeader>
-                    <CardTitle className="text-sm sm:text-base">{event.title}</CardTitle>
-                    <CardDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
-                      <span>{event.date}</span>
-                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] sm:text-[11px] font-medium text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 w-fit">
-                        {event.type}
-                      </span>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
-                      {event.description}
-                    </p>
-                  </CardContent>
-                </Card>
+                <EventCard key={event.title} event={event} />
               ))}
             </div>
           </div>
@@ -113,20 +124,7 @@ export default function EventsPage() {
             </h2>
             <div className="space-y-3 sm:space-y-4">
               {pastHighlights.map((event) => (
-                <Card key={event.title}>
-                  <CardHeader>
-                    <CardTitle className="text-sm sm:text-base">{event.title}</CardTitle>
-                    <CardDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
-                      <span>{event.date}</span>
-                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] sm:text-[11px] font-medium text-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 w-fit">
-                        {event.type}
-                      </span>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
-                    <p>{event.description}</p>
-                  </CardContent>
-                </Card>
+                <EventCard key={event.title} event={event} />
               ))}
             </div>
           </div>

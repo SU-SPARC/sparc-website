@@ -1,9 +1,6 @@
-import Image from "next/image";
 import WritingText from "@/components/ui/writing-text";
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import HeroSlideshow from "@/components/ui/hero-slideshow";
+import NewsCarousel from "@/components/ui/news-carousel";
 
 const newsletter = [
   {
@@ -126,36 +123,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {newsItems.map((item) => (
-              <article
-                key={item.image}
-                className="group relative h-64 min-w-70 overflow-hidden rounded-2xl sm:min-w-85"
-              >
-                <Image
-                  unoptimized
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  className="object-cover transition duration-500 group-hover:scale-105"
-                />
-
-                <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent" />
-
-                <div className="absolute left-3 top-3 right-3">
-                  <p className="inline-block bg-black/85 px-3 py-1 text-sm sm:text-base font-semibold leading-snug text-zinc-100">
-                    {item.title}
-                  </p>
-                </div>
-
-                <div className="absolute left-3 bottom-3">
-                  <p className="bg-black/90 px-3 py-1.5 text-sm font-medium text-zinc-100">
-                    {item.date}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
+          <NewsCarousel items={newsItems} href="/events" />
         </section>
 
         {/*

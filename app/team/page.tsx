@@ -63,6 +63,14 @@ const team = [
       "Hey, I'm a Computer Science Student at Suffolk University.",
   },
   {
+    name: "Andrew Yuen",
+    role: "Founding Member · Class of 2027",
+    image: "/andrew.jpeg",
+    linkedin: "https://www.linkedin.com/in/andrew-yuen-su/",
+    blurb:
+      "Hey, I'm a Computer Science Student at Suffolk University.",
+  },
+  {
     name: "Margulan Kudaibergen",
     role: "Founding Member · Class of 2028",
     image: "/margulan.jpeg",
@@ -121,7 +129,6 @@ export default function TeamPage() {
             Team of 2025
           </h2>
           <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-
             {team.map((member) => (
               <Card key={member.name} className="relative overflow-hidden">
                 <div className="pointer-events-none absolute inset-0">

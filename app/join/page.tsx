@@ -48,7 +48,7 @@ export default function JoinPage() {
           <div className="relative h-48 sm:h-56 rounded-lg bg-transparent md:h-64">
             <Image
               unoptimized
-              src="/sparc-join.jpeg"
+              src="/sparc-8.jpeg"
               alt="SPARC Join Image"
               fill
               className="rounded-2xl object-cover"

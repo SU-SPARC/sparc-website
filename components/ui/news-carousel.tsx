@@ -120,7 +120,7 @@ export default function NewsCarousel({
     >
       <div
         ref={containerRef}
-        className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((item, index) => (
           <Link
@@ -140,13 +140,13 @@ export default function NewsCarousel({
             <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent" />
 
             <div className="absolute left-3 top-3 right-3">
-              <p className="inline-block bg-black/85 px-3 py-1 text-sm font-semibold leading-snug text-zinc-100 sm:text-base">
+              <p className="inline-block bg-black/50 rounded-2xl px-3 py-1 text-sm font-semibold text-zinc-100">
                 {item.title}
               </p>
             </div>
 
             <div className="absolute left-3 bottom-3">
-              <p className="bg-black/90 px-3 py-1.5 text-sm font-medium text-zinc-100">
+              <p className="bg-black/50 rounded-2xl px-3 py-1.5 text-sm font-sm text-zinc-100">
                 {item.date}
               </p>
             </div>

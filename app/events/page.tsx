@@ -2,18 +2,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Image from "next/image";
 
 export default function EventsPage() {
-  const upcomingEvents = [
-    {
-      title: "SPARC Website Development II",
-      date: "April 2, 2026",
-      type: "Development",
-      location: "73 Tremont Room 8065",
-      description:
-        "Part 2: Join us for a dev discussion on the development of the SPARC website, where members will share their ideas and plans for building and maintaining the site. This is a great opportunity to get involved in web development and contribute to our online presence!",
-    },
-  ];
+  type EventItem = {
+    title: string;
+    date: string;
+    type: string;
+    location: string;
+    description: string;
+  };
 
-  const pastHighlights = [
+  type RecordingItem = {
+    title: string;
+    date: string;
+    type: string;
+    link: string;
+    description: string;
+  };
+
+  const upcomingEvents: EventItem[] = [];
+
+  const pastHighlights: EventItem[] = [
     {
       title: "SPARC Website Development I",
       date: "March 31, 2026",
@@ -40,7 +47,7 @@ export default function EventsPage() {
     }
   ];
 
-  const pastRecordings = [
+  const pastRecordings: RecordingItem[] = [
     {
       title: "Meeting 1",
       date: "February 26, 2026",
@@ -55,10 +62,17 @@ export default function EventsPage() {
       link: "https://suffolk.zoom.us/rec/play/OVjfXxrQKRNvOOhjp7zAcx5pHCTUHQ3w2FhEN0SRORkWo7BcFtoH3edi0NKLOeO4xyrcy3jBIX4PxW_n.9Wg9uEz-vEWMVDfa?eagerLoadZvaPages=sidemenu.billing.plan_management&accessLevel=meeting&canPlayFromShare=true&from=share_recording_detail&continueMode=true&oldStyle=true&componentName=rec-play&originRequestUrl=https%3A%2F%2Fsuffolk.zoom.us%2Frec%2Fshare%2FdTUmT8tGpGdRxRpJPIiAIOEHpPA9us7CADcmqsHNAOmGqovD0qOOh9ZsQA_VcujY.BjJrVRW8NNpaCBAk",
       description: "Development meeting recording focused on planning and next milestones.",
     },
+    {
+      title: "Meeting 3",
+      date: "April 3, 2026",
+      type: "Zoom Recording",
+      link: "https://suffolk.zoom.us/rec/share/6FIftvYGrz3OemUrGQOm-ShzaOKu4hJSZqD75zzHDJvbY33wlDhM50ceavXfR_jW.JF2MxqyOxNq1Aks3",
+      description: "Coding and implementation meeting recording where we worked on the website's frontend development tasks.",
+    }
   ];
 
-  const EventCard = ({ event }: { event: (typeof upcomingEvents)[0] }) => (
-    <Card key={event.title}>
+  const EventCard = ({ event }: { event: EventItem }) => (
+    <Card>
       <CardHeader>
         <CardTitle className="text-sm sm:text-base">{event.title}</CardTitle>
         <CardDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs">
@@ -89,11 +103,6 @@ export default function EventsPage() {
               Stay posted for upcoming SPARC events! We host workshops, talks, panels, and social gatherings to build community and share knowledge. Check back here for the latest updates on what we have planned.
             </p>
           </div>
-          {/* 
-          <Button size="sm" variant="outline">
-            Add your event calendar link here
-          </Button>
-          */}
         </section>
 
         <div className="relative h-48 sm:h-56 rounded-lg bg-transparent md:h-64">
@@ -112,9 +121,13 @@ export default function EventsPage() {
               Upcoming
             </h2>
             <div className="space-y-3 sm:space-y-4">
-              {upcomingEvents.map((event) => (
-                <EventCard key={event.title} event={event} />
-              ))}
+              {upcomingEvents.length > 0 ? (
+                upcomingEvents.map((event) => <EventCard key={event.title} event={event} />)
+              ) : (
+                <p className="rounded-lg border border-dashed border-zinc-300 px-4 py-3 text-xs text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
+                  No upcoming events right now. Check back soon for updates.
+                </p>
+              )}
             </div>
           </div>
 

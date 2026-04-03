@@ -7,9 +7,9 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 const themes = [
-  { key: "light", label: "Default", color: "#ffffff", borderColor: "#d4d4d8" },
+  { key: "light", label: "Light", color: "#ffffff", borderColor: "#d4d4d8" },
   { key: "dim", label: "Dim", color: "#15202b", borderColor: "#38444d" },
-  { key: "dark", label: "Lights out", color: "#0a0a0a", borderColor: "#3f3f46" },
+  { key: "dark", label: "Dark", color: "#0a0a0a", borderColor: "#3f3f46" },
 ] as const;
 
 export function ThemeToggle() {

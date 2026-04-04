@@ -19,12 +19,6 @@ const newsletter = [
     image: "/sparc-contact.jpeg",
   },
   {
-    title: "Weekly lab dives into LLM evaluation workflows",
-    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
-    date: "Tue, 17 Mar 2026",
-    image: "/sparc-events.jpeg",
-  },
-  {
     title: "Contributing members recognized at spring meetup",
     description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
     date: "Sat, 14 Mar 2026",
@@ -45,16 +39,15 @@ const newsletter = [
 ];
 
 const gallery = [
-  "/sparc-1.jpg",
-  "/sparc-2.jpg",
+  "/sparc-8.jpeg",
   "/sparc-3.jpg",
-  "/sparc-4.jpeg",
   "/sparc-5.jpeg",
+  "/sparc-4.jpeg",
   "/sparc-6.jpeg",
   "/sparc-7.jpeg",
-  "/sparc-8.jpeg",
+  "/sparc-1.jpg",
+  "/sparc-2.jpg",
   "/sparc-contact.jpeg",
-  "/sparc-events.jpeg",
   "/sparc-projects.jpeg",
 ];
 
@@ -71,6 +64,12 @@ export default function Home() {
             <p className="mt-4 max-w-xl text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
               SPARC is a student club at Suffolk University focused on applied machine learning and AI research. We build real projects, host workshops, and create a space for students across majors to explore the world of AI together.
             </p>
+            <Button asChild size="sm" className="w-fit">
+              <Link href="/join">
+                Join Us
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
           </div>
         </section>
 

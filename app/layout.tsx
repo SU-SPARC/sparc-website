@@ -11,9 +11,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "SPARC | Suffolk Programming, AI & Research Club",
+  title: "SPARC - Suffolk Programming, AI & Research Club",
   description:
-    "Suffolk Programming, AI & Research Club (SPARC) – student-led community for AI, computing, and research at Suffolk University.",
+    "Suffolk Programming, AI & Research Club (SPARC) is a student-led community for AI, computing, and research at Suffolk University.",
 };
 
 export default function RootLayout({

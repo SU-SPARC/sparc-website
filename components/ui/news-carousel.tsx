@@ -38,7 +38,7 @@ export default function NewsCarousel({
       return;
     }
 
-    target.scrollIntoView({ behavior, block: "nearest", inline: "start" });
+    container.scrollTo({ left: target.offsetLeft, behavior });
   }, []);
 
   useEffect(() => {

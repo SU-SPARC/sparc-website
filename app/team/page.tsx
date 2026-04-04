@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 const team = [
   {
     name: "Mohammed Khodor Firas Al-Tal",
-    role: "President · Class of 2026",
+    role: "President - Class of 2026",
     image: "/mo.jpeg",
     website: "https://mohammedkhodoraltal.com/",
     linkedin: "https://www.linkedin.com/in/mohammed-al-tal/",
@@ -21,7 +21,7 @@ const team = [
   },
   {
     name: "Sarmad Shah",
-    role: "Vice-President · Class of 2026",
+    role: "Vice-President - Class of 2026",
     image: "/sarmad.jpeg",
     linkedin: "https://www.linkedin.com/in/sarmadshah03/",
     blurb:
@@ -29,7 +29,7 @@ const team = [
   },
   {
     name: "Kyle Erhabor",
-    role: "Treasurer · Class of 2026",
+    role: "Treasurer - Class of 2026",
     image: "/kyle.jpeg",
     website: "https://kyleerhabor.com/",
     linkedin: "https://www.linkedin.com/in/kyleerhabor/",
@@ -38,7 +38,7 @@ const team = [
   },
   {
     name: "Endi Fejzollari",
-    role: "Secretary · Class of 2027",
+    role: "Secretary - Class of 2027",
     image: "/endi.jpeg",
     linkedin: "https://www.linkedin.com/in/endi-fejzollari-716aab181/",
     blurb:
@@ -47,7 +47,7 @@ const team = [
   {
     name: "Montasir Moyen",
     nickname: "Monty",
-    role: "Founding Member · Class of 2027",
+    role: "Project Lead (Website) - Class of 2027",
     image: "/monty.jpg",
     website: "https://montasirmoyen.com/",
     linkedin: "https://www.linkedin.com/in/montasirmoyen/",
@@ -56,7 +56,7 @@ const team = [
   },
   {
     name: "Kanan Guliyev",
-    role: "Founding Member · Class of 2027",
+    role: "Founding Member - Class of 2027",
     image: "/kanan.jpg",
     linkedin: "https://www.linkedin.com/in/kananguliyev/",
     blurb:
@@ -64,7 +64,7 @@ const team = [
   },
   {
     name: "Andrew Yuen",
-    role: "Founding Member · Class of 2027",
+    role: "Founding Member - Class of 2027",
     image: "/andrew.jpeg",
     linkedin: "https://www.linkedin.com/in/andrew-yuen-su/",
     blurb:
@@ -72,7 +72,7 @@ const team = [
   },
   {
     name: "Margulan Kudaibergen",
-    role: "Founding Member · Class of 2028",
+    role: "Founding Member - Class of 2028",
     image: "/margulan.jpeg",
     linkedin: "https://www.linkedin.com/in/margulan-kudaibergen/",
     blurb:
@@ -80,7 +80,7 @@ const team = [
   },
   {
     name: "Bexultan Abila",
-    role: "Founding Member · Class of 2027",
+    role: "Founding Member - Class of 2027",
     image: "/bex.jpg",
     linkedin: "https://www.linkedin.com/in/beksabila/",
     blurb:
@@ -88,7 +88,7 @@ const team = [
   },
   {
     name: "Allan Nguyen",
-    role: "Founding Member · Class of 2027",
+    role: "Founding Member - Class of 2027",
     image: "/allan.jpeg",
     website: "https://www.allandng.com/",
     linkedin: "https://www.linkedin.com/in/allan-nguyen-b2236529b/",
@@ -97,7 +97,7 @@ const team = [
   },
   {
     name: "Anthony Sek",
-    role: "Founding Member · Class of 2026",
+    role: "Founding Member - Class of 2026",
     image: "/anthony.jpeg",
     linkedin: "https://www.linkedin.com/in/anthony1sek/",
     blurb:
@@ -105,7 +105,7 @@ const team = [
   },
   {
     name: "Yunus Abdurahman",
-    role: "Founding Member · Class of 2027",
+    role: "Founding Member - Class of 2027",
     image: "/yunus.jpeg",
     linkedin: "https://www.linkedin.com/in/yunus-abdurahman/",
     blurb:

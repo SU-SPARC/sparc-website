@@ -149,12 +149,12 @@ export default function ProjectsPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
               <p>
-                We encourage all members to propose project ideas! Whether you have a specific problem you want to solve, a research question you want to explore, or a tool you think would benefit the community, we want to hear about it. To propose a project, simply fill out our project proposal form with your idea, motivation, and any resources or collaborators you have in mind. The SPARC leadership team will review proposals on a rolling basis and provide feedback and support to help bring your project to life.
+                We encourage all members to propose project ideas, whether it's a small tool, a research question, or a larger application. To propose a project, simply email us with your idea, motivation, and any initial plans. We will review proposals on a rolling basis and provide feedback to help you get started.
               </p>
             </CardContent>
             <CardFooter className="justify-start gap-2">
-              <Button size="sm" variant="outline" className="text-xs">
-                View Form
+              <Button asChild size="sm" variant="outline" className="text-xs">
+                <a href="mailto:sparc@studentorgs.suffolk.edu">Email SPARC</a>
               </Button>
             </CardFooter>
           </Card>

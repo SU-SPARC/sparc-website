@@ -14,6 +14,21 @@ export const metadata: Metadata = {
   title: "SPARC - Suffolk Programming, AI & Research Club",
   description:
     "Suffolk Programming, AI & Research Club (SPARC) is a student-led community for AI, computing, and research at Suffolk University.",
+  openGraph: {
+    title: "SPARC - Suffolk Programming, AI & Research Club",
+    description: "Suffolk Programming, AI & Research Club (SPARC) is a student-led community for AI, computing, and research at Suffolk University.",
+    url: "https://sparc-su.vercel.app/",
+    siteName: "SPARC",
+    type: "website",
+    images: [
+      {
+        url: "https://sparc-su.vercel.app/sparc-8.jpeg",
+        width: 1920,
+        height: 1080,
+        alt: "SPARC - Suffolk Programming, AI & Research Club Preview",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({

@@ -30,7 +30,7 @@ const navItems = [
     href: "/events",
     label: "Events",
     description: "See upcoming workshops, panels, and club sessions.",
-    image: "/sparc-events.jpeg",
+    image: "/sparc-8.jpeg",
   },
   {
     href: "/projects",

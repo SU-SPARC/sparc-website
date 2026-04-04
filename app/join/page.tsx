@@ -30,7 +30,7 @@ export default function JoinPage() {
             <div className="flex flex-col sm:flex-row gap-3">
               <Button asChild size="sm" className="text-xs">
                 <a
-                  href="https://example.com/sparc-application"
+                  href="https://docs.google.com/forms/d/e/1FAIpQLScYYJFywXjQNGTlct-dIeZEdtWD25A9lmVbTzhxZm4nOpmlDg/viewform?usp=publish-editor"
                   target="_blank"
                   rel="noreferrer"
                 >

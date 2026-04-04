@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
-import { FaDiscord } from "react-icons/fa";
+import { FaDiscord, FaHandshake } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 
 export default function ContactPage() {
@@ -31,35 +31,64 @@ export default function ContactPage() {
           />
         </div>
 
-        <section className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
-          <Card size="sm">
+        <section className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
+          <Card size="sm" className="flex flex-col">
             <CardHeader className="mb-2 border-b-0 pb-0">
               <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <MdEmail className="size-5" />
                 Email
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
-              <p>Contact us anytime at our official club email address: sparc@studentorgs.suffolk.edu</p>
+            <CardContent className="flex-1 flex flex-col space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
+              <p className="flex-1">Contact us anytime at our official club email address: sparc@studentorgs.suffolk.edu</p>
               <Button asChild size="sm" variant="outline" className="text-xs">
                 <a href="mailto:sparc@studentorgs.suffolk.edu">Email SPARC</a>
               </Button>
             </CardContent>
           </Card>
 
-          <Card size="sm">
+          <Card size="sm" className="flex flex-col">
             <CardHeader className="mb-2 border-b-0 pb-0">
               <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                 <FaDiscord className="size-5" />
                 Community Server
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
-              <p>
-                We planned to start up a Discord server for community discussions, project collaboration, and event announcements. Join now to connect with other members, ask questions, and stay updated on all things SPARC!
+            <CardContent className="flex-1 flex flex-col space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
+              <p className="flex-1">
+                We planned to start up a Discord server for community discussions, project collaboration, and event announcements.
               </p>
               <Button asChild size="sm" variant="outline" className="text-xs">
                 <a href="https://discord.gg/W8veDYAku6">Join Discord</a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card size="sm" className="flex flex-col">
+            <CardHeader className="mb-2 border-b-0 pb-0">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                <FaHandshake className="size-5" />
+                Club Advisor
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
+              <div className="flex gap-3 flex-1 mb-8">
+                <div className="relative w-24 h-24 rounded-lg shrink-0 overflow-hidden">
+                  <Image
+                    src="/professor-anthony.jpeg"
+                    alt="Professor Anthony Gentilucci"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex flex-col justify-between">
+                  <p>
+                    Reach out to our club advisor, Professor Anthony Gentilucci for any questions related to club operations, event planning, or general inquiries about SPARC.
+                  </p>
+                </div>
+              </div>
+              <Button asChild size="sm" variant="outline" className="text-xs w-full">
+                <a href="mailto:argentilucci@suffolk.edu">Email Professor Gentilucci</a>
               </Button>
             </CardContent>
           </Card>

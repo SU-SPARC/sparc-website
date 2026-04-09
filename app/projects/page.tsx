@@ -41,7 +41,7 @@ export default function ProjectsPage() {
     },
     {
       name: "SPARC Website",
-      status: "Idea / Proposal",
+      status: "Completed",
       timeframe: "Spring 2026",
       link: "https://sparc-su.vercel.app",
       image: "/sparc-website-home.png",

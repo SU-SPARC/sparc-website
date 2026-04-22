@@ -3,7 +3,7 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import Navbar from "@/components/ui/navbar";
-import Footer from "@/components/ui/footer";
+import {Footer} from "@/components/ui/footer";
 
 const outfit = Outfit({
   variable: "--font-outfit",

@@ -116,19 +116,19 @@ const team = [
 const team2026 = [
   {
     name: "Kanan Guliyev",
-    role: "President - Class of 2026",
+    role: "President - Class of 2027",
   },
   {
     name: "Montasir Moyen",
-    role: "Vice-President & Project Lead - Class of 2026",
+    role: "Vice-President & Project Lead - Class of 2027",
   },
   {
     name: "Bexultan Abila",
-    role: "Treasurer - Class of 2026",
+    role: "Treasurer - Class of 2027",
   },
   {
     name: "Endi Fejzollari",
-    role: "Secretary - Class of 2026",
+    role: "Secretary - Class of 2027",
   },
 ];
 

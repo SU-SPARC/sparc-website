@@ -1,9 +1,9 @@
 import WritingText from "@/components/ui/writing-text";
 import HeroSlideshow from "@/components/ui/hero-slideshow";
-import NewsCarousel from "@/components/ui/news-carousel";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 const newsletter = [
   {
@@ -24,18 +24,6 @@ const newsletter = [
     date: "Sat, 14 Mar 2026",
     image: "/sparc-7.jpeg",
   },
-  {
-    title: "New AI research project collaborations announced",
-    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
-    date: "Wed, 11 Mar 2026",
-    image: "/sparc-projects.jpeg",
-  },
-  {
-    title: "SPARC hosts open workshop on prompt engineering",
-    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
-    date: "Mon, 9 Mar 2026",
-    image: "/sparc-2.jpg",
-  },
 ];
 
 const gallery = [
@@ -49,6 +37,15 @@ const gallery = [
   "/sparc-2.jpg",
   "/sparc-contact.jpeg",
   "/sparc-projects.jpeg",
+  "/sparc-vc-1.jpeg",
+  "/sparc-vc-2.jpeg",
+  "/sparc-vc-3.jpeg",
+  "/sparc-vc-4.jpeg",
+  "/sparc-vc-5.jpeg",
+  "/sparc-vc-6.jpeg",
+  "/sparc-vc-7.jpeg",
+  "/sparc-vc-8.jpeg",
+  "/sparc-vc-9.jpeg",
 ];
 
 export default function Home() {
@@ -89,7 +86,38 @@ export default function Home() {
               </p>
             </div>
 
-            <NewsCarousel items={newsletter} href="/events" />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {newsletter.slice(0, 3).map((item, index) => (
+                <Link
+                  key={`${item.image}-${index}`}
+                  href="/events"
+                  className="group relative h-64 overflow-hidden rounded-2xl"
+                  aria-label={`Open events page from: ${item.title}`}
+                >
+                  <Image
+                    unoptimized
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className="object-cover"
+                  />
+
+                  <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent" />
+
+                  <div className="absolute left-3 top-3 right-3">
+                    <p className="inline-block rounded-2xl bg-black/50 px-3 py-1 text-sm font-semibold text-zinc-100">
+                      {item.title}
+                    </p>
+                  </div>
+
+                  <div className="absolute left-3 bottom-3">
+                    <p className="rounded-2xl bg-black/50 px-3 py-1.5 text-sm text-zinc-100">
+                      {item.date}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
 
             <Button asChild size="sm" className="w-fit">
               <Link href="/events">

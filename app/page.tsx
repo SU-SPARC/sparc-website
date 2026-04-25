@@ -7,22 +7,19 @@ import Image from "next/image";
 
 const newsletter = [
   {
-    title: "SPARC launches spring AI project tracks",
-    description: "Professor Zhipeng Huang from Suffolk University shares insights on the transformative impact of AI in education, research, and industry. Discover how AI is reshaping learning experiences, driving innovation, and preparing students for the future of work in this exclusive interview.",
-    date: "Sun, 23 Mar 2026",
-    image: "/sparc-3.jpg",
+    title: "SPARC hosts vibe coding contest",
+    date: "Fri, 24 Apr 2026",
+    image: "/sparc-vc-5.jpeg",
   },
   {
-    title: "Students share model demos at campus showcase",
-    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
-    date: "Fri, 20 Mar 2026",
-    image: "/sparc-contact.jpeg",
+    title: "SPARC elections held for 2026-2027",
+    date: "Tue, 21 Apr 2026",
+    image: "/sparc-vc-10.jpeg",
   },
   {
-    title: "Contributing members recognized at spring meetup",
-    description: "Weekly stories from club workshops, project demos, and member spotlights. We share quick recaps, upcoming opportunities, and practical AI insights from our sessions on campus.",
+    title: "SPARC members working on AI projects",
     date: "Sat, 14 Mar 2026",
-    image: "/sparc-7.jpeg",
+    image: "/sparc-vc-9.jpeg",
   },
 ];
 

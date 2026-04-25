@@ -14,19 +14,30 @@ export default function HeroSlideshow({
   autoAdvanceMs = 4200,
 }: HeroSlideshowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const shuffledImages = useMemo(() => {
+    const next = [...images];
+
+    // Fisher-Yates shuffle to randomize order for each load.
+    for (let i = next.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [next[i], next[j]] = [next[j], next[i]];
+    }
+
+    return next;
+  }, [images]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  const hasSlides = images.length > 0;
-  const canSlide = images.length > 1;
+  const hasSlides = shuffledImages.length > 0;
+  const canSlide = shuffledImages.length > 1;
 
   const boundedIndex = useMemo(() => {
     if (!hasSlides) {
       return 0;
     }
 
-    return Math.min(Math.max(activeIndex, 0), images.length - 1);
-  }, [activeIndex, hasSlides, images.length]);
+    return Math.min(Math.max(activeIndex, 0), shuffledImages.length - 1);
+  }, [activeIndex, hasSlides, shuffledImages.length]);
 
   const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior = "smooth") => {
     const container = containerRef.current;
@@ -39,10 +50,10 @@ export default function HeroSlideshow({
       return;
     }
 
-    target.scrollIntoView({
+    // Scroll only inside the slideshow container to avoid moving page scroll.
+    container.scrollTo({
+      left: target.offsetLeft,
       behavior,
-      block: "nearest",
-      inline: "start",
     });
   }, []);
 
@@ -52,11 +63,11 @@ export default function HeroSlideshow({
         return;
       }
 
-      const wrapped = (nextIndex + images.length) % images.length;
+      const wrapped = (nextIndex + shuffledImages.length) % shuffledImages.length;
       setActiveIndex(wrapped);
       scrollToIndex(wrapped);
     },
-    [hasSlides, images.length, scrollToIndex],
+    [hasSlides, shuffledImages.length, scrollToIndex],
   );
 
   const goToNext = useCallback(() => {
@@ -74,14 +85,14 @@ export default function HeroSlideshow({
 
     const timer = window.setInterval(() => {
       setActiveIndex((prev) => {
-        const next = (prev + 1) % images.length;
+        const next = (prev + 1) % shuffledImages.length;
         scrollToIndex(next);
         return next;
       });
     }, autoAdvanceMs);
 
     return () => window.clearInterval(timer);
-  }, [autoAdvanceMs, canSlide, images.length, isPaused, scrollToIndex]);
+  }, [autoAdvanceMs, canSlide, isPaused, scrollToIndex, shuffledImages.length]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -146,7 +157,7 @@ export default function HeroSlideshow({
         className="flex snap-x snap-mandatory overflow-x-auto scroll-smooth rounded-2xl [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         aria-label="SPARC gallery slideshow"
       >
-        {images.map((image, index) => (
+        {shuffledImages.map((image, index) => (
           <div key={`${image}-${index}`} className="relative h-48 w-full shrink-0 snap-start sm:h-56 md:h-64">
             <Image
               unoptimized
@@ -181,14 +192,13 @@ export default function HeroSlideshow({
           </button>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-3 flex items-center justify-center gap-1.5">
-            {images.map((_, index) => (
+            {shuffledImages.map((_, index) => (
               <button
                 key={`dot-${index}`}
                 type="button"
                 onClick={() => goToIndex(index)}
-                className={`pointer-events-auto h-2 rounded-full transition-all ${
-                  boundedIndex === index ? "w-6 bg-white" : "w-2 bg-white/55"
-                }`}
+                className={`pointer-events-auto h-2 rounded-full transition-all ${boundedIndex === index ? "w-6 bg-white" : "w-2 bg-white/55"
+                  }`}
                 aria-label={`Go to image ${index + 1}`}
               />
             ))}

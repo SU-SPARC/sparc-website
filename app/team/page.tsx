@@ -1,4 +1,8 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import {
   Card,
@@ -130,9 +134,15 @@ const team2026 = [
     name: "Endi Fejzollari",
     role: "Secretary - Class of 2027",
   },
+  {
+    name: "Allan Nguyen",
+    role: "Social Media Manager - Class of 2027",
+  },
 ];
 
 export default function TeamPage() {
+  const [show2025, setShow2025] = useState(false);
+
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
       <div className="flex min-h-screen flex-col text-zinc-900 dark:text-zinc-50 gap-y-6 sm:gap-y-8">
@@ -223,76 +233,83 @@ export default function TeamPage() {
             })}
           </div>
 
-          <h2 className="text-base sm:text-lg font-semibold tracking-tight text-zinc-500 dark:text-zinc-400">
+          <button
+            onClick={() => setShow2025((v) => !v)}
+            className="flex items-center gap-2 text-base sm:text-lg font-semibold tracking-tight text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+          >
             Team of 2025
-          </h2>
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
-            {team.map((member) => (
-              <Card key={member.name} className="relative overflow-hidden">
-                <div className="pointer-events-none absolute inset-0">
-                  <Image
-                    unoptimized
-                    src={member.image}
-                    alt=""
-                    fill
-                    aria-hidden
-                    className="object-cover opacity-20"
-                  />
-                  <div className="absolute inset-0 bg-white/75 dark:bg-zinc-950/75" />
-                </div>
+            {show2025 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
 
-                <CardHeader className="relative z-10 border-b pb-0">
-                  <div className="flex items-start gap-2">
-                    <div className="relative w-16 sm:w-24 aspect-square shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900">
-                      <Image
-                        unoptimized
-                        src={member.image}
-                        alt={member.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="space-y-0.5 px-2 sm:px-4 min-w-0">
-                      <div>
-                        <CardTitle className="text-xs sm:text-base wrap-break-word">
-                          {member.name}
-                          {member.nickname && (
-                            <span className="text-zinc-500 dark:text-zinc-400 font-normal text-[10px] sm:text-xs">
-                              {" "}
-                              ({member.nickname})
-                            </span>
-                          )}
-                        </CardTitle>
-                      </div>
-
-                      <CardDescription className="text-[10px] sm:text-xs">
-                        {member.role}
-                      </CardDescription>
-                    </div>
+          {show2025 && (
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+              {team.map((member) => (
+                <Card key={member.name} className="relative overflow-hidden">
+                  <div className="pointer-events-none absolute inset-0">
+                    <Image
+                      unoptimized
+                      src={member.image}
+                      alt=""
+                      fill
+                      aria-hidden
+                      className="object-cover opacity-20"
+                    />
+                    <div className="absolute inset-0 bg-white/75 dark:bg-zinc-950/75" />
                   </div>
-                </CardHeader>
-                <CardContent className="relative z-10 mb-2 sm:mt-4">
-                  {member.website && (
-                    <Button asChild size="xs" variant="outline" className="mr-2 text-xs">
-                      <a href={member.website} target="_blank" rel="noreferrer">
-                        Visit Website
-                      </a>
-                    </Button>
-                  )}
-                  {member.linkedin && (
-                    <Button asChild size="xs" variant="outline" className="text-xs">
-                      <a href={member.linkedin} target="_blank" rel="noreferrer">
-                        Visit LinkedIn
-                      </a>
-                    </Button>
-                  )}
-                </CardContent>
-                <CardContent className="relative z-10 text-[11px] sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
-                  {member.blurb}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+
+                  <CardHeader className="relative z-10 border-b pb-0">
+                    <div className="flex items-start gap-2">
+                      <div className="relative w-16 sm:w-24 aspect-square shrink-0 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900">
+                        <Image
+                          unoptimized
+                          src={member.image}
+                          alt={member.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="space-y-0.5 px-2 sm:px-4 min-w-0">
+                        <div>
+                          <CardTitle className="text-xs sm:text-base wrap-break-word">
+                            {member.name}
+                            {member.nickname && (
+                              <span className="text-zinc-500 dark:text-zinc-400 font-normal text-[10px] sm:text-xs">
+                                {" "}
+                                ({member.nickname})
+                              </span>
+                            )}
+                          </CardTitle>
+                        </div>
+
+                        <CardDescription className="text-[10px] sm:text-xs">
+                          {member.role}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="relative z-10 mb-2 sm:mt-4">
+                    {member.website && (
+                      <Button asChild size="xs" variant="outline" className="mr-2 text-xs">
+                        <a href={member.website} target="_blank" rel="noreferrer">
+                          Visit Website
+                        </a>
+                      </Button>
+                    )}
+                    {member.linkedin && (
+                      <Button asChild size="xs" variant="outline" className="text-xs">
+                        <a href={member.linkedin} target="_blank" rel="noreferrer">
+                          Visit LinkedIn
+                        </a>
+                      </Button>
+                    )}
+                  </CardContent>
+                  <CardContent className="relative z-10 text-[11px] sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
+                    {member.blurb}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </main>

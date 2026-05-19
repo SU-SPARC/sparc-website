@@ -8,7 +8,7 @@ export default function AboutPage() {
         <section className="space-y-3">
           <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">About SPARC</h1>
           <p className="max-w-2xl text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            We're a student club at Suffolk University focused on applied machine learning and AI research. Our mission is to advance AI literacy and build real projects, creating a space for research-minded students across majors.
+            We're a student club at Suffolk University where we build and ship real software, explore AI agentic coding, discuss what's happening in tech, and help members land real-world internships. Open to all majors.
           </p>
         </section>
 
@@ -30,7 +30,7 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent>
               <p className="text-xs sm:text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                We're a student club at Suffolk University focused on applied machine learning and AI research. Our mission is to advance AI literacy and build real projects, creating a space for research-minded students across majors.
+                We exist to give students hands-on experience building real software and shipping it to actual users. We use AI agentic coding tools, collaborate on projects with real stakes, and create pathways for members to gain industry experience through internships.
               </p>
             </CardContent>
           </Card>
@@ -38,13 +38,14 @@ export default function AboutPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-sm sm:text-base">Focus Areas</CardTitle>
-              <CardDescription className="text-xs">What SPARC explores</CardDescription>
+              <CardDescription className="text-xs">What SPARC does</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-xs sm:text-sm text-zinc-700 dark:text-zinc-300">
               <ul className="list-disc space-y-1 pl-5">
-                <li>Applied machine learning and generative AI projects.</li>
-                <li>Research reading groups and paper discussions.</li>
-                <li>Workshops on tools, MLOps, and modern dev practices.</li>
+                <li>AI agentic coding. Building software with AI-powered tools and workflows.</li>
+                <li>Shipping real products used by real people.</li>
+                <li>Tech talks and discussions on industry trends.</li>
+                <li>Internship opportunities and career development in tech.</li>
               </ul>
             </CardContent>
           </Card>
@@ -58,10 +59,10 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-xs sm:text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
               <p>
-                SPARC was founded in 2025 by a group of students passionate about AI and machine learning. We started with a small group of members and have since grown into a vibrant community of many students from various majors.
+                SPARC was founded in 2025 by a group of students who wanted to build real things, not just study theory. We started small and quickly grew into a community of builders from across majors, united by a shared drive to create software that matters.
               </p>
               <p>
-                Formerly Computational Science and Mathematics (CSMA), we rebranded to SPARC in 2026 to better reflect our focus on AI research and projects. Our vision is to continue expanding our community, fostering collaboration, and making a meaningful impact on campus and beyond through our work in AI.
+                Formerly Computational Science and Mathematics (CSMA), we rebranded to SPARC in 2026 to better reflect who we are: a programming and AI club that ships software, secures internships for members, and stays plugged into where technology is actually heading.
               </p>
             </CardContent>
           </Card>

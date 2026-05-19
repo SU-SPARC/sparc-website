@@ -61,7 +61,7 @@ export default function ProjectsPage() {
         <section className="space-y-3">
           <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Projects</h1>
           <p className="max-w-2xl text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            Learn about our real world applications, research, and tools built by SPARC members. Our projects are hands-on opportunities to apply machine learning concepts, collaborate with peers, and create impactful solutions.
+            Software built and shipped by SPARC members. Every project is a real product with real users, we collaborate, iterate, and launch things that live beyond the classroom.
           </p>
         </section>
 
@@ -78,7 +78,7 @@ export default function ProjectsPage() {
         <section className="space-y-4">
           <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">Catalog</h1>
           <p className="max-w-2xl mb-8 text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            What we have built so far and what we're planning next. Each project is a collaborative effort by SPARC members to apply AI concepts to real problems and create something meaningful for our community.
+            What we have built so far and what we're planning next. Each project is a collaborative effort by SPARC members to ship something real, tools, apps, and platforms that solve actual problems.
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 md:gap-6">
             {projects.map((project) => (
@@ -149,7 +149,7 @@ export default function ProjectsPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
               <p>
-                We encourage all members to propose project ideas, whether it's a small tool, a research question, or a larger application. To propose a project, simply email us with your idea, motivation, and any initial plans. We will review proposals on a rolling basis and provide feedback to help you get started.
+                Have an idea for a product or tool? We encourage all members to pitch projects, whether it's a small utility, a mobile app, or something bigger. Email us with your idea and a brief motivation. We review proposals on a rolling basis and help you turn ideas into shipped software.
               </p>
             </CardContent>
             <CardFooter className="justify-start gap-2">

@@ -18,7 +18,7 @@ export default function JoinPage() {
               Join SPARC
             </h1>
             <p className="max-w-xl text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Join SPARC to explore machine learning and AI research, work on real projects, and connect with fellow students. All experience levels welcome!
+              Join SPARC to build and ship real software, explore AI agentic coding, stay on top of tech, and access internship opportunities. All experience levels welcome.
             </p>
 
             <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 text-xs text-zinc-600 dark:text-zinc-400">
@@ -74,8 +74,7 @@ export default function JoinPage() {
               <CardTitle className="text-xs sm:text-sm">Who should apply</CardTitle>
             </CardHeader>
             <CardContent className="text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
-              Join SPARC if you are passionate about machine learning, AI, and data science. We welcome students from all majors and backgrounds who are eager to learn, collaborate, and contribute to projects and research.
-              attract – by interest, not just major.
+              Join SPARC if you want to build real software, work with AI tools, stay current with tech, or break into the industry through internships. We welcome students from all majors, interest and drive matter more than background.
             </CardContent>
           </Card>
           <Card size="sm">

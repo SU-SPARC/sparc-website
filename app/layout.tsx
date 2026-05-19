@@ -11,12 +11,12 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "SPARC - Suffolk Programming, AI & Research Club",
+  title: "SPARC — Suffolk Programming, AI & Research Club",
   description:
-    "Suffolk Programming, AI & Research Club (SPARC) is a student-led community for AI, computing, and research at Suffolk University.",
+    "Suffolk Programming, AI & Research Club (SPARC), a student-led club at Suffolk University where we build software, do AI agentic coding, discuss tech, and connect members with real-world internships.",
   openGraph: {
-    title: "SPARC - Suffolk Programming, AI & Research Club",
-    description: "Suffolk Programming, AI & Research Club (SPARC) is a student-led community for AI, computing, and research at Suffolk University.",
+    title: "SPARC — Suffolk Programming, AI & Research Club",
+    description: "Suffolk Programming, AI & Research Club (SPARC), a student-led club at Suffolk University where we build software, do AI agentic coding, discuss tech, and connect members with real-world internships.",
     url: "https://sparc-su.vercel.app/",
     siteName: "SPARC",
     type: "website",

@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
-import { FaDiscord, FaHandshake } from "react-icons/fa";
+import { FaDiscord, FaHandshake, FaGithubAlt } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 
 export default function ContactPage() {
@@ -31,7 +31,7 @@ export default function ContactPage() {
           />
         </div>
 
-        <section className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 md:grid-cols-3">
+        <section className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
           <Card size="sm" className="flex flex-col">
             <CardHeader className="mb-2 border-b-0 pb-0">
               <CardTitle className="text-sm sm:text-base flex items-center gap-2">
@@ -59,7 +59,24 @@ export default function ContactPage() {
                 We planned to start up a Discord server for community discussions, project collaboration, and event announcements.
               </p>
               <Button asChild size="sm" variant="outline" className="text-xs">
-                <a href="https://discord.gg/W8veDYAku6">Join Discord</a>
+                <a href="https://discord.gg/W8veDYAku6" target="blank">Join Discord</a>
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card size="sm" className="flex flex-col">
+            <CardHeader className="mb-2 border-b-0 pb-0">
+              <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                <FaGithubAlt className="size-5" />
+                GitHub
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
+              <p className="flex-1">
+                Check out our projects and contribute!
+              </p>
+              <Button asChild size="sm" variant="outline" className="text-xs">
+                <a href="https://github.com/SU-SPARC" target="blank">Contribute</a>
               </Button>
             </CardContent>
           </Card>

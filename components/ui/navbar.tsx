@@ -64,7 +64,7 @@ export default function Navbar() {
         <header className="relative z-120 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
             <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:gap-6 sm:px-6 lg:px-8">
                 <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
-                    <div className="flex size-8 items-center justify-center bg-white rounded-full">
+                    <div className="flex size-8 items-center justify-center">
                         <img src="/sparc-logo.png" alt="SPARC" className="size-full object-contain" />
                     </div>
                     <div className="hidden sm:flex flex-col leading-tight">

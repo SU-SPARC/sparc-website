@@ -24,13 +24,13 @@ const navItems = [
     href: "/team",
     label: "Team",
     description: "Meet the student leaders and founding members.",
-    image: "/sparc-2.jpg",
+    image: "/sparc-vc-4.jpeg",
   },
   {
     href: "/events",
     label: "Events",
     description: "See upcoming workshops, panels, and club sessions.",
-    image: "/sparc-8.jpeg",
+    image: "/sparc-6.jpeg",
   },
   {
     href: "/projects",
@@ -42,7 +42,7 @@ const navItems = [
     href: "/join",
     label: "Join",
     description: "Apply to SPARC and learn how recruitment works.",
-    image: "/sparc-7.jpeg",
+    image: "/sparc-8.jpeg",
   },
   {
     href: "/contact",

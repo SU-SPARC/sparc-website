@@ -62,7 +62,7 @@ export default function JoinPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
               <p>
-                Simply fill out our application form with some basic info about yourself, your interests, and any relevant experience. Our leadership team will review applications on a rolling basis and follow up with next steps. We typically hold an info session and/or interview to get to know applicants better and answer any questions. We want to make the process as welcoming and low-pressure as possible, so don&apos;t worry about having tons of experience – we value curiosity and enthusiasm above all!
+                Simply fill out our application form with some basic info about yourself, your interests, and any relevant experience. Our leadership team will review applications on a rolling basis and follow up with next steps. We typically hold an info session and/or interview to get to know applicants better and answer any questions. We want to make the process as welcoming and low-pressure as possible, so don&apos;t worry about having tons of experience, we value curiosity and enthusiasm above all.
               </p>
             </CardContent>
           </Card>
@@ -91,7 +91,6 @@ export default function JoinPage() {
             </CardHeader>
             <CardContent className="text-xs sm:text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
               SPARC is committed to being welcoming and accessible to all students. No prior experience is required to join, and we offer recorded sessions and mentorship to support your learning and growth.
-              experience not required, recorded sessions, mentorship).
             </CardContent>
           </Card>
         </section>

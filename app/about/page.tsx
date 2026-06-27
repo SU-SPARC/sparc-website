@@ -8,7 +8,7 @@ export default function AboutPage() {
         <section className="space-y-3">
           <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">About SPARC</h1>
           <p className="max-w-2xl text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            We're a student club at Suffolk University where we build and ship real software, explore AI agentic coding, discuss what's happening in tech, and help members land real-world internships. Open to all majors.
+            We're a student club at Suffolk University where we build and ship real software, explore AI agentic coding, discuss what's happening in tech, and help members land real-world internships.
           </p>
         </section>
 
@@ -30,7 +30,7 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent>
               <p className="text-xs sm:text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                We exist to give students hands-on experience building real software and shipping it to actual users. We use AI agentic coding tools, collaborate on projects with real stakes, and create pathways for members to gain industry experience through internships.
+                We're open to all majors and exist to give students hands-on experience building real software and shipping it to actual users. We use AI agentic coding tools, collaborate on projects with real stakes, and create pathways for members to gain industry experience through internships.
               </p>
             </CardContent>
           </Card>

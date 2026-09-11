@@ -138,6 +138,10 @@ const team2026 = [
     name: "Allan Nguyen",
     role: "Social Media Manager - Class of 2027",
   },
+  {
+    name: "Margulan Kudaibergen",
+    role: "Network Lead - Class of 2028",
+  },
 ];
 
 export default function TeamPage() {

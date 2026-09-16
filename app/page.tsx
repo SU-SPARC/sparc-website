@@ -1,130 +1,86 @@
-import WritingText from "@/components/ui/writing-text";
-import HeroSlideshow from "@/components/ui/hero-slideshow";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import Image from "next/image";
+/* Home. Server component — the two moving parts are client components it
+ * renders, and nothing else on this page needs the client.
+ *
+ * What used to be here and is not any more:
+ *   - hero-slideshow: replaced by the hero itself (SPEC "Home / Hero").
+ *   - news-carousel + the news-article cards: SPEC kills the carousel, and
+ *     the reason it kills it — dated items whose value is that they
+ *     accumulate should not hide behind interaction — rules out rebuilding
+ *     the same three items as static cards. /events owns dated content.
+ *   - writing-text: it existed only for the old hero's headline.
+ *   - the two-column grid whose arbitrary track list was comma-separated:
+ *     commas are invalid in Tailwind v4 arbitrary values, so that layout was
+ *     silently collapsing. The rewrite is flex and has no grid to fix.
+ *
+ * The photo set is the gallery array from the page this replaces, mapped
+ * from the old public/*.jpeg to the migrated public/images/*.webp.
+ *
+ * WHAT CAME BACK, AND WHY IT IS NOT THE CAROUSEL. The client reviewed this
+ * page as empty and supplied two mockups (Aug 2026): a stats band and a news
+ * preview. Both live in ./home-sections.tsx and both are static server
+ * markup — see that file's header for the provenance of every string and for
+ * why three visible cards do not re-open SPEC's objection to the carousel.
+ *
+ * ORDER. Hero → PhotoDrift → StatsBand → NewsPreview. Client request
+ * (Aug 2026): the photos sit directly under the hero, and the stats band —
+ * a short, still, hairlined row — becomes the divider between the photo row
+ * and the news. The drift is therefore one section closer to the fold than
+ * it was, but that does not weaken the "hero and drift never move at once"
+ * guarantee: its start is still gated on its own IntersectionObserver AND
+ * on onHeroSettled(), so it cannot begin while the hero is still settling
+ * no matter how early it enters the viewport.
+ */
 
-const newsletter = [
-  {
-    title: "SPARC hosts vibe coding contest",
-    date: "Fri, 24 Apr 2026",
-    image: "/sparc-vc-5.jpeg",
-  },
-  {
-    title: "SPARC elections held for 2026-2027",
-    date: "Tue, 21 Apr 2026",
-    image: "/sparc-vc-10.jpeg",
-  },
-  {
-    title: "SPARC members working on AI projects",
-    date: "Sat, 14 Mar 2026",
-    image: "/sparc-vc-9.jpeg",
-  },
-];
+import type { Metadata } from "next";
 
-const gallery = [
-  "/sparc-8.jpeg",
-  "/sparc-3.jpg",
-  "/sparc-5.jpeg",
-  "/sparc-4.jpeg",
-  "/sparc-6.jpeg",
-  "/sparc-7.jpeg",
-  "/sparc-1.jpg",
-  "/sparc-2.jpg",
-  "/sparc-contact.jpeg",
-  "/sparc-projects.jpeg",
-  "/sparc-vc-1.jpeg",
-  "/sparc-vc-2.jpeg",
-  "/sparc-vc-3.jpeg",
-  "/sparc-vc-4.jpeg",
-  "/sparc-vc-5.jpeg",
-  "/sparc-vc-6.jpeg",
-  "/sparc-vc-7.jpeg",
-  "/sparc-vc-8.jpeg",
-  "/sparc-vc-9.jpeg",
-];
+import { NewsPreview, StatsBand } from "@/app/home-sections";
+import { Hero } from "@/components/ui/hero";
+import { PhotoDrift } from "@/components/ui/photo-drift";
+
+/* No title: the root layout's template default already reads
+   "SPARC — Suffolk Programming, AI & Research Club". */
+export const metadata: Metadata = {
+  description:
+    "SPARC is a student club at Suffolk University where we build and ship real software, explore AI agentic coding, discuss the latest in tech, and connect members with real-world internships. All majors welcome.",
+};
+
+const GALLERY = [
+  "sparc-8",
+  "sparc-3",
+  "sparc-5",
+  "sparc-4",
+  "sparc-6",
+  "sparc-7",
+  "sparc-1",
+  "sparc-2",
+  "sparc-contact",
+  "sparc-projects",
+  "sparc-vc-1",
+  "sparc-vc-2",
+  "sparc-vc-3",
+  "sparc-vc-4",
+  "sparc-vc-5",
+  "sparc-vc-6",
+  "sparc-vc-7",
+  "sparc-vc-8",
+  "sparc-vc-9",
+].map((name, i) => ({
+  src: `/images/${name}.webp`,
+  /* The alt the old slideshow used. These are undescribed club photos in
+     the repo; numbering them is honest, inventing captions is not. */
+  alt: `SPARC gallery image ${i + 1}`,
+}));
 
 export default function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
-      <div className="flex min-h-screen flex-col text-zinc-900 dark:text-zinc-50 gap-y-6 sm:gap-y-8">
-        <section className="grid gap-6 sm:gap-8 md:grid-cols-[3fr,2fr] md:items-center">
-          <div className="space-y-4">
-            <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-              Suffolk University · Student Club
-            </p>
-            <WritingText className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight" text="Suffolk Programming, AI & Research Club" />
-            <p className="mt-4 max-w-xl text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              SPARC is a student club at Suffolk University where we build and ship real software, explore AI agentic coding, discuss the latest in tech, and connect members with real-world internships. All majors welcome.
-            </p>
-            <Button asChild size="sm" className="w-fit">
-              <Link href="/join">
-                Join Us
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </div>
-        </section>
-
-        <HeroSlideshow images={gallery} />
-
-        <section className="space-y-4">
-          <div className="flex flex-col justify-between gap-4 rounded-xl border border-zinc-200/80 bg-white/75 p-4 dark:border-zinc-800 dark:bg-zinc-950/60">
-            <div className="space-y-1">
-              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
-                Latest Updates
-              </p>
-              <h1 className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl font-semibold tracking-tight">
-                News Articles
-              </h1>
-              <p className="max-w-xl text-xs sm:text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                Stay up to date with the latest news, events, and project highlights from SPARC.
-              </p>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {newsletter.slice(0, 3).map((item, index) => (
-                <Link
-                  key={`${item.image}-${index}`}
-                  href="/events"
-                  className="group relative h-64 overflow-hidden rounded-2xl"
-                  aria-label={`Open events page from: ${item.title}`}
-                >
-                  <Image
-                    unoptimized
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    className="object-cover"
-                  />
-
-                  <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent" />
-
-                  <div className="absolute left-3 top-3 right-3">
-                    <p className="inline-block rounded-2xl bg-black/50 px-3 py-1 text-sm font-semibold text-zinc-100">
-                      {item.title}
-                    </p>
-                  </div>
-
-                  <div className="absolute left-3 bottom-3">
-                    <p className="rounded-2xl bg-black/50 px-3 py-1.5 text-sm text-zinc-100">
-                      {item.date}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            <Button asChild size="sm" className="w-fit">
-              <Link href="/events">
-                See Events
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          </div>
-        </section>
-      </div>
+    /* No top padding: the hero's sticky stage has to start flush under the
+       nav row for the bolt's landing maths and for the first screen to fill
+       the viewport. */
+    <main>
+      <Hero />
+      <PhotoDrift photos={GALLERY} />
+      <StatsBand />
+      <NewsPreview />
     </main>
   );
 }

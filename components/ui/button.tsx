@@ -9,7 +9,7 @@ type ButtonVariant =
   | "destructive"
   | "secondary"
   | "link";
-
+ 
 type ButtonSize = "default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "icon-lg";
 
 export interface ButtonProps

@@ -1,0 +1,6 @@
+# Normalise line endings. Without this, a Windows clone with the default
+# core.autocrlf=true checks scripts/verify.sh out with CRLF and bash fails
+# on the first line with "\r: command not found" — the build gate would be
+# broken for exactly the people most likely to be running it.
+* text=auto eol=lf
+*.sh text eol=lf

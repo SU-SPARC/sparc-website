@@ -1,43 +1,321 @@
 @import "tailwindcss";
 
+/* SPARC token layer — Tailwind v4
+   Two faces. Ultra is a poster face with two jobs (hero, footer wordmark);
+   Martian Mono does everything else. Because one family carries the whole
+   ramp, hierarchy comes from size, weight, tracking and case — so those
+   are tokens here, not per-component guesses. */
+
 @custom-variant dark (&:where(.dark, .dark *, .dim, .dim *));
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── Static tokens: identical in every theme ─────────────────── */
+
+/* `static` is load-bearing, not decoration. Tailwind v4 tree-shakes theme
+   variables that no utility class references, and it decides that by
+   scanning source files for class names — it does not see `var()` uses
+   inside this stylesheet. So `--font-body` and `--font-poster` were being
+   dropped from the build even though `body` and `.poster` below both
+   depend on them: body copy silently fell back to Tailwind's sans stack,
+   and `.poster` would not have applied Ultra at all. It compiles clean
+   either way, which is what makes it dangerous. Measured in the browser,
+   not guessed: --font-body, --font-mono, --font-poster, --text-label and
+   --spacing-section were all absent from :root before this changed. */
+@theme static {
+  --font-poster: var(--font-ultra), Georgia, serif;
+  --font-mono: var(--font-martian), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-body: var(--font-martian), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Ultra's real metrics, measured from the font file (2048 upm).
+     Its ascent runs far above the caps, so any Ultra heading left alone
+     carries ~0.24em of empty space. The .poster class below trims it. */
+  --ultra-cap-gap: 0.1287em;   /* empty space above the caps at line-height:1 */
+  --ultra-base-gap: 0.1116em;  /* empty space below the ink */
+
+  /* Mono ramp — 1.2 ratio, 16px body. 13px is the floor.
+     Martian's advance is 0.7em, so these read wider than a sans at the
+     same value. The scale stops at 40px because Ultra owns everything
+     above that. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5;
+  --text-xs--letter-spacing: -0.01em;
+  --text-xs--font-weight: 500;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.6;
+  --text-sm--letter-spacing: -0.02em;
+  --text-sm--font-weight: 450;
+  --text-base: 1rem;
+  --text-base--line-height: 1.7;
+  --text-base--letter-spacing: -0.03em;
+  --text-lg: 1.1875rem;
+  --text-lg--line-height: 1.6;
+  --text-lg--letter-spacing: -0.03em;
+  --text-xl: 1.4375rem;
+  --text-xl--line-height: 1.4;
+  --text-xl--letter-spacing: -0.035em;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 1.3;
+  --text-2xl--letter-spacing: -0.04em;
+  --text-3xl: 2.0625rem;
+  --text-3xl--line-height: 1.22;
+  --text-3xl--letter-spacing: -0.045em;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 1.15;
+  --text-4xl--letter-spacing: -0.05em;
+
+  /* Poster sizes — Ultra only. Below 48px its counters close up. */
+  --text-poster-sm: 3rem;
+  --text-poster-sm--line-height: 1;
+  --text-poster-md: 4.5rem;
+  --text-poster-md--line-height: 1;
+  --text-poster-lg: 6.5rem;
+  --text-poster-lg--line-height: 1;
+
+  /* Micro-labels: dates, rooms, semesters, project IDs, class years.
+     Same family as everything else, so the difference has to come from
+     tracking + case + colour. Never below 13px. */
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.08em;
+  --text-label--font-weight: 500;
+
+  /* Width. Martian Mono carries a wdth axis (75–112.5) as well as weight.
+     Body is condensed so prose fits more characters per line without
+     shrinking the type; labels sit at normal width for presence. */
+  --wdth-condensed: 88;
+  --wdth-normal: 100;
+  --wdth-wide: 108;
+
+  /* Weights. Martian Mono is variable, 100–800. */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Section rhythm — 8px grid. */
+  --spacing-gutter: 1.5rem;
+  --spacing-section: 4rem;
+  --spacing-section-lg: 6rem;
+  --spacing-section-xl: 9rem;
+
+  /* Containers. Named --container-text, not --container-prose: Tailwind
+     ships a built-in max-w-prose (65ch) that wins the collision, so the
+     token would be silently ignored. 44rem is 63 characters per line at
+     Martian's 0.7em advance; 40rem would give 57, which is tight. */
+  --container-text: 44rem;
+  --container-page: 72rem;
+  --container-wide: 84rem;
+
+  /* Radius — three values, each with one job.
+     control = anything you click. card = anything holding content.
+     pill = badges and status chips only. */
+  --radius-control: 0.375rem;
+  --radius-card: 0.75rem;
+  --radius-pill: 9999px;
+
+  /* Motion. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
 }
+
+/* ─── Semantic colour names ───────────────────────────────────── */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-outfit: var(--font-outfit);
+  --color-surface: var(--n-0);
+  --color-surface-1: var(--n-1);
+  --color-surface-2: var(--n-2);
+
+  --color-ink: var(--n-8);
+  --color-ink-muted: var(--n-6);
+  --color-ink-faint: var(--n-5);
+
+  --color-line: var(--n-3);
+  --color-line-strong: var(--n-5);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-text: var(--accent-text);
+  --color-accent-quiet: var(--accent-quiet);
+  --color-on-accent: var(--on-accent);
+
+  /* Footer icon tiles. Added per design/COMPONENTS.md:40 — the only two
+     values in the reference set with no semantic equivalent, because the
+     footer pill is dark on every theme and so does not track the neutral
+     ramp. Deliberately NOT redefined under .dark / .dim. */
+  --color-chip: var(--chip);
+  --color-chip-line: var(--chip-line);
 }
+
+/* ─── Light ───────────────────────────────────────────────────── */
+
+/* `.light` alongside :root makes light a FORCING class, not just the
+   default: a .light element inside a .dark page gets the light ramp,
+   because a custom property declared on a nearer element beats one
+   inherited from html. Needed by /preview's side-by-side theme columns,
+   and it makes next-themes' class="light" mean what it says. Zero effect
+   on normal pages, where :root already supplied these values. */
+:root,
+.light {
+  --n-0: #f9f8f9;
+  --n-1: #f4f3f3;
+  --n-2: #edeaec;
+  --n-3: #e1dbdd;
+  --n-4: #bfb0b6;
+  --n-5: #907a82;
+  --n-6: #6b575f;
+  --n-7: #3f3137;
+  --n-8: #20181b;
+
+  --accent: #e6005c;
+  --accent-hover: #ad0045;
+  --accent-text: #ad0045;
+  --accent-quiet: #f8e7ee;
+  --on-accent: #ffffff;
+
+  /* Theme-constant — see the note in @theme inline above. */
+  --chip: #2e2427;
+  --chip-line: #3d3134;
+
+  color-scheme: light;
+}
+
+/* ─── Dark ────────────────────────────────────────────────────── */
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --n-0: #0d0a0b;
+  --n-1: #151113;
+  --n-2: #1f1a1c;
+  --n-3: #2c2628;
+  --n-4: #52474b;
+  --n-5: #837279;
+  --n-6: #afa1a7;
+  --n-7: #d5cdd0;
+  --n-8: #f4f1f2;
+
+  --accent: #fa3383;
+  --accent-hover: #ffa3c8;
+  --accent-text: #ffa3c8;
+  --accent-quiet: #2c0a1a;
+  --on-accent: #0d0a0b;
+
+  color-scheme: dark;
 }
+
+/* ─── Dim ─────────────────────────────────────────────────────── */
+/* Deep plum derived from the accent hue, not X's navy. */
 
 .dim {
-  --background: #15202b;
-  --foreground: #e7e9ea;
+  --n-0: #1e0911;
+  --n-1: #280e18;
+  --n-2: #351522;
+  --n-3: #442230;
+  --n-4: #734557;
+  --n-5: #a17285;
+  --n-6: #bfa6b0;
+  --n-7: #ded3d8;
+  --n-8: #f6f3f5;
 
-  /* Override zinc palette to navy-blue tints (X Dim style) */
-  --color-zinc-50: #e7e9ea;
-  --color-zinc-100: #d6dce2;
-  --color-zinc-200: #c4cdd5;
-  --color-zinc-300: #8b98a5;
-  --color-zinc-400: #8b98a5;
-  --color-zinc-500: #6e7b8a;
-  --color-zinc-600: #8b98a5;
-  --color-zinc-700: #536471;
-  --color-zinc-800: #38444d;
-  --color-zinc-900: #1e2732;
-  --color-zinc-950: #15202b;
+  --accent: #fa3383;
+  --accent-hover: #ffa3c8;
+  --accent-text: #ffa3c8;
+  --accent-quiet: #3d1024;
+  --on-accent: #1e0911;
+
+  color-scheme: dark;
 }
 
+/* ─── Base ────────────────────────────────────────────────────── */
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-outfit);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 300;
+  line-height: 1.7;
+  letter-spacing: -0.03em;
+  font-variation-settings: "wdth" var(--wdth-condensed);
+}
+
+/* Weight floor for small text. Below 16px, mono strokes get thin enough
+   that text can pass its contrast ratio and still read badly — WCAG
+   measures colour, not stroke.
+
+   The real enforcement is --text-xs--font-weight and
+   --text-label--font-weight in @theme, which the utilities emit
+   themselves and which font-* utilities can still override. This block
+   only covers raw HTML elements, and it sits in @layer base so that any
+   Tailwind utility beats it. */
+@layer base {
+  small,
+  figcaption {
+    font-weight: 500;
+    font-variation-settings: "wdth" var(--wdth-normal);
+  }
+}
+
+/* Prose stays light-weight and capped at 44rem. Martian at 400 is heavy
+   in a paragraph; 300 reads closer to a normal body weight. */
+.prose-block {
+  max-width: var(--container-text);
+  font-weight: 300;
+}
+
+/* Ultra, trimmed to its ink. Without this, every poster heading carries
+   ~0.24em of empty box — which is what made the footer feel tall. */
+.poster {
+  font-family: var(--font-poster);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-block-start: calc(-1 * var(--ultra-cap-gap));
+  margin-block-end: calc(-1 * var(--ultra-base-gap));
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0 var(--radius-control) 0;
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lift {
+    transition: transform 200ms var(--ease-out);
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,231 +1,198 @@
 "use client";
 
-import { ThemeToggle } from "@/components/theme-toggle";
-import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
+/* Navbar — mark + wordmark + club name, four links, theme control.
+ *
+ * Translated from design/nav-and-photo-motion.html. That file's custom
+ * property names drifted from the token layer (see the correction table in
+ * design/COMPONENTS.md); the real semantic tokens are used here.
+ *
+ * THE MARK IS A LANDING TARGET, NOT DECORATION.
+ * S4 flies the hero bolt into [data-nav-mark], so that slot's position must
+ * not move for any reason the animation cannot see:
+ *   - the header row is a fixed h-16, so the slot is vertically centred at a
+ *     constant offset no matter what the lockup text does;
+ *   - there is no scroll listener and no scrolled/unscrolled variant, so the
+ *     header never changes size or padding as the page moves;
+ *   - the subtitle hides under 640px inside the lockup only — the row height
+ *     is set by the h-16, not by its contents, so nothing shifts;
+ *   - the mobile panel opens BELOW the row, never inside it.
+ * [data-nav-wordmark] is the "SPARC" text S4 fades in at ~80% of the travel.
+ *
+ * The old nav's hover preview cards are gone on purpose: seven routes with
+ * an image panel each became five routes, and a preview panel that opens on
+ * hover has no touch equivalent.
+ *
+ * Motion here is transitions on colour only, which the global
+ * prefers-reduced-motion block in globals.css already flattens; the panel is
+ * the shared <Expand>, whose motion is likewise all-CSS. No JS motion lives
+ * in this file — the hero travel is S4's.
+ */
 
-const navItems = [
-  {
-    href: "/",
-    label: "Home",
-    description: "Start here for SPARC highlights and updates.",
-    image: "/sparc-1.jpg",
-  },
-  {
-    href: "/about",
-    label: "About",
-    description: "Learn SPARC's mission, focus areas, and story.",
-    image: "/sparc-3.jpg",
-  },
-  {
-    href: "/team",
-    label: "Team",
-    description: "Meet the student leaders and founding members.",
-    image: "/sparc-vc-4.jpeg",
-  },
-  {
-    href: "/events",
-    label: "Events",
-    description: "See upcoming workshops, panels, and club sessions.",
-    image: "/sparc-6.jpeg",
-  },
-  {
-    href: "/projects",
-    label: "Projects",
-    description: "Explore member projects and proposal ideas.",
-    image: "/sparc-projects.jpeg",
-  },
-  {
-    href: "/join",
-    label: "Join",
-    description: "Apply to SPARC and learn how recruitment works.",
-    image: "/sparc-8.jpeg",
-  },
-  {
-    href: "/contact",
-    label: "Contact",
-    description: "Reach out by email and stay updated on channels.",
-    image: "/sparc-contact.jpeg",
-  },
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import * as React from "react";
+
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Expand } from "@/components/ui/expand";
+import { SparcMark } from "@/components/ui/sparc-mark";
+import { cn } from "@/lib/utils";
+
+/* The five routes that exist after the merge. Home is the lockup itself, so
+   it is listed only for the mobile panel. */
+const HOME = { href: "/", label: "Home" };
+const LINKS = [
+  { href: "/about", label: "About" },
+  { href: "/projects", label: "Projects" },
+  { href: "/events", label: "Events" },
+  { href: "/join", label: "Join" },
 ];
 
+const PANEL_ID = "nav-menu-panel";
+
+/* globals.css exposes the width axis as a token but no utility for it. */
+const WIDTH_NORMAL: React.CSSProperties = {
+  fontVariationSettings: '"wdth" var(--wdth-normal)',
+};
+const WIDTH_CONDENSED: React.CSSProperties = {
+  fontVariationSettings: '"wdth" var(--wdth-condensed)',
+};
+
 export default function Navbar() {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [suppressPreviews, setSuppressPreviews] = useState(false);
+  const pathname = usePathname();
+  const [open, setOpen] = React.useState(false);
 
-    const handleDesktopNavClick = () => {
-      setSuppressPreviews(true);
-    };
+  /* Close the panel when the route changes — otherwise it stays open over
+     the new page after a tap. */
+  React.useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
-    return (
-        <header className="relative z-120 border-b border-zinc-200 bg-white/80 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/80">
-            <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:gap-6 sm:px-6 lg:px-8">
-                <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0">
-                    <div className="flex size-8 items-center justify-center">
-                        <img src="/sparc-logo.png" alt="SPARC" className="size-full object-contain dark:invert" />
-                    </div>
-                    <div className="hidden sm:flex flex-col leading-tight">
-                        <span className="text-sm font-semibold tracking-tight">
-                            SPARC
-                        </span>
-                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                            Suffolk Programming, AI & Research Club
-                        </span>
-                    </div>
-                </Link>
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-                <nav
-                  className="hidden items-center gap-1 text-sm font-medium lg:flex"
-                  onMouseLeave={() => setSuppressPreviews(false)}
-                >
-                  {navItems.map((item) => (
-                    <NavLink
-                      key={item.href}
-                      href={item.href}
-                      title={item.label}
-                      description={item.description}
-                      image={item.image}
-                      suppressPreview={suppressPreviews}
-                      onNavClick={handleDesktopNavClick}
-                    />
-                  ))}
-                </nav>
+  return (
+    <header className="sticky top-0 z-50 border-b border-line bg-surface">
+      <div className="mx-auto max-w-page px-4 sm:px-6 lg:px-8">
+        {/* Fixed row height: this is what keeps [data-nav-mark] still. */}
+        <div className="flex h-16 items-center gap-4">
+          <Link
+            href="/"
+            aria-current={isActive("/") ? "page" : undefined}
+            className="flex min-w-0 shrink-0 items-center gap-[11px] text-ink"
+          >
+            <span
+              data-nav-mark
+              className="flex h-[34px] w-auto shrink-0 items-center text-accent"
+            >
+              <SparcMark className="h-[34px] w-auto" />
+            </span>
+            <span className="flex min-w-0 flex-col gap-[2px]">
+              <span
+                data-nav-wordmark
+                className="text-base font-semibold leading-none tracking-[0.01em]"
+                style={WIDTH_NORMAL}
+              >
+                SPARC
+              </span>
+              {/* 11.5px is the ONE sanctioned sub-13px size in the whole
+                  site, specified by SPEC for this subtitle only. The 13px
+                  floor stands everywhere else — use text-label there. */}
+              <span
+                className="hidden text-[11.5px] leading-[1.25] tracking-[-0.01em] text-ink-muted sm:block"
+                style={WIDTH_CONDENSED}
+              >
+                Suffolk Programming, AI &amp; Research Club
+              </span>
+            </span>
+          </Link>
 
-                <div className="flex items-center gap-2">
-                    <ThemeToggle />
-                    <Button
-                        asChild
-                        size="sm"
-                        className="hidden lg:inline-flex"
-                    >
-                        <Link href="/join">Join</Link>
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="lg:hidden"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        {mobileMenuOpen ? (
-                            <X className="size-5" />
-                        ) : (
-                            <Menu className="size-5" />
-                        )}
-                    </Button>
-                </div>
-            </div>
+          <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-4">
+            <nav aria-label="Main" className="hidden lg:block">
+              <ul className="flex items-center gap-1">
+                {LINKS.map((item) => (
+                  <li key={item.href}>
+                    <NavLink {...item} active={isActive(item.href)} />
+                  </li>
+                ))}
+              </ul>
+            </nav>
 
-            {mobileMenuOpen && (
-                <div className="border-t border-zinc-200 bg-white/95 backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/95 lg:hidden">
-                    <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3 text-sm font-medium">
-                      {navItems.map((item) => (
-                        <MobileNavLink
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                        >
-                          {item.label}
-                        </MobileNavLink>
-                      ))}
-                        {/*<div className="border-t border-zinc-200 pt-3 dark:border-zinc-800 mt-2">
-                            <Button
-                                asChild
-                                className="w-full"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                <Link href="/join">Apply</Link>
-                            </Button>
-                        </div>*/}
-                    </nav>
-                </div>
-            )}
-        </header>
-    )
+            <ThemeToggle />
+
+            {/* Text label, not a hamburger: five destinations do not need an
+                icon metaphor. */}
+            <button
+              type="button"
+              aria-expanded={open}
+              aria-controls={PANEL_ID}
+              onClick={() => setOpen((v) => !v)}
+              className="rounded-control border border-line px-3 py-2 text-label text-ink-muted transition-colors hover:border-line-strong hover:text-ink lg:hidden"
+              style={WIDTH_NORMAL}
+            >
+              MENU
+            </button>
+          </div>
+        </div>
+
+        {/* THE shared expand — components/ui/expand.tsx. Not a second one. */}
+        <Expand open={open} id={PANEL_ID} className="lg:hidden">
+          <nav aria-label="Site" className="pb-4">
+            <ul className="flex flex-col gap-1 border-t border-line pt-3">
+              {[HOME, ...LINKS].map((item) => (
+                <li key={item.href}>
+                  <NavLink
+                    {...item}
+                    active={isActive(item.href)}
+                    block
+                    onClick={() => setOpen(false)}
+                  />
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </Expand>
+      </div>
+    </header>
+  );
 }
 
 function NavLink({
   href,
-  title,
-  description,
-  image,
-  suppressPreview,
-  onNavClick,
-}: {
-  href: string;
-  title: string;
-  description: string;
-  image: string;
-  suppressPreview: boolean;
-  onNavClick: () => void;
-}) {
-  return (
-    <div className="group relative">
-      <Button
-        asChild
-        variant="ghost"
-        size="sm"
-        className="px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
-      >
-        <Link
-          href={href}
-          onClick={() => {
-            onNavClick();
-            if (document.activeElement instanceof HTMLElement) {
-              document.activeElement.blur();
-            }
-          }}
-        >
-          {title}
-        </Link>
-      </Button>
-
-      <div
-        className={`pointer-events-none absolute left-1/2 top-full z-200 mt-3 w-72 -translate-x-1/2 translate-y-1 overflow-hidden rounded-xl border border-zinc-200 bg-white/95 opacity-0 shadow-xl transition duration-200 dark:border-zinc-800 dark:bg-zinc-950/95 ${
-          suppressPreview
-            ? ""
-            : "group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100"
-        }`}
-      >
-        <div className="relative h-36">
-          <Image
-            src={image}
-            alt={`${title} preview image`}
-            fill
-            unoptimized
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-linear-to-t from-black/35 via-black/5 to-transparent" />
-        </div>
-        <div className="space-y-1 p-3">
-          <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{title}</p>
-          <p className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">{description}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MobileNavLink({
-  href,
-  children,
+  label,
+  active,
+  block,
   onClick,
 }: {
   href: string;
-  children: React.ReactNode;
+  label: string;
+  active: boolean;
+  block?: boolean;
   onClick?: () => void;
 }) {
   return (
-    <Button
-      asChild
-      variant="ghost"
-      className="justify-start px-3 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
+    <Link
+      href={href}
       onClick={onClick}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "relative rounded-control text-sm leading-none transition-colors",
+        block ? "flex items-center px-3 py-3" : "inline-flex px-3 py-[9px]",
+        active ? "text-ink" : "text-ink-muted hover:bg-surface-1 hover:text-ink",
+      )}
     >
-      <Link href={href}>{children}</Link>
-    </Button>
+      {label}
+      {/* Visible active state, paired with aria-current above. */}
+      {active && (
+        <span
+          aria-hidden="true"
+          className={cn(
+            "absolute rounded-pill bg-accent",
+            block
+              ? "left-0 top-1/2 h-4 w-[2px] -translate-y-1/2"
+              : "inset-x-3 bottom-[3px] h-[2px]",
+          )}
+        />
+      )}
+    </Link>
   );
 }
-

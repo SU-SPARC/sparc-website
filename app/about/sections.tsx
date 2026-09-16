@@ -105,8 +105,8 @@ export function PhotoReveal({ className, children }: PhotoRevealProps) {
  *
  *   Current / Alumni — `status`, which members.ts:33 is explicit is sourced
  *     data and must be read, never inferred from a class year.
- *   E-Board — sort_order < 100. members.ts:29 defines the order as "the five
- *     e-board members first, in team2026's own order (10,20,30,40,50), then
+ *   E-Board — sort_order < 100. members.ts:29 defines the order as "the six
+ *     e-board members first, in team2026's own order (10,20,30,40,50,60), then
  *     everyone else in the `team` array's own order (100,110,…160)", so the
  *     e-board is exactly the block below 100. Deriving it from `role` would
  *     mean deciding which role strings count as offices, and deriving it from

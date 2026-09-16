@@ -3,10 +3,10 @@
 // Source of truth: app/team/page.tsx. Every value is copy-paste traceable; do
 // not edit by memory. Shape mirrors `create table members` in supabase/schema.sql.
 //
-// MERGE: the live /team page renders 17 cards for 12 people — Kanan, Montasir,
-// Bexultan, Endi and Allan each appear in BOTH the `team` array (heading "Team
-// of 2025", page.tsx:240) and the `team2026` array (heading "Team of 2026",
-// page.tsx:158). They are merged to one entry each:
+// MERGE: the live /team page renders 18 cards for 12 people — Kanan, Montasir,
+// Bexultan, Endi, Allan and Margulan each appear in BOTH the `team` array
+// (heading "Team of 2025", page.tsx:244) and the `team2026` array (heading
+// "Team of 2026", page.tsx:162). They are merged to one entry each:
 //   • `role` / `role_term` come from team2026 ('2026' is the heading's own year
 //     string — not '2026–27', which came from the deleted, wrong SQL seed).
 //   • their 2025 role from `team` moves into `role_history`.
@@ -25,9 +25,9 @@
 //
 // class_year: parsed from the 'Class of 20XX' half of the repo's role string.
 // slug: kebab-case of `name`.
-// sort_order: the five e-board members first, in team2026's own order
-// (10,20,30,40,50), then everyone else in the `team` array's own order
-// (100,110,…160).
+// sort_order: the six e-board members first, in team2026's own order
+// (10,20,30,40,50,60), then everyone else in the `team` array's own order
+// (100,110,…160) — less 140, vacated when Margulan moved up to the e-board.
 //
 // status: club-supplied, confirmed Aug 2026 via the orchestrator (resolves
 // PLAN.md §5.1). The four Class-of-2026 members — Mohammed, Sarmad, Kyle and
@@ -52,7 +52,7 @@
 import type { Member } from "./types";
 
 export const members: Member[] = [
-  // ── e-board, "Team of 2026" (app/team/page.tsx:120–141) ──────────────────
+  // ── e-board, "Team of 2026" (app/team/page.tsx:120–145) ──────────────────
   {
     slug: "kanan-guliyev",
     name: "Kanan Guliyev",
@@ -139,6 +139,23 @@ export const members: Member[] = [
     website: "https://www.allandng.com/",
     sort_order: 50,
   },
+  {
+    slug: "margulan-kudaibergen",
+    name: "Margulan Kudaibergen",
+    nickname: null,
+    photo: "/images/margulan.webp",
+    class_year: 2028,
+    status: "current",
+    role: "Network Lead",
+    role_term: "2026",
+    role_history: ["Founding Member"],
+    badges: ["founding", "collegiatex"],
+    participated: [2025, 2026],
+    bio: "Hi, I'm a software engineer studying Computer Science at Suffolk University. I am obsessed with building meaningful products that help people.",
+    linkedin: "https://www.linkedin.com/in/margulan-kudaibergen/",
+    website: null,
+    sort_order: 60,
+  },
 
   // ── "Team of 2025" only (app/team/page.tsx:16–118) ───────────────────────
   {
@@ -209,23 +226,9 @@ export const members: Member[] = [
     website: null,
     sort_order: 130,
   },
-  {
-    slug: "margulan-kudaibergen",
-    name: "Margulan Kudaibergen",
-    nickname: null,
-    photo: "/images/margulan.webp",
-    class_year: 2028,
-    status: "current",
-    role: "Founding Member",
-    role_term: "2025",
-    role_history: [],
-    badges: ["founding", "collegiatex"],
-    participated: [2025, 2026],
-    bio: "Hi, I'm a software engineer studying Computer Science at Suffolk University. I am obsessed with building meaningful products that help people.",
-    linkedin: "https://www.linkedin.com/in/margulan-kudaibergen/",
-    website: null,
-    sort_order: 140,
-  },
+  // 140 is intentionally vacant: Margulan moved to the e-board block above
+  // when `Add margu` (382b81e) put him in team2026. Everyone else keeps the
+  // `team` array's own order, so the numbers stay traceable to it.
   {
     slug: "anthony-sek",
     name: "Anthony Sek",

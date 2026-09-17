@@ -45,6 +45,9 @@ export const metadata: Metadata = {
 };
 
 const GALLERY = [
+  "sp-1",
+  "sp-2",
+  "sp-3",
   "sparc-8",
   "sparc-3",
   "sparc-5",

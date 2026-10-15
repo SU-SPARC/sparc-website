@@ -174,6 +174,7 @@ enable_refresh_token_rotation = true
 # Requires enable_refresh_token_rotation = true.
 refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project.
+# false: invite/admin-created accounts only (the admin API still works).
 enable_signup = false
 # Allow/disallow anonymous sign-ins to your project.
 enable_anonymous_sign_ins = false
@@ -219,7 +220,11 @@ web3 = 30
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
-enable_signup = false
+# KEEP TRUE: in the CLI this maps to the email provider being enabled at all
+# (false = "Email logins are disabled", so password sign-in breaks too).
+# Public sign-up is closed by [auth] enable_signup = false above; admins create
+# and invite accounts through the admin API, which that setting does not block.
+enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
 double_confirm_changes = true

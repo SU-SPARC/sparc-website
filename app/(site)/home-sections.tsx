@@ -9,7 +9,7 @@
  * composition; nothing here needs its own module boundary.
  *
  * PROVENANCE. Every visible string below is either (a) countable data read
- * off lib/content, (b) copy already in the repo with the file:line given, or
+ * off the data layer (lib/data, passed in as props by page.tsx), (b) copy already in the repo with the file:line given, or
  * (c) a string the client wrote in the mockup, each one marked
  * `client mockup, Aug 2026`. Nothing is written here.
  *
@@ -22,11 +22,11 @@ import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import { blurProps } from "@/components/ui/blur";
 import { MicroLabel } from "@/components/ui/micro-label";
 import { PosterText } from "@/components/ui/poster-text";
-import { members } from "@/lib/content/members";
-import { news } from "@/lib/content/news";
-import { projects } from "@/lib/content/projects";
+import { formatDateOnly } from "@/lib/data/dates";
+import type { Member, News, Project } from "@/lib/data/types";
 
 /* The quiet-link chip, verbatim from app/join/page.tsx:70-71 — itself the
    404 route chip (app/not-found.tsx:43). It is the site's established
@@ -61,15 +61,17 @@ const quietLink =
  * (components/ui/poster-text.tsx). Nothing else on this page uses it — the
  * news heading below is Martian.
  *
- * COUNTS ARE DERIVED, NEVER TYPED. Anything countable is read off
- * lib/content so a stat cannot disagree with the page that lists the items.
+ * COUNTS ARE DERIVED, NEVER TYPED. Anything countable is read off the data
+ * the page fetched, so a stat cannot disagree with the page that lists the
+ * items. The tiles are built per render (stats() below), not at module
+ * scope: the data is fetched, so there is nothing to count at import time.
  */
 
 /* app/about/page.tsx:55 (STORY): "SPARC was founded in 2025". A string, not a
    number: it is a year read out of prose, not a count of anything. */
 const FOUNDED = "2025";
 
-const STATS: {
+type Stat = {
   value: string;
   label: string;
   /* Written out per tile rather than built from the index: Tailwind finds
@@ -78,58 +80,69 @@ const STATS: {
      phone), four at lg. */
   rule: string;
   accent?: boolean;
-}[] = [
-  {
-    value: FOUNDED,
-    /* client mockup, Aug 2026 — "FOUNDED AT SUFFOLK". The all-caps is
-       MicroLabel's `uppercase`, not the source string, so every label in
-       this array is stored in its natural casing and renders identically
-       either way. */
-    label: "Founded at Suffolk",
-    rule: "pr-5",
-    accent: true,
-  },
-  {
-    /* Counted off the BADGE, not off the roster. The tile is labelled
-       "Founding Members", so the thing it counts has to be founding badges —
-       otherwise the label and the number are free to drift apart, which is
-       exactly what the resolved NOTE(client) below was about.
-       It renders identically today: the club confirmed (Aug 2026) that all
-       12 members are founding and lib/content/members.ts badges every one of
-       them, so this is 12 either way. The difference is that it now stays
-       right on its own — the first non-founding member to join moves the
-       roster without moving this number, which is what the label promises. */
-    value: String(
-      members.filter((m) => m.badges.includes("founding")).length,
-    ),
-    /* client mockup, Aug 2026 — "FOUNDING MEMBERS". A NOTE(client) stood here
-       flagging the mockup's label as contradicting the data (only 7 of 12
-       members carried the 'founding' badge, so the tile would have disagreed
-       with the people cards on /about); the club resolved it by confirming
-       all 12, Aug 2026. */
-    label: "Founding Members",
-    rule: "border-l border-line pr-5 pl-5",
-  },
-  {
-    /* Zero-padded to two digits per the mockup's "03". padStart, not a typed
-       "03", so it still reads off projects.length. */
-    value: String(projects.length).padStart(2, "0"),
-    /* client mockup, Aug 2026 — "PROJECTS SHIPPED". "ship" is the site's own
-       verb for this: "we build and ship real software"
-       (components/ui/hero.tsx:566-567, and app/page.tsx:28 metadata). */
-    label: "Projects shipped",
-    rule: "border-t border-line pt-8 pr-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5",
-  },
-  {
-    /* The tagline's own tail, split at its natural seam: "All majors
-       welcome." — components/ui/hero.tsx:568-569, app/page.tsx:28. */
-    value: "All",
-    label: "Majors welcome",
-    rule: "border-t border-l border-line pt-8 pl-5 lg:border-t-0 lg:pt-0",
-  },
-];
+};
 
-export function StatsBand() {
+function stats(members: Member[], projects: Project[]): Stat[] {
+  return [
+    {
+      value: FOUNDED,
+      /* client mockup, Aug 2026 — "FOUNDED AT SUFFOLK". The all-caps is
+         MicroLabel's `uppercase`, not the source string, so every label in
+         this array is stored in its natural casing and renders identically
+         either way. */
+      label: "Founded at Suffolk",
+      rule: "pr-5",
+      accent: true,
+    },
+    {
+      /* Counted off the BADGE, not off the roster. The tile is labelled
+         "Founding Members", so the thing it counts has to be founding badges —
+         otherwise the label and the number are free to drift apart, which is
+         exactly what the resolved NOTE(client) below was about.
+         It renders identically today: the club confirmed (Aug 2026) that all
+         12 members are founding and the seeded member rows badge every one of
+         them, so this is 12 either way. The difference is that it now stays
+         right on its own — the first non-founding member to join moves the
+         roster without moving this number, which is what the label promises. */
+      value: String(
+        members.filter((m) => m.badges.includes("founding")).length,
+      ),
+      /* client mockup, Aug 2026 — "FOUNDING MEMBERS". A NOTE(client) stood here
+         flagging the mockup's label as contradicting the data (only 7 of 12
+         members carried the 'founding' badge, so the tile would have disagreed
+         with the people cards on /about); the club resolved it by confirming
+         all 12, Aug 2026. */
+      label: "Founding Members",
+      rule: "border-l border-line pr-5 pl-5",
+    },
+    {
+      /* Zero-padded to two digits per the mockup's "03". padStart, not a typed
+         "03", so it still reads off projects.length. */
+      value: String(projects.length).padStart(2, "0"),
+      /* client mockup, Aug 2026 — "PROJECTS SHIPPED". "ship" is the site's own
+         verb for this: "we build and ship real software"
+         (components/ui/hero.tsx:566-567, and app/page.tsx:28 metadata). */
+      label: "Projects shipped",
+      rule: "border-t border-line pt-8 pr-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-5",
+    },
+    {
+      /* The tagline's own tail, split at its natural seam: "All majors
+         welcome." — components/ui/hero.tsx:568-569, app/page.tsx:28. */
+      value: "All",
+      label: "Majors welcome",
+      rule: "border-t border-l border-line pt-8 pl-5 lg:border-t-0 lg:pt-0",
+    },
+  ];
+}
+
+export function StatsBand({
+  members,
+  projects,
+}: {
+  members: Member[];
+  projects: Project[];
+}) {
+  const STATS = stats(members, projects);
   return (
     <section className="border-y border-line bg-surface-1">
       <dl className="mx-auto grid max-w-page grid-cols-2 gap-y-8 px-gutter py-10 lg:grid-cols-4 lg:py-12">
@@ -171,7 +184,8 @@ export function StatsBand() {
  * control to advance them. /events still owns the full dated list, which is
  * where every card and the chip point; news has no detail pages.
  *
- * DATES are formatted from the Date in lib/content/news.ts, never re-typed.
+ * DATES are `published_on`, a date-only 'YYYY-MM-DD' string, formatted by
+ * formatDateOnly() — no zone arithmetic, so no day shift on any machine.
  * en-GB with weekday/day/month/year short produces exactly the shape the
  * repo stored as a display string ("Fri, 24 Apr 2026"), so the weekday on
  * screen is the weekday the calendar says. An explicit locale, not the
@@ -184,18 +198,12 @@ export function StatsBand() {
  * adjacent text there to carry the meaning.)
  */
 
-const DATE_FORMAT = new Intl.DateTimeFormat("en-GB", {
+const DATE_OPTS: Intl.DateTimeFormatOptions = {
   weekday: "short",
   day: "numeric",
   month: "short",
   year: "numeric",
-});
-
-/* Machine-readable pair for <time dateTime>, built off the same local Date so
-   it cannot drift a day the way an ISO parse would. */
-function isoDate(date: Date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-}
+};
 
 /* 0799ca5^:app/page.tsx:76 — the kicker the deleted news section carried. */
 const NEWS_KICKER = "Latest Updates";
@@ -205,7 +213,7 @@ const NEWS_HEADING = "News from the club";
    lucide ArrowRight the site already uses on its links (hero.tsx:576). */
 const NEWS_CTA = "All events";
 
-export function NewsPreview() {
+export function NewsPreview({ news }: { news: News[] }) {
   return (
     <section className="mx-auto flex max-w-page flex-col gap-6 px-gutter py-section">
       <div className="flex flex-col gap-3">
@@ -219,13 +227,14 @@ export function NewsPreview() {
 
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {news.map((item) => (
-          <li key={item.slug}>
+          <li key={item.id}>
             {/* The accessible name is the date plus the title, both inside
                 the link, so no aria-label is needed to say where it goes. */}
             <Link href="/events" className="lift flex flex-col gap-3">
               <div className="relative aspect-[4/3] overflow-hidden rounded-card bg-surface-2">
                 <Image
-                  src={item.image}
+                  src={item.image.src}
+                  {...blurProps(item.image)}
                   alt=""
                   fill
                   sizes="(min-width: 1024px) 360px, (min-width: 640px) 50vw, 100vw"
@@ -253,10 +262,10 @@ export function NewsPreview() {
                       hazard app/join/page.tsx:123-128 warns about. */}
                   <MicroLabel as="span">
                     <time
-                      dateTime={isoDate(item.date)}
+                      dateTime={item.published_on}
                       className="text-accent-text"
                     >
-                      {DATE_FORMAT.format(item.date)}
+                      {formatDateOnly(item.published_on, DATE_OPTS, "en-GB")}
                     </time>
                   </MicroLabel>
                 </div>

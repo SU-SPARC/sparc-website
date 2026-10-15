@@ -1,6 +1,6 @@
 /* /events — server shell.
  *
- * Numbered, ruled rows read from lib/content/events.ts. No cards, no search,
+ * Numbered, ruled rows read from the events table (lib/data). No cards, no search,
  * no images, no motion beyond the shared expand (SPEC "/events"). This file
  * carries the metadata and the static copy; the rows and the recordings —
  * the only parts that need a clock or open/closed state — are in
@@ -20,6 +20,7 @@
 import type { Metadata } from "next";
 
 import { MicroLabel } from "@/components/ui/micro-label";
+import { getEvents, getRecordings } from "@/lib/data";
 
 import { EventRecord, RecordingList } from "./events-record";
 
@@ -33,7 +34,15 @@ export const metadata: Metadata = {
   description: INTRO,
 };
 
-export default function EventsPage() {
+/* ISR: a safety net; admin saves revalidate on demand. */
+export const revalidate = 300;
+
+export default async function EventsPage() {
+  const [events, recordings] = await Promise.all([
+    getEvents(),
+    getRecordings(),
+  ]);
+
   return (
     <main className="mx-auto max-w-page px-gutter py-section">
       <header>
@@ -42,16 +51,18 @@ export default function EventsPage() {
       </header>
 
       <div className="mt-10">
-        <EventRecord />
+        <EventRecord events={events} />
       </div>
 
-      <section className="mt-section">
-        {/* "Past Zoom Recordings" — app/events/page.tsx:148 (pre-rewrite). */}
-        <MicroLabel as="h2" className="block">
-          Past Zoom Recordings
-        </MicroLabel>
-        <RecordingList />
-      </section>
+      {recordings.length > 0 ? (
+        <section className="mt-section">
+          {/* "Past Zoom Recordings" — app/events/page.tsx:148 (pre-rewrite). */}
+          <MicroLabel as="h2" className="block">
+            Past Zoom Recordings
+          </MicroLabel>
+          <RecordingList recordings={recordings} />
+        </section>
+      ) : null}
     </main>
   );
 }

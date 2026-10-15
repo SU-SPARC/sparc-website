@@ -214,7 +214,7 @@ export default function JoinPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               <div className="relative size-24 shrink-0 overflow-hidden rounded-card">
                 <Image
-                  src="/images/professor-anthony.webp"
+                  src="/advisor.webp"
                   alt="Professor Anthony Gentilucci"
                   fill
                   sizes="96px"

@@ -4,7 +4,7 @@
  * needs an event handler lives in ./project-index.
  *
  * CONTENT RULE. Nothing on this page is written from memory. The three
- * projects come from lib/content/projects.ts; the two blocks of prose below
+ * projects come from the projects table via lib/data; the two blocks of prose below
  * are lifted from the page this replaces (see the SOURCE comments). The old
  * page's second lede ("Catalog" + "What we have built so far…", old lines
  * 79–82) restated the first, and its /sparc-projects banner was scenery for a
@@ -15,7 +15,7 @@ import type { Metadata } from "next";
 
 import { MicroLabel } from "@/components/ui/micro-label";
 import { SurfaceCard } from "@/components/ui/surface-card";
-import { projects } from "@/lib/content/projects";
+import { getProjects } from "@/lib/data";
 
 import { ProjectIndex } from "./project-index";
 
@@ -40,7 +40,11 @@ export const metadata: Metadata = {
   description: LEDE,
 };
 
-export default function ProjectsPage() {
+/* ISR: a safety net; admin saves revalidate on demand. */
+export const revalidate = 300;
+
+export default async function ProjectsPage() {
+  const projects = await getProjects();
   /* Accession order — SP-001 first. sort_order is defined to follow ref, so
      sorting on it is sorting on the accession id without parsing a string. */
   const catalogue = [...projects].sort((a, b) => a.sort_order - b.sort_order);
@@ -59,7 +63,14 @@ export default function ProjectsPage() {
           nothing. Adding it back is a render change, not a data change. */}
 
       <div className="mt-12 lg:mt-16">
-        <ProjectIndex projects={catalogue} />
+        {catalogue.length > 0 ? (
+          <ProjectIndex projects={catalogue} />
+        ) : (
+          /* Empty state: only before the first project is published. */
+          <p className="border-y border-line py-4 text-sm text-ink-muted">
+            No projects published yet.
+          </p>
+        )}
       </div>
 
       {/* SurfaceCard takes no landmark element, so the <section> is outside it.

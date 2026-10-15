@@ -33,10 +33,13 @@
 import Image from "next/image";
 import * as React from "react";
 
+import { blurProps } from "@/components/ui/blur";
 import { onHeroSettled } from "@/components/ui/hero";
 
 export interface PhotoDriftProps {
-  photos: { src: string; alt: string }[];
+  /* Plain data from the server page: an ImageRef's src/alt/blur. `blur` is a
+     tiny data: URL or null (lib/data/types.ts ImageRef). */
+  photos: { src: string; alt: string; blur?: string | null }[];
 }
 
 /* px per second. The reference runs a ~3.7k row in 44s; this is the same
@@ -291,6 +294,7 @@ export function PhotoDrift({ photos }: PhotoDriftProps) {
               >
                 <Image
                   src={photo.src}
+                  {...blurProps({ blur: photo.blur ?? null })}
                   alt={dupe ? "" : photo.alt}
                   fill
                   sizes="(max-width: 640px) 140px, 180px"

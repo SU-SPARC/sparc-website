@@ -6,7 +6,7 @@
  *
  * CONTENT RULE. Every visible string on this page is lifted from the two pages
  * this one replaces — app/about/page.tsx and app/team/page.tsx as they stood
- * before this rewrite — from lib/content, or from SPEC's approved provenance
+ * before this rewrite — from the data layer (lib/data), or from SPEC's approved provenance
  * list. Copy is TRIMMED in one place (the statement); nothing is reworded and
  * nothing is written. The `about:NN` references below are to the pre-rewrite
  * about page.
@@ -32,8 +32,8 @@ import Link from "next/link";
 import { MicroLabel } from "@/components/ui/micro-label";
 import { PosterText } from "@/components/ui/poster-text";
 import { SurfaceCard } from "@/components/ui/surface-card";
-import { members } from "@/lib/content/members";
-import { projects } from "@/lib/content/projects";
+import { blurProps } from "@/components/ui/blur";
+import { featuredPhoto, getMembers, getPhotos, getProjects } from "@/lib/data";
 
 import { PeopleDirectory, PhotoReveal } from "./sections";
 
@@ -61,13 +61,16 @@ const STORY = [
    (Aug 2026) and approved; the project count agrees with the repo. Two numbers
    and a cadence, no member count.
 
-   The 3 is read off lib/content/projects rather than typed: it is countable
-   data, so it should not be able to disagree with the projects page. */
-const FACTS: { value: string; label: string }[] = [
-  { value: String(projects.length), label: "Projects" },
-  { value: "4", label: "Semesters" },
-  { value: "Biweekly", label: "Meetings" },
-];
+   The project count is read off getProjects() rather than typed: it is
+   countable data, so it should not be able to disagree with the projects
+   page. Built inside the component because the data is fetched per render. */
+function facts(projectCount: number): { value: string; label: string }[] {
+  return [
+    { value: String(projectCount), label: "Projects" },
+    { value: "4", label: "Semesters" },
+    { value: "Biweekly", label: "Meetings" },
+  ];
+}
 
 /* people-badges.html:94 — the section is called People in the reference. */
 const PEOPLE_LABEL = "People";
@@ -87,10 +90,21 @@ export const metadata: Metadata = {
     "We're a student club at Suffolk University where we build and ship real software, explore AI agentic coding, discuss what's happening in tech, and help members land real-world internships.",
 };
 
-export default function AboutPage() {
-  /* The module is already in this order; sorting here means the page cannot
-     inherit a future edit's ordering mistake. */
+/* ISR: a safety net; admin saves revalidate on demand. */
+export const revalidate = 300;
+
+export default async function AboutPage() {
+  const [members, projects, photos] = await Promise.all([
+    getMembers(),
+    getProjects(),
+    getPhotos(),
+  ]);
+  /* getMembers() already orders by sort_order; sorting here means the page
+     cannot inherit a future query change's ordering mistake. */
   const roster = [...members].sort((a, b) => a.sort_order - b.sort_order);
+  /* The first featured gallery photo, else the first gallery photo. */
+  const group = featuredPhoto(photos);
+  const FACTS = facts(projects.length);
 
   return (
     <main className="flex flex-col gap-section py-section">
@@ -123,17 +137,20 @@ export default function AboutPage() {
              photo at some width. ──────────────────────────────────── */}
       <section>
         <PhotoReveal className="relative aspect-[4/3] w-full overflow-hidden bg-surface-2 sm:aspect-[16/9] lg:aspect-[21/9]">
-          <Image
-            src="/images/sparc-vc-4.webp"
-            /* Decorative. The club is described in words on either side of it,
-               and a written-out description of who is in the room would be
-               content nobody supplied. */
-            alt=""
-            fill
-            sizes="100vw"
-            priority={false}
-            className="object-cover"
-          />
+          {group ? (
+            <Image
+              src={group.image.src}
+              {...blurProps(group.image)}
+              /* Decorative. The club is described in words on either side of
+                 it, and a written-out description of who is in the room would
+                 be content nobody supplied. */
+              alt=""
+              fill
+              sizes="100vw"
+              priority={false}
+              className="object-cover"
+            />
+          ) : null}
         </PhotoReveal>
 
         <div className="mx-auto w-full max-w-page px-gutter">

@@ -7,7 +7,7 @@
  * on hover, one at a time, and never enters the layout.
  *
  * Holds no content of its own. `projects` is passed in from the server page,
- * already sorted; every visible string comes from lib/content/projects.ts,
+ * already sorted; every visible string comes from the projects table (lib/data),
  * except two labels lifted from the page this replaces and cited at their use.
  *
  * ── the row ──────────────────────────────────────────────────────────────
@@ -114,7 +114,8 @@ import Image from "next/image";
 
 import { Expand, ExpandIcon } from "@/components/ui/expand";
 import { MicroLabel } from "@/components/ui/micro-label";
-import type { Project } from "@/lib/content/types";
+import { blurProps } from "@/components/ui/blur";
+import type { Project } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
 
 /* The one link treatment on this page. Same class string as the /events rows
@@ -418,7 +419,8 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
                 project.cover && (
                   <Image
                     key={project.ref}
-                    src={project.cover}
+                    src={project.cover.src}
+                    {...blurProps(project.cover)}
                     /* Decorative: the layer is aria-hidden and every fact in
                        it is already on the row. */
                     alt=""

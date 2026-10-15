@@ -39,8 +39,18 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "SPARC",
     locale: "en_US",
+    /* A local file, not a Storage URL: link previews must not depend on the
+       database. One club photo, 1200x630. */
+    images: [
+      {
+        url: "/og.webp",
+        width: 1200,
+        height: 630,
+        alt: "SPARC members at a club meeting",
+      },
+    ],
   },
-  twitter: { card: "summary_large_image" },
+  twitter: { card: "summary_large_image", images: ["/og.webp"] },
 };
 
 export default function RootLayout({

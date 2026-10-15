@@ -15,14 +15,15 @@
  * primitive is ever extracted, these two exhibits mount it instead.
  *
  * CONTENT RULE. No name, date, role, term or count is typed into this file.
- * Every demo entry is selected from lib/content by PREDICATE (see the DEMO
- * block below), so when the roster changes this page follows it. The only
+ * Every demo entry is selected from ./fixtures by PREDICATE (see the DEMO
+ * block below). The fixtures are static sample records, so the catalogue
+ * renders with no database at all. The only
  * literal strings here are UI chrome: section labels, token names, and the
  * "SPARC" / "Aa" type specimens.
  *
- * Bundle note: importing the content modules into a client component ships
- * them to the browser. That is fine here and nowhere else — /preview is
- * noindexed, internal, and not on any user path.
+ * Bundle note: importing the fixtures into a client component ships them to
+ * the browser. That is fine here — /preview is noindexed, internal, and not
+ * on any user path.
  */
 
 import * as React from "react";
@@ -36,11 +37,11 @@ import { PersonCard } from "@/components/ui/person-card";
 import { Pill } from "@/components/ui/pill";
 import { PosterText } from "@/components/ui/poster-text";
 import { SurfaceCard } from "@/components/ui/surface-card";
-import { events } from "@/lib/content/events";
-import { members } from "@/lib/content/members";
-import { projects } from "@/lib/content/projects";
-import type { Member, Project, SparcEvent } from "@/lib/content/types";
+import { formatInstant } from "@/lib/data/dates";
+import type { Member, Project, SparcEvent } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
+
+import { events, members, projects } from "./fixtures";
 
 /* ── themes ──────────────────────────────────────────────────────────── */
 
@@ -87,14 +88,15 @@ const DEMO_CHIPS: Array<{ id: string; count: number }> = [
   { id: "personal", count: projects.filter((p) => p.kind === "personal").length },
 ];
 
-/* Dates are formatted from the real Date, never written out. Both the server
-   render and the client render build the Date with the local-time constructor
-   and format in the same zone, so the two agree. */
-const DATE_FORMAT = new Intl.DateTimeFormat("en-US", {
+/* Dates are formatted from the real Date, never written out, and pinned to
+   America/New_York by formatInstant(), so the server render and the client
+   render agree whatever either machine's zone is. */
+const DATE_OPTS: Intl.DateTimeFormatOptions = {
   month: "short",
   day: "numeric",
   year: "numeric",
-});
+};
+const DATE_FORMAT = { format: (date: Date) => formatInstant(date, DATE_OPTS) };
 
 /* ── shared bits ─────────────────────────────────────────────────────── */
 

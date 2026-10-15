@@ -29,6 +29,7 @@ const LINKS = [
   { href: "/projects", label: "Projects" },
   { href: "/events", label: "Events" },
   { href: "/join", label: "Join" },
+  { href: "/links", label: "Links" },
 ];
 
 /* Every destination is one already present in the repo: the first three come
@@ -134,27 +135,27 @@ const FOOTER_CSS = `
 
   /* ── Wordmark tuning. Four variables per letter, S P A R C in order; see
         the RETUNING note above before changing -img or -zoom. ─────────── */
-  --sparc-mask-1-img:url("/images/sparc-vc-1.webp");
+  --sparc-mask-1-img:url("/wordmark/sparc-vc-1.webp");
   --sparc-mask-1-zoom:380%;
   --sparc-mask-1-x:22%;
   --sparc-mask-1-y:50%;
 
-  --sparc-mask-2-img:url("/images/sparc-vc-6.webp");
+  --sparc-mask-2-img:url("/wordmark/sparc-vc-6.webp");
   --sparc-mask-2-zoom:170%;
   --sparc-mask-2-x:42%;
   --sparc-mask-2-y:62%;
 
-  --sparc-mask-3-img:url("/images/sparc-vc-11.webp");
+  --sparc-mask-3-img:url("/wordmark/sparc-vc-11.webp");
   --sparc-mask-3-zoom:340%;
   --sparc-mask-3-x:8%;
   --sparc-mask-3-y:40%;
 
-  --sparc-mask-4-img:url("/images/sparc-vc-7.webp");
+  --sparc-mask-4-img:url("/wordmark/sparc-vc-7.webp");
   --sparc-mask-4-zoom:240%;
   --sparc-mask-4-x:28%;
   --sparc-mask-4-y:52%;
 
-  --sparc-mask-5-img:url("/images/sparc-vc-4.webp");
+  --sparc-mask-5-img:url("/wordmark/sparc-vc-4.webp");
   --sparc-mask-5-zoom:220%;
   --sparc-mask-5-x:40%;
   --sparc-mask-5-y:60%;
@@ -415,6 +416,15 @@ const Footer = () => {
           >
             {EMAIL}
           </a>
+          {/* The e-board and members sign in here; deliberately small and
+              in the strip, not in the nav or the link list above. */}
+          <Link
+            href="/login"
+            className="text-label text-ink-muted transition-colors hover:text-accent-text"
+            style={WIDTH_NORMAL}
+          >
+            Sign in
+          </Link>
           {/* ink-muted, not ink-faint: this is 13px text, so it owes 4.5:1
               and ink-faint does not clear it — see micro-label.tsx. */}
           <p className="w-full text-label text-ink-muted" style={WIDTH_NORMAL}>

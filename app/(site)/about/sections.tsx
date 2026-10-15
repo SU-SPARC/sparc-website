@@ -11,7 +11,7 @@
  * CONTENT RULE. The only literal strings here are the three filter labels,
  * which SPEC names itself ("Current, Alumni and E-Board are filters, not
  * pills"). No name, role, year or count is typed — members arrive as a prop
- * from the server page, which reads lib/content/members.ts, and every count is
+ * from the server page, which reads the members table via lib/data, and every count is
  * computed from that array.
  */
 
@@ -19,7 +19,7 @@ import * as React from "react";
 
 import { FilterChip } from "@/components/ui/filter-chip";
 import { PersonCard } from "@/components/ui/person-card";
-import type { Member } from "@/lib/content/types";
+import type { Member } from "@/lib/data/types";
 
 /* ── the group photo reveal ─────────────────────────────────────────────
  *
@@ -105,13 +105,11 @@ export function PhotoReveal({ className, children }: PhotoRevealProps) {
  *
  *   Current / Alumni — `status`, which members.ts:33 is explicit is sourced
  *     data and must be read, never inferred from a class year.
- *   E-Board — sort_order < 100. members.ts:29 defines the order as "the six
- *     e-board members first, in team2026's own order (10,20,30,40,50,60), then
- *     everyone else in the `team` array's own order (100,110,…160)", so the
- *     e-board is exactly the block below 100. Deriving it from `role` would
- *     mean deciding which role strings count as offices, and deriving it from
- *     role_term === '2026' would sweep in anyone who happens to hold that
- *     term later.
+ *   E-Board — the explicit `eboard` flag on the member row. It used to be
+ *     "sort_order < 100", a threshold that an admin reorder could silently
+ *     cross; the seed set the flag from that rule once, and sort_order is now
+ *     only an ordering. Deriving it from `role` would mean deciding which role
+ *     strings count as offices.
  *
  * A filter whose count is zero is not rendered.
  *
@@ -127,7 +125,7 @@ type FilterId = "current" | "alumni" | "eboard";
 const FILTERS: { id: FilterId; label: string; match: (m: Member) => boolean }[] = [
   { id: "current", label: "Current", match: (m) => m.status === "current" },
   { id: "alumni", label: "Alumni", match: (m) => m.status === "alumni" },
-  { id: "eboard", label: "E-Board", match: (m) => m.sort_order < 100 },
+  { id: "eboard", label: "E-Board", match: (m) => m.eboard },
 ];
 
 export interface PeopleDirectoryProps {

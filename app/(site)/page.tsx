@@ -12,8 +12,8 @@
  *     commas are invalid in Tailwind v4 arbitrary values, so that layout was
  *     silently collapsing. The rewrite is flex and has no grid to fix.
  *
- * The photo set is the gallery array from the page this replaces, mapped
- * from the old public/*.jpeg to the migrated public/images/*.webp.
+ * The photo set is the published gallery (photos table, by sort_order),
+ * fetched here and handed to the client PhotoDrift as plain props.
  *
  * WHAT CAME BACK, AND WHY IT IS NOT THE CAROUSEL. The client reviewed this
  * page as empty and supplied two mockups (Aug 2026): a stats band and a news
@@ -36,6 +36,7 @@ import type { Metadata } from "next";
 import { NewsPreview, StatsBand } from "./home-sections";
 import { Hero } from "@/components/ui/hero";
 import { PhotoDrift } from "@/components/ui/photo-drift";
+import { getMembers, getNews, getPhotos, getProjects } from "@/lib/data";
 
 /* No title: the root layout's template default already reads
    "SPARC — Suffolk Programming, AI & Research Club". */
@@ -44,46 +45,36 @@ export const metadata: Metadata = {
     "SPARC is a student club at Suffolk University where we build and ship real software, explore AI agentic coding, discuss the latest in tech, and connect members with real-world internships. All majors welcome.",
 };
 
-const GALLERY = [
-  "sp-1",
-  "sp-2",
-  "sp-3",
-  "sparc-8",
-  "sparc-3",
-  "sparc-5",
-  "sparc-4",
-  "sparc-6",
-  "sparc-7",
-  "sparc-1",
-  "sparc-2",
-  "sparc-contact",
-  "sparc-projects",
-  "sparc-vc-1",
-  "sparc-vc-2",
-  "sparc-vc-3",
-  "sparc-vc-4",
-  "sparc-vc-5",
-  "sparc-vc-6",
-  "sparc-vc-7",
-  "sparc-vc-8",
-  "sparc-vc-9",
-].map((name, i) => ({
-  src: `/images/${name}.webp`,
-  /* The alt the old slideshow used. These are undescribed club photos in
-     the repo; numbering them is honest, inventing captions is not. */
-  alt: `SPARC gallery image ${i + 1}`,
-}));
+/* ISR: a safety net; admin saves revalidate on demand. */
+export const revalidate = 300;
 
-export default function Home() {
+export default async function Home() {
+  const [photos, members, projects, news] = await Promise.all([
+    getPhotos(),
+    getMembers(),
+    getProjects(),
+    getNews(),
+  ]);
+
+  /* The drift cards are 140–180px wide, so the 640px thumb is the source;
+     the optimizer still sizes it down. When a photo has no alt the old
+     positional alt is used: these are mostly undescribed club photos, and
+     numbering them is honest where inventing captions is not. */
+  const gallery = photos.map((photo, i) => ({
+    src: photo.image.thumb,
+    alt: photo.image.alt || photo.caption || `SPARC gallery image ${i + 1}`,
+    blur: photo.image.blur,
+  }));
+
   return (
     /* No top padding: the hero's sticky stage has to start flush under the
        nav row for the bolt's landing maths and for the first screen to fill
        the viewport. */
     <main>
       <Hero />
-      <PhotoDrift photos={GALLERY} />
-      <StatsBand />
-      <NewsPreview />
+      {gallery.length > 0 ? <PhotoDrift photos={gallery} /> : null}
+      <StatsBand members={members} projects={projects} />
+      {news.length > 0 ? <NewsPreview news={news} /> : null}
     </main>
   );
 }

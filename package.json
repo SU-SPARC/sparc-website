@@ -9,7 +9,7 @@
     "lint": "eslint",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
-    "db:types": "supabase gen types --local --lang typescript > lib/supabase/database.types.ts",
+    "db:types": "supabase gen types --local --lang typescript > lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts",
     "rls:check": "tsx scripts/rls-check.ts",
     "seed": "tsx scripts/seed/index.ts"
   },
@@ -35,6 +35,7 @@
     "dotenv": "^18.0.8",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "prettier": "^3.9.10",
     "sharp": "^0.35.5",
     "supabase": "^2.121.0",
     "tailwindcss": "^4",

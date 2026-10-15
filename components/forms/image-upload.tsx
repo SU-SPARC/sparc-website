@@ -113,12 +113,12 @@ export function ImageUpload({
           : "";
 
   // Tell the form something changed (hidden inputs fire no events).
-  const first = React.useRef(true);
+  // Compare with the last value (not a first-run flag: Strict Mode runs
+  // effects twice on mount).
+  const lastJson = React.useRef(json);
   React.useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
+    if (lastJson.current === json) return;
+    lastJson.current = json;
     hiddenRef.current?.dispatchEvent(new Event("input", { bubbles: true }));
     onValueChange?.(json);
   }, [json, onValueChange]);

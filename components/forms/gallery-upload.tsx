@@ -64,12 +64,12 @@ export function GalleryUpload({ name, label, kind, initial, slug }: GalleryUploa
   const json = JSON.stringify(
     tiles.map((t) => (t.kind === "existing" ? { id: t.image.id, alt: t.alt } : { upload: t.upload, alt: t.alt })),
   );
-  const first = React.useRef(true);
+  // Compare with the last value (not a first-run flag: Strict Mode runs
+  // effects twice on mount).
+  const lastJson = React.useRef(json);
   React.useEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
+    if (lastJson.current === json) return;
+    lastJson.current = json;
     hiddenRef.current?.dispatchEvent(new Event("input", { bubbles: true }));
   }, [json]);
 

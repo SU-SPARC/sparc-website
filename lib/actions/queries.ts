@@ -5,7 +5,7 @@
 import "server-only";
 
 import type { ExistingImage } from "@/components/forms/image-upload";
-import type { CurrentUser } from "@/lib/auth";
+import { isAdminRole, isEditorRole, requireUser, type CurrentUser } from "@/lib/auth";
 import { toMember } from "@/lib/data/mappers";
 import type { Member } from "@/lib/data/types";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -49,4 +49,17 @@ export async function getOwnCard(current: CurrentUser): Promise<OwnCard | null> 
   if (!data) return null;
   const photo = (data.photo as MediaCols | null) ?? null;
   return { row: data, photo, member: toMember({ ...data, photo }) };
+}
+
+/** Guard for admin pages. Members get null (the admin layout renders the
+ *  403 page; a redirect here would race it), signed-out users go to login.
+ *  Admin pages: `const me = await editorPage(); if (!me) return null;` */
+export async function editorPage(next = "/admin"): Promise<CurrentUser | null> {
+  const current = await requireUser(next);
+  return isEditorRole(current.profile.role) ? current : null;
+}
+
+export async function adminPage(next = "/admin"): Promise<CurrentUser | null> {
+  const current = await requireUser(next);
+  return isAdminRole(current.profile.role) ? current : null;
 }

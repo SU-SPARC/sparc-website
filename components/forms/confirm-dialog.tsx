@@ -164,7 +164,7 @@ export function ConfirmDialog({
       ref={ref}
       aria-labelledby={titleId}
       onClose={handleClose}
-      className="m-auto w-[calc(100%-2rem)] max-w-[28rem] rounded-card border border-line bg-surface p-0 text-ink shadow-xl backdrop:bg-ink/40"
+      className="m-auto w-[calc(100%-2rem)] max-w-[28rem] rounded-card border border-line bg-surface p-0 text-ink shadow-xl backdrop:bg-ink/40 dark:backdrop:bg-surface/75"
     >
       {open ? (
         action ? (

@@ -6,26 +6,39 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:types": "supabase gen types --local --lang typescript > lib/supabase/database.types.ts",
+    "rls:check": "tsx scripts/rls-check.ts",
+    "seed": "tsx scripts/seed/index.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
     "lucide-react": "^0.563.0",
     "motion": "^12.38.0",
     "next": "16.1.6",
     "next-themes": "^0.4.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-icons": "^5.6.0"
+    "react-icons": "^5.6.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^18.0.8",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "sharp": "^0.35.5",
+    "supabase": "^2.121.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

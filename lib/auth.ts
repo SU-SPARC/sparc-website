@@ -48,6 +48,20 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   return { user, profile };
 });
 
+/** The signed-in user's role, or null when signed out. Never redirects, so a
+ *  layout can render a 403 itself instead of racing a redirect. Actions keep
+ *  using requireEditor / requireAdmin. */
+export async function getRole(): Promise<UserRole | null> {
+  const current = await getCurrentUser();
+  return current?.profile.role ?? null;
+}
+
+/** True for editors and admins; false for members and signed-out visitors.
+ *  Non-redirecting counterpart of requireEditor. */
+export async function hasEditorRole(): Promise<boolean> {
+  return isEditorRole(await getRole());
+}
+
 /** Any signed-in account. Otherwise → /login?next=<next>. */
 export async function requireUser(next = "/dashboard"): Promise<CurrentUser> {
   const current = await getCurrentUser();

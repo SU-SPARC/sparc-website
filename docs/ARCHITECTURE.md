@@ -33,11 +33,18 @@ rebuild stands), rich text, comments, realtime collaboration on boards, OAuth.
 | admin    | the shared e-board login              | everything an editor can, plus create/invite accounts and manage roles     |
 
 Flow: the seed creates the admin account (`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`).
-Admins create members' accounts at `/admin/accounts/new` either by **invite
-email** (Supabase sends the invite; the member sets a password) or with a
-**temporary password** shown once. An account is linked to a member card at
-creation (pick an existing card or create one). Yearly rotation of the shared
-login is a password change on `/dashboard/profile`.
+Admins create members' accounts at `/admin/accounts/new` with a **temporary
+password** shown once (the default: it needs no email at all), or by **invite
+email** once custom SMTP is configured. An account is linked to a member card at
+creation (pick an existing card or create one). Admins can also reset a
+member's password to a new temporary one. Yearly rotation of the shared login
+is a password change on `/dashboard/profile`.
+
+Email caveat: Supabase's built-in sender only delivers to the project's own
+team members, two per hour. Invites and self-service password resets therefore
+need custom SMTP (for example Resend's free tier) before they work in
+production. `docs/CMS.md` covers the setup; until then the temporary-password
+path is the one that works.
 
 ## Schema
 
@@ -155,25 +162,40 @@ Decisions driven by the survey:
 - **`/preview`** (the design catalogue) stops importing content modules and
   renders from a small static fixture file. It must not depend on the database.
 
-### Helper functions (all `security definer`, `stable`, `set search_path = ''`)
+### Helper functions
+
+All `security definer`, `stable`, `set search_path = ''`, and kept in a
+`private` schema that is not exposed through the Data API (a security-definer
+function in `public` would be callable over REST with the owner's privileges):
 
 ```
-public.current_user_role() → user_role | null
-public.is_editor()         → role in ('editor','admin')
-public.is_admin()          → role = 'admin'
-public.own_member_id()     → profiles.member_id for auth.uid()
-public.is_project_member(project_id) → member of, supervisor of, or is_editor()
+private.current_user_role() → user_role | null
+private.is_editor()         → role in ('editor','admin')
+private.is_admin()          → role = 'admin'
+private.own_member_id()     → profiles.member_id for auth.uid()
+private.is_project_member(project_id) → member of, supervisor of, or is_editor()
 ```
+
+Grants are explicit on every table (Supabase no longer grants new `public`
+tables to `anon`/`authenticated` automatically; a missing grant surfaces as
+`42501` from PostgREST). `service_role` gets everything via default privileges.
+
+Role and card linking are not writable by clients at all: `profiles` gets
+`grant update (display_name)` only, and admins change `role` / `member_id`
+through two RPCs, `public.admin_set_role(uuid, user_role)` and
+`public.admin_link_member(uuid, uuid)`, which check `private.is_admin()` first.
+A `public.people` view (`id, display_name, member_id`) is readable by every
+signed-in user for assignee pickers.
 
 ### Policies (summary; the migrations are the source of truth)
 
 | table            | select                                | insert / update / delete                                                   |
 |------------------|---------------------------------------|----------------------------------------------------------------------------|
 | media            | everyone                              | `is_editor()`; **insert also allowed** for any authenticated user with a linked member card (own photo) and for project members (task attachments are out of scope, so this is only `members/`) |
-| members          | `published or is_editor()`            | `is_editor()`; **update also allowed** where `id = own_member_id()`, and a `before update` trigger rejects any change outside `nickname, photo_media_id, bio, linkedin, website` unless `is_editor()` |
+| members          | `published or is_editor()`            | `is_editor()`; **update also allowed** where `id = own_member_id()`, and a `before update` trigger rejects any change outside `nickname, photo_media_id, bio, linkedin, website` unless `is_editor()`. The trigger skips its check when `auth.uid()` is null (service role, SQL editor). |
 | projects         | anon: `published and status <> 'proposed'`; authenticated: all | `is_editor()`; **insert allowed** for any authenticated user with `status = 'proposed'`, `published = false`, `requested_by = auth.uid()`; **update allowed** for the requester while still `proposed` (trigger restricts columns) and for `is_project_member()` on `summary, highlights, repo_url, live_url, cover_media_id` |
 | events, recordings, news, photos, links, project_gallery | `published or is_editor()` | `is_editor()` |
-| profiles         | own row, `is_admin()`, or **any authenticated user may read `id, display_name, member_id`** via the view `public.people` (for assignees) | update own row (trigger blocks `role`/`member_id` unless admin); admin updates any; no client inserts; no deletes |
+| profiles         | own row, or `is_admin()`; everyone signed in reads `id, display_name, member_id` via the `people` view | update own row, `display_name` only (column grant); `role`/`member_id` only via the admin RPCs; no client inserts; no deletes |
 | project_members, project_columns, project_sprints, project_tasks, project_activity | `authenticated` | `is_project_member(project_id)`; `project_members` rows: lead of that project or `is_editor()` |
 | storage.objects  | everyone (bucket is public)           | `bucket_id = 'media'` and (`is_editor()` or a linked member uploading under `members/`) |
 
@@ -194,17 +216,23 @@ One public bucket, `media`:
 
 ## Image pipeline
 
-Browser (every upload):
+Browser (every upload), hand-rolled in `lib/images/encode.ts` with no
+dependency (`browser-image-compression` is unmaintained and loads its worker
+from a third-party CDN):
 
-1. Decode with `createImageBitmap(file, { imageOrientation: 'from-image' })` so
-   phone photos come out upright.
-2. Produce three outputs:
+1. Decode once with `createImageBitmap(file, { imageOrientation: 'from-image' })`
+   so phone photos come out upright.
+2. Produce three outputs on an `OffscreenCanvas`:
    - **full**: long edge ≤ 2000 px, WebP quality 0.82
    - **thumb**: long edge ≤ 640 px, WebP quality 0.80 (admin lists, cards)
-   - **blur**: 24 px wide WebP as a `data:` URL (~400 bytes) for placeholders
+   - **blur**: 24 px wide as a `data:` URL (~400 bytes) for placeholders
+   Safari cannot encode WebP from a canvas and silently returns PNG, so the
+   encoder checks `blob.type` and falls back to JPEG at the same quality. The
+   stored `mime` and file extension follow what was actually produced.
 3. Show the user original vs compressed size before they save.
-4. Upload full + thumb to Storage, then insert the `media` row with dimensions,
-   bytes, blur and the required `alt` text.
+4. Upload full + thumb to Storage **directly from the browser** (Vercel caps
+   server-action bodies at 4.5 MB), then insert the `media` row with
+   dimensions, bytes, blur and the required `alt` text.
 
 Expected results: a 3–5 MB phone JPEG → 150–350 KB full, 25–50 KB thumb.
 HEIC (iPhone default) cannot be decoded by browsers; the uploader rejects it with
@@ -216,8 +244,9 @@ reading the **original** JPEG/PNG in `public/` where one exists (three of the
 
 Rendering: `next/image` with `fill` and the optimizer **on**, exactly as the
 site does today (`verify.sh` bans `unoptimized`). `next.config.ts` adds a
-`remotePatterns` entry derived from `NEXT_PUBLIC_SUPABASE_URL`. `placeholder="blur"`
-uses `blur_data_url`.
+`remotePatterns` entry derived from `NEXT_PUBLIC_SUPABASE_URL`, and sets
+`images.dangerouslyAllowLocalIP` only when that URL points at the local stack
+(Next 16 blocks local IPs by default). `placeholder="blur"` uses `blur_data_url`.
 
 ## Data layer contract (`lib/data/*.ts`, server-only)
 
@@ -236,14 +265,19 @@ getPhotos():     Promise<Photo[]>       // the gallery, by sort_order; image: Im
 getLinks():      Promise<Link[]>        // published, by sort_order
 ```
 
-`lib/content/types.ts` keeps its names; image fields change from `string` to
-`ImageRef`, date-only fields become `DateOnly`. The pure helpers `upcoming`,
-`past`, `currentTerm` move to `lib/content/events-helpers.ts` unchanged.
-Date formatting lives in `lib/content/dates.ts` (`formatInstant`, `formatDateOnly`).
+The DB-backed types live in `lib/data/types.ts` and keep the old names;
+image fields are `ImageRef` instead of `string`, date-only fields are
+`DateOnly`. The pure helpers `upcoming`, `past`, `currentTerm` move to
+`lib/data/events-helpers.ts` unchanged, and date formatting lives in
+`lib/data/dates.ts` (`formatInstant`, `formatDateOnly`). The legacy
+`lib/content/*` modules stay untouched until the integration phase deletes them,
+so parallel work never edits the same file.
 
-Caching: public routes export `revalidate = 300`. Every admin server action
+Caching: public routes read through a cookie-less client (`lib/supabase/public.ts`)
+so they stay static, and export `revalidate = 300`. Every admin server action
 ends with `revalidatePath('/', 'layout')`. Signed-in routes (`/dashboard/**`,
-`/admin/**`) are dynamic (they read cookies) and never cached.
+`/admin/**`) read cookies, are dynamic, and are never cached. Next's
+`cacheComponents` stays off.
 
 ## Routing and layouts
 
@@ -313,8 +347,9 @@ dashboard, board and `/links` screens.
 
 ```
 NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY        # legacy anon JWT or new sb_publishable_ key; both work
-SUPABASE_SERVICE_ROLE_KEY            # server only: account creation action + seed script; never NEXT_PUBLIC_
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY  # sb_publishable_… (a legacy anon JWT also works)
+NEXT_PUBLIC_SITE_URL                  # for auth redirect links
+SUPABASE_SECRET_KEY                   # server only: account-creation actions + seed script; never NEXT_PUBLIC_
 SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD # seed script only
 ```
 
@@ -327,7 +362,7 @@ resets) land in Mailpit at http://127.0.0.1:55324.
 
 | phase | owner | files |
 |-------|-------|-------|
-| C1 backend core | agent C | route-group move, `supabase/migrations/0001_cms.sql`, `supabase/config.toml`, `lib/supabase/*`, `lib/data/*`, `lib/content/{types,dates,events-helpers}.ts`, `next.config.ts`, `eslint.config.mjs`, `package.json`, `.env.example`, `scripts/rls-check.ts` |
+| C1 backend core | agent C | route-group move, `supabase/migrations/0001_cms.sql`, `supabase/config.toml`, `lib/supabase/*`, `lib/auth.ts`, `lib/data/*` (incl. `types.ts`, `dates.ts`, `events-helpers.ts`), `next.config.ts`, `eslint.config.mjs`, `package.json`, `.env.example`, `scripts/rls-check.ts` |
 | R design brief | agent R | `docs/DESIGN-BRIEF.md` (Mobbin research) |
 | C2 seed | agent C | `scripts/seed/**` |
 | D auth + admin + members shell | agent D | `proxy.ts`, `app/(auth)/**`, `app/auth/**`, `app/(members)/layout.tsx`, `app/(members)/dashboard/{page,profile}/**`, `app/(admin)/**`, `components/forms/**`, `components/admin/**`, `lib/actions/**`, `lib/images/**`, `app/globals.css` (new tokens only) |

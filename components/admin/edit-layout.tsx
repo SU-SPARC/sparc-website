@@ -59,9 +59,9 @@ export function EditHeader({
 
 export function EditColumns({ rail, children }: { rail: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,44rem)_18rem] lg:items-start lg:gap-8">
+    <div className="grid gap-6 lg:grid-cols-[1fr_18rem] lg:items-start lg:gap-8">
       <div className="flex flex-col gap-4 lg:sticky lg:top-8 lg:order-2">{rail}</div>
-      <div className="flex min-w-0 flex-col gap-6 lg:order-1">{children}</div>
+      <div className="flex min-w-0 max-w-text flex-col gap-6 lg:order-1">{children}</div>
     </div>
   );
 }

@@ -37,6 +37,7 @@ export function RecordingsEditor({ eventId, rows, defaultDate }: { eventId: stri
   const [editing, setEditing] = React.useState<RecordingRow | "new" | null>(null);
   const [deleting, setDeleting] = React.useState<RecordingRow | null>(null);
   const [, startTransition] = React.useTransition();
+  const closeEditor = React.useCallback(() => setEditing(null), []);
 
   return (
     <section aria-labelledby="recordings-title" className="mt-10 flex max-w-text flex-col gap-4">
@@ -57,7 +58,7 @@ export function RecordingsEditor({ eventId, rows, defaultDate }: { eventId: stri
           eventId={eventId}
           row={editing === "new" ? null : editing}
           defaultDate={defaultDate}
-          onDone={() => setEditing(null)}
+          onDone={closeEditor}
         />
       ) : null}
 
@@ -145,15 +146,15 @@ function RecordingForm({
 }) {
   const [state, dispatch, pending] = React.useActionState<FormState, FormData>(saveRecording, {});
   const [, startTransition] = React.useTransition();
-  const [handled, setHandled] = React.useState(state);
   const formRef = React.useRef<HTMLFormElement>(null);
-  if (state !== handled) {
-    setHandled(state);
-    if (state.ok) onDone();
-  }
   React.useEffect(() => {
-    formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"], input')?.focus();
-  }, [state]);
+    if (state.ok) onDone();
+    else
+      (
+        formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]') ??
+        formRef.current?.querySelector<HTMLElement>("input:not([type=hidden])")
+      )?.focus();
+  }, [state, onDone]);
 
   return (
     <FieldErrorsProvider errors={state.fieldErrors}>

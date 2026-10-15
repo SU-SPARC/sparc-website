@@ -89,7 +89,7 @@ export function ConfirmDialog({
     setBusy(false);
     onOpenChange(false);
     const target = returnFocus.current;
-    if (target && target.isConnected) requestAnimationFrame(() => target.focus());
+    if (target && target.isConnected) setTimeout(() => target.focus(), 0);
   };
 
   const matches = confirmText === undefined || typed === confirmText;

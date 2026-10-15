@@ -153,7 +153,7 @@ export function ImageUpload({
       discardCurrent(previous);
       const alt = previous.kind === "existing" || previous.kind === "uploaded" ? previous.alt : "";
       setValue({ kind: "uploaded", upload, preview: previewUrl, originalBytes: processed.originalBytes, alt });
-      requestAnimationFrame(() => altRef.current?.focus());
+      setTimeout(() => altRef.current?.focus(), 0);
     } catch (e) {
       URL.revokeObjectURL(previewUrl);
       setValue(previous);

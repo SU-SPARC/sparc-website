@@ -140,6 +140,17 @@
   --color-accent-quiet: var(--accent-quiet);
   --color-on-accent: var(--on-accent);
 
+  /* Status colours for the admin, dashboard and auth screens
+     (docs/DESIGN-BRIEF.md §11). Danger leans orange-red so it never reads as
+     the pink accent; every use also carries a word. */
+  --color-danger: var(--danger);
+  --color-danger-quiet: var(--danger-quiet);
+  --color-on-danger: var(--on-danger);
+  --color-success: var(--success);
+  --color-success-quiet: var(--success-quiet);
+  --color-warning: var(--warning);
+  --color-warning-quiet: var(--warning-quiet);
+
   /* Footer icon tiles. Added per design/COMPONENTS.md:40 — the only two
      values in the reference set with no semantic equivalent, because the
      footer pill is dark on every theme and so does not track the neutral
@@ -174,6 +185,16 @@
   --accent-quiet: #f8e7ee;
   --on-accent: #ffffff;
 
+  /* WCAG ratios: text on --n-0 / on its own -quiet. danger 5.29 / 4.77,
+     success 5.02 / 4.62, warning 5.59 / 5.24; on-danger on danger 5.60. */
+  --danger: #c0341d;
+  --danger-quiet: #fbe9e5;
+  --on-danger: #ffffff;
+  --success: #1f7a4d;
+  --success-quiet: #e6f2eb;
+  --warning: #8a5a00;
+  --warning-quiet: #fbf0d9;
+
   /* Theme-constant — see the note in @theme inline above. */
   --chip: #2e2427;
   --chip-line: #3d3134;
@@ -200,6 +221,15 @@
   --accent-quiet: #2c0a1a;
   --on-accent: #0d0a0b;
 
+  /* danger 7.69 / 6.87, success 8.90 / 7.51, warning 10.61 / 8.70. */
+  --danger: #ff7a5c;
+  --danger-quiet: #2a1210;
+  --on-danger: #0d0a0b;
+  --success: #4cc38a;
+  --success-quiet: #0f2219;
+  --warning: #f0b43c;
+  --warning-quiet: #2a1f0a;
+
   color-scheme: dark;
 }
 
@@ -222,6 +252,15 @@
   --accent-text: #ffa3c8;
   --accent-quiet: #3d1024;
   --on-accent: #1e0911;
+
+  /* danger 8.27 / 7.06, success 9.86 / 8.00, warning 11.16 / 8.54. */
+  --danger: #ff8a6e;
+  --danger-quiet: #3a1416;
+  --on-danger: #1e0911;
+  --success: #5fcf98;
+  --success-quiet: #16281f;
+  --warning: #f3be55;
+  --warning-quiet: #36260e;
 
   color-scheme: dark;
 }

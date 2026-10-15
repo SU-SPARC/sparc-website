@@ -79,14 +79,16 @@ export async function saveProfile(_prev: FormState, formData: FormData): Promise
     const resolved = await resolveImageField(supabase, photo, "members", { updateExistingAlt: isEditor });
     if ("error" in resolved) return { fieldErrors: { photo: [resolved.error] } };
 
-    const { data: updated, error } = await supabase
-      .from("members")
-      .update({ ...card.data, photo_media_id: resolved.id })
-      .eq("id", memberId)
-      .select("id");
+    const patch = { ...card.data, photo_media_id: resolved.id };
+    const { data: updated, error } = await supabase.from("members").update(patch).eq("id", memberId).select("id");
     if (error) return { error: `Couldn't save your card: ${error.message}` };
     if (!updated?.length) {
-      return { error: "Your card is hidden from the site, so it can't be edited here. Ask an e-board editor to publish it." };
+      // RLS hides unpublished cards from members, so an UPDATE on one's own
+      // hidden card matches no rows. The caller's own member_id came from
+      // their profile and `patch` holds only the five self-editable
+      // columns, so do the same write with the admin client.
+      const { error: adminError } = await admin.from("members").update(patch).eq("id", memberId);
+      if (adminError) return { error: `Couldn't save your card: ${adminError.message}` };
     }
     if (oldPhotoId && oldPhotoId !== resolved.id) {
       // Members can't delete media or objects; the admin client does it

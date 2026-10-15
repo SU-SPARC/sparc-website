@@ -33,7 +33,7 @@
 
 import type { Metadata } from "next";
 
-import { NewsPreview, StatsBand } from "@/app/home-sections";
+import { NewsPreview, StatsBand } from "./home-sections";
 import { Hero } from "@/components/ui/hero";
 import { PhotoDrift } from "@/components/ui/photo-drift";
 

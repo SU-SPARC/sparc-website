@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Ultra, Martian_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import Navbar from "@/components/ui/navbar";
-import { Footer } from "@/components/ui/footer";
 
 /* Poster face. Single weight, latin only, ~15KB.
    Used in exactly two places: the hero and the footer wordmark.
@@ -71,15 +69,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <a href="#main" className="skip-link">
-            Skip to content
-          </a>
-          <Navbar />
-          {/* Not a <main> — every page already renders its own, and
-              nesting landmarks breaks screen-reader navigation. This is
-              just the skip-link target. */}
-          <div id="main">{children}</div>
-          <Footer />
+          {children}
         </ThemeProvider>
       </body>
     </html>

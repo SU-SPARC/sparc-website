@@ -2,12 +2,15 @@
  * for tasks, projects and requests, right column for "My card". Mobile:
  * one column, card first.
  *
- * The left column is placeholder copy for now: agent G (project boards)
- * replaces the three PLACEHOLDER sections below with real queries
- * (lib/data/pm.ts). Keep the headings, order and empty-state lines. */
+ * The left column (My tasks, My projects, My requests) comes from
+ * getMyDashboard() in lib/data/pm.ts; components/board/dashboard-sections.tsx
+ * renders it. `?tasks=all` lifts the 5-task cap. */
 
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 
+import { SEEN_DECLINED_COOKIE } from "@/components/board/board-utils";
+import { MyProjectsSection, MyRequestsSection, MyTasksSection } from "@/components/board/dashboard-sections";
 import { ButtonLink } from "@/components/forms/button";
 import { StatusBanner } from "@/components/forms/status-banner";
 import { MicroLabel } from "@/components/ui/micro-label";
@@ -15,6 +18,7 @@ import { PersonCard } from "@/components/ui/person-card";
 import { requireUser } from "@/lib/auth";
 import { getOwnCard } from "@/lib/actions/queries";
 import { formatInstant } from "@/lib/data/dates";
+import { getMyDashboard } from "@/lib/data/pm";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -23,12 +27,18 @@ const ROLE_LABEL = { member: "Member", editor: "Editor", admin: "Admin" } as con
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ notice?: string }>;
+  searchParams: Promise<{ notice?: string; tasks?: string }>;
 }) {
-  const { notice } = await searchParams;
+  const { notice, tasks } = await searchParams;
+  const allTasks = tasks === "all";
   const current = await requireUser("/dashboard");
   const { profile } = current;
-  const card = await getOwnCard(current);
+  const [card, pm, cookieStore] = await Promise.all([
+    getOwnCard(current),
+    getMyDashboard({ allTasks }),
+    cookies(),
+  ]);
+  const seenDeclined = (cookieStore.get(SEEN_DECLINED_COOKIE)?.value ?? "").split(".").filter(Boolean);
   const name = profile.display_name || profile.email || "Your dashboard";
   const joined = formatInstant(new Date(profile.created_at), { month: "short", year: "numeric" });
 
@@ -79,36 +89,9 @@ export default async function DashboardPage({
         </section>
 
         <div className="flex flex-col gap-10 lg:order-1">
-          {/* PLACEHOLDER (agent G): My tasks — open tasks assigned to me
-              across projects, due soonest first, max 5; "All my tasks" link
-              when there are more. */}
-          <section aria-labelledby="my-tasks" className="flex flex-col gap-3">
-            <MicroLabel as="h2" id="my-tasks">
-              My tasks
-            </MicroLabel>
-            <p className="text-sm text-ink-muted">Nothing assigned to you.</p>
-          </section>
-
-          {/* PLACEHOLDER (agent G): My projects — compact rows: title,
-              status chip, progress "7/12", last activity; row → board. */}
-          <section aria-labelledby="my-projects" className="flex flex-col gap-3">
-            <MicroLabel as="h2" id="my-projects">
-              My projects
-            </MicroLabel>
-            <p className="text-sm text-ink-muted">You're not on a project yet.</p>
-            <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-              <a href="/dashboard/projects" className="text-ink underline underline-offset-4 hover:text-accent-text">
-                Browse projects
-              </a>
-              <a href="/dashboard/projects/new" className="text-ink underline underline-offset-4 hover:text-accent-text">
-                Request a project
-              </a>
-            </p>
-          </section>
-
-          {/* PLACEHOLDER (agent G): My requests — my projects with status
-              'proposed': title, submitted date, "Waiting for e-board
-              review". Omitted entirely when empty (brief §6). */}
+          <MyTasksSection tasks={pm.tasks} more={pm.moreTasks} showingAll={allTasks} />
+          <MyProjectsSection projects={pm.projects} />
+          <MyRequestsSection requests={pm.requests} seen={seenDeclined} />
         </div>
       </div>
     </div>

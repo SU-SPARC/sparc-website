@@ -164,3 +164,6 @@ export function sprintAfterMove(
   if (f.sprint !== "all" && task.sprintId !== f.sprint) return f.sprint;
   return undefined;
 }
+
+/** Cookie listing declined request ids the dashboard has already shown. */
+export const SEEN_DECLINED_COOKIE = "sparc_seen_declined";

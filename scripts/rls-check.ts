@@ -131,10 +131,13 @@ async function cleanup() {
   }
 }
 
-async function must<T>(label: string, p: PromiseLike<{ data: T; error: { message: string } | null }>): Promise<NonNullable<T>> {
+async function must<R extends { data: unknown; error: { message: string } | null }>(
+  label: string,
+  p: PromiseLike<R>,
+): Promise<NonNullable<R["data"]>> {
   const { data, error } = await p;
   if (error || data == null) throw new Error(`setup ${label}: ${error?.message ?? "no data"}`);
-  return data as NonNullable<T>;
+  return data as NonNullable<R["data"]>;
 }
 
 async function setup() {
@@ -149,6 +152,7 @@ async function setup() {
       email_confirm: true,
       user_metadata: { display_name: `RLS ${key}` },
     }));
+    if (!data.user) throw new Error(`setup user ${key}: no user`);
     ids.users[key] = data.user.id;
   }
   await must("role admin", admin.from("profiles").update({ role: "admin" }).eq("id", ids.users.admin!).select());

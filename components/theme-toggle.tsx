@@ -2,7 +2,7 @@
 
 import { Moon, Sun, CloudMoon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 /* S1 note — this file previously carried six hex literals in a `themes`
    array, painted as colour swatches through an inline style attribute.
@@ -35,13 +35,19 @@ const themes = [
 const trigger =
   "grid size-[34px] place-items-center rounded-control border border-line text-ink-muted transition-colors hover:border-line-strong hover:text-ink";
 
+/* `mounted` is false during SSR and hydration, true afterwards — without a
+   setState-in-effect. The store never changes, so subscribe is a no-op. */
+const noopSubscribe = () => () => {};
+
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
   const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     function onClick(e: MouseEvent) {

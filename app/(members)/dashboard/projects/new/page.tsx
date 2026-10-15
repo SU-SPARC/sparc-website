@@ -7,8 +7,7 @@ import { notFound } from "next/navigation";
 
 import { RequestForm, type RequestValues } from "@/components/board/request-form";
 import { requireUser } from "@/lib/auth";
-import { listMemberCards } from "@/lib/data/pm";
-import { createClient } from "@/lib/supabase/server";
+import { getOwnPendingRequest, listMemberCards } from "@/lib/data/pm";
 
 export const metadata: Metadata = { title: "Request a project" };
 
@@ -25,32 +24,25 @@ const EMPTY: RequestValues = {
 };
 
 export default async function NewProjectPage({ searchParams }: { searchParams: Promise<{ edit?: string }> }) {
-  const current = await requireUser("/dashboard/projects/new");
+  await requireUser("/dashboard/projects/new");
   const { edit } = await searchParams;
   const cards = await listMemberCards();
 
   let initial = EMPTY;
   if (edit) {
-    const supabase = await createClient();
-    const { data } = /^[0-9a-f-]{36}$/i.test(edit)
-      ? await supabase
-          .from("projects")
-          .select("id, title, summary, highlights, kind, methodology, supervisor_kind, supervisor_member_id, supervisor_name, repo_url, status, requested_by")
-          .eq("id", edit)
-          .maybeSingle()
-      : { data: null };
-    if (!data || data.requested_by !== current.user.id || data.status !== "proposed") notFound();
+    const r = await getOwnPendingRequest(edit);
+    if (!r) notFound();
     initial = {
-      id: data.id,
-      title: data.title,
-      summary: data.summary ?? "",
-      description: data.highlights.join("\n"),
-      kind: data.kind,
-      methodology: data.methodology,
-      supervisorKind: data.supervisor_kind ?? "faculty",
-      supervisorMemberId: data.supervisor_member_id ?? "",
-      supervisorName: data.supervisor_name ?? "",
-      repoUrl: data.repo_url ?? "",
+      id: r.id,
+      title: r.title,
+      summary: r.summary ?? "",
+      description: r.highlights.join("\n"),
+      kind: r.kind,
+      methodology: r.methodology,
+      supervisorKind: r.supervisorKind ?? "faculty",
+      supervisorMemberId: r.supervisorMemberId ?? "",
+      supervisorName: r.supervisorName ?? "",
+      repoUrl: r.repoUrl ?? "",
     };
   }
 

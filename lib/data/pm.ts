@@ -104,6 +104,7 @@ export type BoardProject = {
   liveUrl: string | null;
   supervisor: PmSupervisor | null;
   approvedAt: string | null;
+  requestedBy: string | null;
   createdAt: string;
 };
 
@@ -327,7 +328,7 @@ export async function getBoard(projectId: string): Promise<Board | null> {
     supabase
       .from("projects")
       .select(
-        "id, ref, title, summary, highlights, status, methodology, kind, repo_url, live_url, supervisor_kind, supervisor_member_id, supervisor_name, approved_at, created_at, supervisor_card:members!projects_supervisor_member_id_fkey(name)",
+        "id, ref, title, summary, highlights, status, methodology, kind, repo_url, live_url, supervisor_kind, supervisor_member_id, supervisor_name, requested_by, approved_at, created_at, supervisor_card:members!projects_supervisor_member_id_fkey(name)",
       )
       .eq("id", projectId)
       .maybeSingle(),
@@ -386,6 +387,7 @@ export async function getBoard(projectId: string): Promise<Board | null> {
       liveUrl: p.live_url,
       supervisor,
       approvedAt: p.approved_at,
+      requestedBy: p.requested_by,
       createdAt: p.created_at,
     },
     columns: (columns.data ?? []).map((c) => ({
@@ -579,4 +581,42 @@ export async function listMemberCards(): Promise<MemberCardOption[]> {
   return [...idx.cards.entries()]
     .map(([id, c]) => ({ id, name: c.name }))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export type OwnRequest = {
+  id: string;
+  title: string;
+  summary: string | null;
+  highlights: string[];
+  kind: ProjectKind;
+  methodology: Methodology;
+  supervisorKind: SupervisorKind | null;
+  supervisorMemberId: string | null;
+  supervisorName: string | null;
+  repoUrl: string | null;
+};
+
+/** One of my own requests while it is still proposed, else null. */
+export async function getOwnPendingRequest(id: string): Promise<OwnRequest | null> {
+  const current = await getCurrentUser();
+  if (!current || !/^[0-9a-f-]{36}$/i.test(id)) return null;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("projects")
+    .select("id, title, summary, highlights, kind, methodology, supervisor_kind, supervisor_member_id, supervisor_name, repo_url, status, requested_by")
+    .eq("id", id)
+    .maybeSingle();
+  if (!data || data.requested_by !== current.user.id || data.status !== "proposed") return null;
+  return {
+    id: data.id,
+    title: data.title,
+    summary: data.summary,
+    highlights: data.highlights,
+    kind: data.kind,
+    methodology: data.methodology,
+    supervisorKind: data.supervisor_kind,
+    supervisorMemberId: data.supervisor_member_id,
+    supervisorName: data.supervisor_name,
+    repoUrl: data.repo_url,
+  };
 }

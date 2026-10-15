@@ -1,4 +1,4 @@
-/* One-time seed: the repo's content modules and public/ photos → Supabase.
+/* One-time seed: the repo's content modules and scripts/seed/assets/ photos → Supabase.
  *
  *   npm run seed
  *

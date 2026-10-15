@@ -1,4 +1,4 @@
-// Pure event helpers, moved unchanged from lib/content/events.ts.
+// Pure event helpers, moved unchanged from the old lib/content/events.ts.
 // Pure, and `now` is always a parameter. Never call Date.now() at module scope:
 // these run at build time in a static export, so a module-scope clock would bake
 // the build date into the output.

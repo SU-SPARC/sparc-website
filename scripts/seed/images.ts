@@ -8,7 +8,9 @@ import path from "node:path";
 
 import sharp from "sharp";
 
-export const PUBLIC_DIR = path.resolve(process.cwd(), "public");
+/** Source photos for the seed (moved out of public/ once the site stopped
+ * serving them). Originals at the top level, re-exports under images/. */
+export const ASSETS_DIR = path.resolve(process.cwd(), "scripts/seed/assets");
 
 const ORIGINAL_EXTS = [".jpg", ".jpeg", ".png"] as const;
 
@@ -27,19 +29,19 @@ export type EncodedImage = {
 
 /**
  * Pick the input file for an image basename (e.g. "kanan", "sparc-vc-4").
- * Prefers an original in public/ (.jpg/.jpeg/.png) over the re-export in
- * public/images/<base>.webp. When several originals share the basename
+ * Prefers an original in scripts/seed/assets/ (.jpg/.jpeg/.png) over the
+ * re-export in scripts/seed/assets/images/<base>.webp. When several originals share the basename
  * (mo.jpeg 400 px and mo.jpg 2316×3088), the largest file wins: it is the one
  * the .webp re-export was made from. Missing everywhere = hard error.
  */
 export function resolveSource(base: string): string {
-  const originals = ORIGINAL_EXTS.map((ext) => path.join(PUBLIC_DIR, `${base}${ext}`))
+  const originals = ORIGINAL_EXTS.map((ext) => path.join(ASSETS_DIR, `${base}${ext}`))
     .filter((p) => existsSync(p))
     .sort((a, b) => statSync(b).size - statSync(a).size);
   if (originals.length > 0) return originals[0];
-  const webp = path.join(PUBLIC_DIR, "images", `${base}.webp`);
+  const webp = path.join(ASSETS_DIR, "images", `${base}.webp`);
   if (existsSync(webp)) return webp;
-  throw new Error(`No source image for "${base}" (looked for public/${base}.{jpg,jpeg,png} and public/images/${base}.webp)`);
+  throw new Error(`No source image for "${base}" (looked for scripts/seed/assets/${base}.{jpg,jpeg,png} and scripts/seed/assets/images/${base}.webp)`);
 }
 
 /** "/images/kanan.webp" → "kanan" */
@@ -50,7 +52,7 @@ export function basenameOf(publicPath: string): string {
 export async function encodeImage(base: string): Promise<EncodedImage> {
   const source = resolveSource(base);
   try {
-    // sharp sniffs content, so the mislabelled public/images/*.webp files
+    // sharp sniffs content, so the mislabelled assets/images/*.webp files
     // (really JPEG/PNG) decode fine. limitInputPixels: false for bex.jpg (16 MB).
     const pipeline = sharp(source, { limitInputPixels: false }).rotate();
     const box = { fit: "inside" as const, withoutEnlargement: true };

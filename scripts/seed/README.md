@@ -3,7 +3,7 @@
 One-time migration of the site's existing content into Supabase. It reads the
 copies of the old content modules in `content/` (members, projects, events,
 recordings, news) plus the home gallery and `/links` entries defined in
-`index.ts`, compresses every photo from `public/` with sharp (`images.ts`: EXIF
+`index.ts`, compresses every photo from `assets/` with sharp (`images.ts`: EXIF
 orient, full ≤ 2000 px WebP q82, thumb ≤ 640 px q80, 24 px blur), uploads them to
 the `media` bucket at fixed paths (`members/<slug>.webp`, `photos/<name>.webp`, …),
 upserts the `media` rows and the content rows, and creates the shared e-board

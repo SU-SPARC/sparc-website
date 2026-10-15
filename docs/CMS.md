@@ -161,10 +161,24 @@ accounts. *Admin* is meant for the shared e-board login.
 **Reset password**. A new temporary password is shown once. Once SMTP is set
 up, people can also use "Forgot password" on `/login`.
 
-**Project requests.** Members request a project at `/dashboard/projects/new`.
-Editors review requests at `/admin/projects/requests`. Approving a request
-creates the project's board from its methodology template and assigns the
-supervisor. Members see the status of their requests on `/dashboard`.
+**Project requests.** Any signed-in member can propose a project at
+`/dashboard/projects/new`. They give a title, summary, description, kind,
+methodology, proposed supervisor and an optional GitHub repo. While the
+request is pending, the member can edit it or withdraw it from "My
+requests" on `/dashboard` or from the project's page. Editors see pending requests at
+`/admin/projects/requests`, and the sidebar shows how many are waiting.
+- **Approve:** confirm or change the ref (the next free `SP-…` is suggested),
+  the methodology and the supervisor. The project becomes *In progress*, gets
+  a board with that methodology's template columns (Kanban, Scrumban, Scrum or
+  SAFe), and the requester becomes its lead. The project is still unpublished
+  on the public site, so publish it from `/admin/projects/<id>` when it's
+  ready.
+- **Decline:** add an optional reason. The project is archived. The member sees
+  the decline and the reason once, in "My requests" on `/dashboard`.
+
+Every member can view every board. Project members, the project's supervisor
+and editors can edit it. The lead and editors add or remove members on the
+board's Members tab.
 
 **Yearly handover.**
 1. Sign in as the shared login and change its password on `/dashboard/profile`.
@@ -186,8 +200,12 @@ npm run seed              # local content, photos and the admin login
 npm run dev               # http://localhost:3000
 ```
 
-- `npm run rls:check` and `npm run rls:check-pm` prove the security rules
-  against the local database. Run them after you change a migration.
+- `npm run rls:check` proves the content rules (anon, member, editor, admin,
+  storage, sign-up). `npm run rls:check-pm` proves the project-board rules
+  (requests, approve/decline, board edits by members versus non-members,
+  template columns). Both create throwaway users against the local database.
+  Run them after you change a migration. Sign-in is rate-limited to 30 per
+  5 minutes, so wait a few minutes if a run fails at sign-in.
 - `npm run db:types` regenerates `lib/supabase/database.types.ts`.
 - Studio (the database UI): http://127.0.0.1:55323. Local emails (invites,
   resets) go to Mailpit at http://127.0.0.1:55324, not to real inboxes.
@@ -207,7 +225,7 @@ Before git commands, run `find . -name '._*' -not -path './node_modules/*' -dele
 | An error mentions `42501` / "permission denied" | A grant or RLS policy is missing for that table or role. Every table needs explicit `grant`s in its migration (new Supabase projects add none by default). Add them in a new migration, then `db push`. |
 | "Email logins are disabled" | `[auth.email] enable_signup` (or the Email provider in the dashboard) was turned off. Turn it back on. Public sign-up is closed by "Allow new users to sign up" / `[auth] enable_signup = false` instead. |
 | Images don't load (broken image or a 400 from `/_next/image`) | `NEXT_PUBLIC_SUPABASE_URL` doesn't match the host allowed in `next.config.ts` `images.remotePatterns` (it is read from the same variable at build time). Fix the env var and redeploy. Locally, see the FAT32 note above. |
-| A member sees "You can view this board" | They can read every board but edit only the boards of projects they belong to. Add them to the project's members on its board (`/dashboard/projects/<id>`, as an editor). |
+| A member sees "You can view this board. Only project members can edit it." | Expected for anyone who isn't on the project. To let them edit, the project lead or an editor adds them on the board's Members tab (`/dashboard/projects/<id>`). Boards of requests that are still pending can't be edited by anyone until the request is approved. |
 | Invite or reset emails never arrive | Custom SMTP isn't set up (section 2.7), or the email rate limit was hit. |
 | "Token has expired or is invalid" from an email link | The link was already used, or an email scanner opened it first. Send a new one, or use a temporary password. |
 | The site is up but empty | The Free Supabase project paused. Restore it from the dashboard (section 2.8). |

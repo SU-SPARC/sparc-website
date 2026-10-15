@@ -11,7 +11,8 @@
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types --local --lang typescript > lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts",
     "rls:check": "tsx scripts/rls-check.ts",
-    "seed": "tsx scripts/seed/index.ts"
+    "seed": "tsx scripts/seed/index.ts",
+    "rls:check-pm": "tsx scripts/rls-check-pm.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

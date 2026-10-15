@@ -384,6 +384,108 @@ export type Database = {
           },
         ];
       };
+      project_activity: {
+        Row: {
+          action: string;
+          actor_profile_id: string | null;
+          created_at: string;
+          detail: NonNullable<Json>;
+          id: string;
+          project_id: string;
+          task_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          action: string;
+          actor_profile_id?: string | null;
+          created_at?: string;
+          detail?: NonNullable<Json>;
+          id?: string;
+          project_id: string;
+          task_id?: string | null;
+        };
+        Update: {
+          action?: string;
+          actor_profile_id?: string | null;
+          created_at?: string;
+          detail?: NonNullable<Json>;
+          id?: string;
+          project_id?: string;
+          task_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "project_activity_actor_profile_id_fkey";
+            columns: ["actor_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_activity_actor_profile_id_fkey";
+            columns: ["actor_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_activity_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_activity_task_id_fkey";
+            columns: ["task_id"];
+            isOneToOne: false;
+            referencedRelation: "project_tasks";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      project_columns: {
+        Row: {
+          created_at: string;
+          id: string;
+          is_done: boolean;
+          name: string;
+          position: number;
+          project_id: string;
+          updated_at: string;
+          wip_limit: number | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          is_done?: boolean;
+          name: string;
+          position?: number;
+          project_id: string;
+          updated_at?: string;
+          wip_limit?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          is_done?: boolean;
+          name?: string;
+          position?: number;
+          project_id?: string;
+          updated_at?: string;
+          wip_limit?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "project_columns_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       project_gallery: {
         Row: {
           created_at: string;
@@ -424,12 +526,211 @@ export type Database = {
           },
         ];
       };
+      project_members: {
+        Row: {
+          joined_at: string;
+          profile_id: string;
+          project_id: string;
+          role: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          joined_at?: string;
+          profile_id: string;
+          project_id: string;
+          role?: string;
+        };
+        Update: {
+          joined_at?: string;
+          profile_id?: string;
+          project_id?: string;
+          role?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "project_members_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_members_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_members_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      project_sprints: {
+        Row: {
+          created_at: string;
+          ends_on: string | null;
+          goal: string | null;
+          id: string;
+          name: string;
+          position: number;
+          project_id: string;
+          starts_on: string | null;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          ends_on?: string | null;
+          goal?: string | null;
+          id?: string;
+          name: string;
+          position?: number;
+          project_id: string;
+          starts_on?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          ends_on?: string | null;
+          goal?: string | null;
+          id?: string;
+          name?: string;
+          position?: number;
+          project_id?: string;
+          starts_on?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "project_sprints_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      project_tasks: {
+        Row: {
+          assignee_profile_id: string | null;
+          column_id: string;
+          completed_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          description: string | null;
+          due_on: string | null;
+          github_url: string | null;
+          id: string;
+          points: number | null;
+          position: number;
+          priority: Database["public"]["Enums"]["task_priority"];
+          project_id: string;
+          sprint_id: string | null;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          assignee_profile_id?: string | null;
+          column_id: string;
+          completed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          due_on?: string | null;
+          github_url?: string | null;
+          id?: string;
+          points?: number | null;
+          position?: number;
+          priority?: Database["public"]["Enums"]["task_priority"];
+          project_id: string;
+          sprint_id?: string | null;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          assignee_profile_id?: string | null;
+          column_id?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          description?: string | null;
+          due_on?: string | null;
+          github_url?: string | null;
+          id?: string;
+          points?: number | null;
+          position?: number;
+          priority?: Database["public"]["Enums"]["task_priority"];
+          project_id?: string;
+          sprint_id?: string | null;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "project_tasks_assignee_profile_id_fkey";
+            columns: ["assignee_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_tasks_assignee_profile_id_fkey";
+            columns: ["assignee_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_tasks_column_id_project_id_fkey";
+            columns: ["column_id", "project_id"];
+            isOneToOne: false;
+            referencedRelation: "project_columns";
+            referencedColumns: ["id", "project_id"];
+          },
+          {
+            foreignKeyName: "project_tasks_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_tasks_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_tasks_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "project_tasks_sprint_id_project_id_fkey";
+            columns: ["sprint_id", "project_id"];
+            isOneToOne: false;
+            referencedRelation: "project_sprints";
+            referencedColumns: ["id", "project_id"];
+          },
+        ];
+      };
       projects: {
         Row: {
           approved_at: string | null;
           approved_by: string | null;
           cover_media_id: string | null;
           created_at: string;
+          decline_reason: string | null;
+          declined_at: string | null;
           highlights: string[];
           id: string;
           kind: Database["public"]["Enums"]["project_kind"];
@@ -457,6 +758,8 @@ export type Database = {
           approved_by?: string | null;
           cover_media_id?: string | null;
           created_at?: string;
+          decline_reason?: string | null;
+          declined_at?: string | null;
           highlights?: string[];
           id?: string;
           kind?: Database["public"]["Enums"]["project_kind"];
@@ -483,6 +786,8 @@ export type Database = {
           approved_by?: string | null;
           cover_media_id?: string | null;
           created_at?: string;
+          decline_reason?: string | null;
+          declined_at?: string | null;
           highlights?: string[];
           id?: string;
           kind?: Database["public"]["Enums"]["project_kind"];
@@ -642,6 +947,21 @@ export type Database = {
         };
         Returns: undefined;
       };
+      approve_project_request: {
+        Args: {
+          methodology: Database["public"]["Enums"]["methodology"];
+          p: string;
+          ref: string;
+          supervisor_kind: Database["public"]["Enums"]["supervisor_kind"];
+          supervisor_member_id: string;
+          supervisor_name: string;
+        };
+        Returns: undefined;
+      };
+      decline_project_request: {
+        Args: { p: string; reason: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       member_status: "current" | "alumni";
@@ -649,6 +969,7 @@ export type Database = {
       project_kind: "team" | "personal";
       project_status: "proposed" | "in_progress" | "completed" | "archived";
       supervisor_kind: "faculty" | "student";
+      task_priority: "low" | "medium" | "high" | "urgent";
       user_role: "member" | "editor" | "admin";
     };
     CompositeTypes: {
@@ -785,6 +1106,7 @@ export const Constants = {
       project_kind: ["team", "personal"],
       project_status: ["proposed", "in_progress", "completed", "archived"],
       supervisor_kind: ["faculty", "student"],
+      task_priority: ["low", "medium", "high", "urgent"],
       user_role: ["member", "editor", "admin"],
     },
   },

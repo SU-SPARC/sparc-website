@@ -9,11 +9,16 @@
  *
  * No metadata export — not-found.tsx does not support one. The root layout's
  * title template covers it.
+ *
+ * The root layout no longer renders the site chrome (it moved to
+ * app/(site)/layout.tsx), so the 404 renders Navbar + Footer itself.
  */
 
 import Link from "next/link";
 
+import { Footer } from "@/components/ui/footer";
 import { MicroLabel } from "@/components/ui/micro-label";
+import Navbar from "@/components/ui/navbar";
 
 const ROUTES = [
   { href: "/", label: "Home" },
@@ -25,29 +30,38 @@ const ROUTES = [
 
 export default function NotFound() {
   return (
-    <main className="mx-auto flex min-h-[60vh] max-w-page flex-col justify-center px-gutter py-section">
-      <MicroLabel as="p" className="block">
-        404
-      </MicroLabel>
-      <h1 className="mt-2 text-3xl font-medium">Page not found</h1>
-      <p className="mt-3 max-w-text text-ink-muted">
-        This URL does not match any page on this site.
-      </p>
+    <>
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
+      <Navbar />
+      <div id="main">
+        <main className="mx-auto flex min-h-[60vh] max-w-page flex-col justify-center px-gutter py-section">
+          <MicroLabel as="p" className="block">
+            404
+          </MicroLabel>
+          <h1 className="mt-2 text-3xl font-medium">Page not found</h1>
+          <p className="mt-3 max-w-text text-ink-muted">
+            This URL does not match any page on this site.
+          </p>
 
-      <nav aria-label="Site" className="mt-8">
-        <ul className="flex flex-wrap gap-2">
-          {ROUTES.map((route) => (
-            <li key={route.href}>
-              <Link
-                href={route.href}
-                className="inline-block rounded-control border border-line bg-surface-1 px-3 py-2 text-sm text-ink transition-colors duration-200 ease-out hover:border-line-strong"
-              >
-                {route.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </main>
+          <nav aria-label="Site" className="mt-8">
+            <ul className="flex flex-wrap gap-2">
+              {ROUTES.map((route) => (
+                <li key={route.href}>
+                  <Link
+                    href={route.href}
+                    className="inline-block rounded-control border border-line bg-surface-1 px-3 py-2 text-sm text-ink transition-colors duration-200 ease-out hover:border-line-strong"
+                  >
+                    {route.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </main>
+      </div>
+      <Footer />
+    </>
   );
 }

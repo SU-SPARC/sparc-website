@@ -9,7 +9,7 @@
  * components/ui/expand.tsx is the only one in the codebase.
  *
  * CONTENT RULE. This file contains no name, role, bio, year or badge value.
- * Everything visible comes off the `member` prop (lib/content/members.ts).
+ * Everything visible comes off the `member` prop (lib/data, read from the members table).
  * The only literal strings are the two badge LABELS below and the words
  * "Alumni", "Class of", "Previously", "Participated", "Visit LinkedIn" and
  * "Visit Website" — see the provenance note on each.
@@ -45,7 +45,8 @@ import { Expand, ExpandTrigger } from "@/components/ui/expand";
 import { MicroLabel } from "@/components/ui/micro-label";
 import { Pill } from "@/components/ui/pill";
 import { SurfaceCard } from "@/components/ui/surface-card";
-import type { Member } from "@/lib/content/types";
+import { blurProps } from "@/components/ui/blur";
+import type { Member } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
 
 /* The two badges SPEC allows, and their rendering. Keyed by the value stored
@@ -113,7 +114,8 @@ export function PersonCard({ member }: PersonCardProps) {
       <div className="relative aspect-square overflow-hidden bg-surface-2">
         {member.photo ? (
           <Image
-            src={member.photo}
+            src={member.photo.src}
+            {...blurProps(member.photo)}
             /* Decorative: the name is the next thing in the reading order. */
             alt=""
             fill

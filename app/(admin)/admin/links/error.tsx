@@ -1,0 +1,7 @@
+"use client";
+
+import { ListError } from "@/components/admin/list-states";
+
+export default function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
+  return <ListError what="links" error={error} reset={reset} />;
+}

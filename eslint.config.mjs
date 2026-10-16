@@ -2,8 +2,6 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
-// eslint-disable-next-line prefer-const
-/* eslint-disable  @typescript-eslint/no-explicit-any */
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
@@ -21,6 +19,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // macOS AppleDouble files on the FAT32 drive (e.g. ._next-env.d.ts).
+    "**/._*",
   ]),
 ]);
 

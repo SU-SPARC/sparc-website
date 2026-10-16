@@ -27,6 +27,13 @@
 #
 # Add one path per line. Keep the step comment. Do not sort — chronological
 # order is the migration history.
+#
+# An entry may be a file or a directory. A directory is expanded at run time
+# to every *.ts / *.tsx / *.css file under it (AppleDouble ._* files and
+# generated database types skipped), so new files in a migrated area are
+# covered the moment they land. Since the Supabase CMS build (agent F) the
+# whole app/ route-group tree, the form/admin/board components and lib/ are
+# on the list as directories.
 
 MIGRATED=(
   app/globals.css               # S1 — token layer (exempt from the hex check)
@@ -39,30 +46,26 @@ MIGRATED=(
   components/ui/surface-card.tsx # S2 — redesign card (legacy card.tsx still live)
   components/ui/micro-label.tsx # S2 — 13px labels; muted default is deliberate
   components/ui/poster-text.tsx # S2 — the only way to render the poster face
-  lib/content/types.ts          # S2.5 — shapes mirror supabase/schema.sql
-  lib/content/members.ts        # S2.5 — 12 people, verbatim from app/team
-  lib/content/projects.ts       # S2.5 — 3 projects, verbatim from app/projects
-  lib/content/events.ts         # S2.5 — 3 events + 3 recordings, verbatim
-  app/preview/page.tsx          # S7 — specimen catalogue, noindex
-  app/preview/preview-client.tsx # S7 — theme harness + measured contrast
-  app/preview/exhibits.tsx      # S7 — exhibits, demo data by predicate only
   app/not-found.tsx             # S7 — 404, Martian only (no Ultra)
   components/ui/sparc-mark.tsx  # S3 — inline mark; mask #fff/#000 are alpha, exempt
   components/ui/navbar.tsx      # S3 — nav; [data-nav-mark] is S4's landing target
   components/ui/footer.tsx      # S3 — footer; ink-fit wordmark + photo mask
-  app/page.tsx                  # S4 — home shell
   components/ui/hero.tsx        # S4 — orbit draw + scroll-linked bolt travel
   components/ui/photo-drift.tsx # S4 — entrance into drift; card vs track handoff
-  app/about/page.tsx            # P1 — merged about+team
-  app/about/sections.tsx        # P1 — photo reveal + people directory
   components/ui/person-card.tsx # P1 — reserved name/role heights live here
-  app/join/page.tsx             # P2 — merged join+contact; form kept, subordinate
-  app/projects/page.tsx         # P3 — type list shell
-  app/projects/project-index.tsx # P3 — hover preview, one-at-a-time
-  app/events/page.tsx           # P4 — record shell
-  app/events/events-record.tsx  # P4 — rows + recordings; no card, no search
-  lib/content/news.ts           # U1 — 3 news items, verbatim from old home
-  app/home-sections.tsx         # U2 — stats band + news preview
+  components/ui/blur.ts         # CMS E — blur placeholder props
+  # S2.5–U2 pages (preview, about, join, projects, events, home) and
+  # lib/content/* now live under app/(site)/ and scripts/seed/content/.
+  "app/(site)"                  # CMS C1/E — public pages on lib/data
+  "app/(auth)"                  # CMS D — login, forgot password
+  "app/(members)"               # CMS D/G — dashboard, profile, boards
+  "app/(admin)"                 # CMS D/G — admin panel
+  app/auth                      # CMS D — confirm/callback/update-password
+  components/forms              # CMS D — form primitives
+  components/admin              # CMS D — admin forms and lists
+  components/board              # CMS G — project boards
+  lib                           # CMS C1/D/G — data, actions, auth, supabase
+  proxy.ts                      # CMS D — session refresh
 )
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -79,8 +82,10 @@ cd "$(dirname "$0")/.." || exit 2
 # resolve a real executable here and abort if there is not one.
 if command -v rg >/dev/null 2>&1 && [ -x "$(command -v rg 2>/dev/null)" ]; then
   SEARCH() { rg -n "$@"; }
+  SEARCH_R() { rg -n "$@"; }             # rg recurses by default
 elif command -v grep >/dev/null 2>&1; then
   SEARCH() { grep -E -n "$@"; }
+  SEARCH_R() { grep -E -n -r "$@"; }
 else
   echo "verify.sh: no usable rg or grep on PATH — refusing to report a pass." >&2
   exit 2
@@ -94,14 +99,23 @@ bad()  { printf '  \033[31mFAIL\033[0m  %s\n' "$1"; fail=1; }
 info() { printf '  \033[2m%s\033[0m\n' "$1"; }
 
 # Only the paths that actually exist, so the script survives a deletion.
+# Directories expand to their source files (see the note above MIGRATED).
 scope=()
-for p in "${MIGRATED[@]}"; do [ -e "$p" ] && scope+=("$p"); done
+for p in "${MIGRATED[@]}"; do
+  if [ -d "$p" ]; then
+    while IFS= read -r f; do scope+=("$f"); done < <(
+      find "$p" -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.css' \) \
+        ! -name '._*' ! -name 'database.types.ts' | LC_ALL=C sort)
+  elif [ -e "$p" ]; then
+    scope+=("$p")
+  fi
+done
 if [ "${#scope[@]}" -eq 0 ]; then
   echo "verify.sh: migrated-path list is empty — nothing to check." >&2
   exit 2
 fi
 
-printf '\nverify.sh — %d of %d migrated paths present\n\n' \
+printf '\nverify.sh — %d files from %d migrated entries\n\n' \
   "${#scope[@]}" "${#MIGRATED[@]}"
 
 # reject <regex> <label> [files...]  — fails if the pattern is found.
@@ -208,6 +222,27 @@ if [ "$animated" -eq 0 ]; then
 else
   info "$guarded/$animated animated files carry a reduced-motion variant"
   [ "$guarded" -eq "$animated" ] && pass 'reduced-motion coverage'
+fi
+
+echo
+echo "── secrets ──────────────────────────────────────────────────"
+
+# The secret key bypasses RLS. Only the admin client and the account-creation
+# actions may read it (plus supabase/ and scripts/, which never ship to the
+# browser). Any other mention in app code is one import away from a client
+# bundle, so it fails here. Scans all app code, not just the migrated list.
+secret_hits=$(SEARCH_R '(SUPABASE_SECRET_KEY|SERVICE_ROLE)' app components lib proxy.ts next.config.ts 2>/dev/null \
+  | grep -v '/\._' \
+  | grep -vE '^(lib/supabase/admin\.ts|lib/actions/accounts\.ts):' || true)
+if [ -n "$secret_hits" ]; then
+  bad 'secret key referenced outside lib/supabase/admin.ts and lib/actions/accounts.ts'
+  printf '%s\n' "$secret_hits" | sed 's/^/          /'
+else
+  pass 'secret key confined to the admin client'
+fi
+# Prove the gate can fail: a known-bad string must match the same pattern.
+if ! printf 'process.env.SUPABASE_SECRET_KEY\n' | SEARCH '(SUPABASE_SECRET_KEY|SERVICE_ROLE)' - >/dev/null 2>&1; then
+  bad 'secret-key gate cannot match a known-bad string'
 fi
 
 echo

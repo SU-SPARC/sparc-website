@@ -15,6 +15,7 @@
     "seed": "tsx scripts/seed/index.ts",
     "rls:check-pm": "tsx scripts/rls-check-pm.ts",
     "admin:magic-link": "tsx scripts/admin-magic-link.ts",
+    "seed:locator": "tsx scripts/seed/locator.ts",
     "rls:check-locator": "tsx scripts/rls-check-locator.ts"
   },
   "dependencies": {

@@ -23,6 +23,7 @@ refreshes them straight away.
 | Photo gallery (one "featured" photo) | `/admin/photos` | `/` strip, `/about` group photo |
 | Links (link-in-bio) | `/admin/links` | `/links` |
 | Accounts and roles (admin only) | `/admin/accounts` | none |
+| Locator: internships, conferences, networking events, hackathons (editors) | `/admin/locator/<kind>` | none in v1; see `docs/LOCATOR.md` |
 
 These files stay in the repo because they aren't content: `public/advisor.webp`,
 `public/og.webp`, `public/wordmark/*` (footer masks), `public/logo/sparc-mark.svg`,
@@ -36,7 +37,7 @@ These files stay in the repo because they aren't content: `public/advisor.webp`,
    ```
    npx supabase login
    npx supabase link --project-ref <ref>
-   npx supabase db push        # applies supabase/migrations/0001_cms.sql and 0002_project_management.sql
+   npx supabase db push        # applies supabase/migrations/0001_cms.sql, 0002_project_management.sql and 0003_locator.sql
    ```
 3. In **Storage**, check that a public bucket named `media` exists. The
    migration creates it.
@@ -109,6 +110,8 @@ Production, Preview and Development (names as in `.env.example`):
 | `NEXT_PUBLIC_SITE_URL` | the production URL, no trailing slash | public |
 | `SUPABASE_SECRET_KEY` | the legacy **`service_role`** key (Project Settings → API Keys → Legacy API keys); see note below | **server only** |
 | `AUTH_SMTP_CONFIGURED` | `false`, then `true` after step 2.7 | server only |
+| `ANTHROPIC_API_KEY` | the club's Anthropic API key (console.anthropic.com → API keys). Powers the Locator eligibility checks and "Import from a link". Leave unset to run without AI. | **server only** |
+| `LOCATOR_AI_MODEL` | optional; default `claude-opus-5-5` | server only |
 
 `SUPABASE_SECRET_KEY` bypasses every security rule. The site uses it in one
 place only: the admin's account actions (create an account, reset a password)
@@ -212,6 +215,21 @@ Every member can view every board. Project members, the project's supervisor
 and editors can edit it. The lead and editors add or remove members on the
 board's Members tab.
 
+**Locator** (`/admin/locator`, editors). Four lists the e-board keeps for
+members: Internships (filter by Co-op, Semester part-time, Summer, Winter),
+Conferences, Networking and Hackathons. Each row links to the posting or event
+page. Add an item with **New**, or paste the posting URL into **Import from a
+link** and let the club's AI fill the form; check every field before saving.
+**Check my eligibility** on an item uses your own Locator profile
+(`/admin/locator/profile`: major, year, skills, goals, availability) and
+answers Eligible / Likely eligible / Unclear / Not eligible with reasons and a
+1–5 career-fit score; the result is cached and shown on the list. Your Locator
+profile is readable only by you. Use **Mark verified today** after you
+re-check a listing; the seed data was verified on 16 October 2026 and events
+with unannounced dates say so in their dates note. Load or refresh the
+researched starter set with `npm run seed:locator` (it upserts by slug, so
+edits to other fields survive). Details: `docs/LOCATOR.md`.
+
 **Yearly handover.**
 1. Sign in as the shared login and change its password on `/dashboard/profile`.
 2. Review `/admin/accounts`. Demote graduates to *Member* (or unlink their
@@ -229,13 +247,16 @@ npm run db:start          # supabase start; first run downloads images
 cp .env.example .env.local  # then fill keys from: npx supabase status -o env
 npm run db:reset          # recreate the local DB from supabase/migrations
 npm run seed              # local content, photos and the admin login
+npm run seed:locator      # the researched Locator starter set (scripts/seed/locator/*.json)
 npm run dev               # http://localhost:3000
 ```
 
 - `npm run rls:check` proves the content rules (anon, member, editor, admin,
   storage, sign-up). `npm run rls:check-pm` proves the project-board rules
   (requests, approve/decline, board edits by members versus non-members,
-  template columns). Both create throwaway users against the local database.
+  template columns). `npm run rls:check-locator` proves the Locator rules
+  (editors write opportunities; Locator profiles and eligibility checks are
+  own-row only). All three create throwaway users against the local database.
   Run them after you change a migration. Sign-in is rate-limited to 30 per
   5 minutes, so wait a few minutes if a run fails at sign-in.
 - `npm run db:types` regenerates `lib/supabase/database.types.ts`.
@@ -262,3 +283,5 @@ Before git commands, run `find . -name '._*' -not -path './node_modules/*' -dele
 | The admin is locked out (forgot the password, no email) | From the repo, run `npm run admin:magic-link -- sparc@studentorgs.suffolk.edu` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SITE_URL` and `SUPABASE_SECRET_KEY` (the `service_role` key) set in the shell. It prints a one-time sign-in link; open it, then set a new password on `/dashboard/profile`. Works for any account. Too many failed sign-ins also trips a 30-per-5-minutes limit per IP; waiting five minutes clears that. |
 | "Token has expired or is invalid" from an email link | The link was already used, or an email scanner opened it first. Send a new one, or use a temporary password. |
 | The site is up but empty | The Free Supabase project paused. Restore it from the dashboard (section 2.8). |
+| Locator says "AI checks need `ANTHROPIC_API_KEY`" | Set `ANTHROPIC_API_KEY` (and optionally `LOCATOR_AI_MODEL`) in Vercel for Production and Preview, then redeploy. The lists work without it; only the two AI features wait for the key. |
+| "The AI declined to assess this listing" or "Couldn't read that page" | The model refused (rare; try again or fill the form by hand), or the posting page blocks automated readers (LinkedIn and some job boards do). Paste the company's own careers page instead, or enter the fields manually. |

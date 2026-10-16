@@ -34,4 +34,7 @@ npm run dev                     # http://localhost:3000
   data layer and routing
 - [`docs/DESIGN-BRIEF.md`](docs/DESIGN-BRIEF.md): design patterns for the
   admin, dashboard, board and `/links` screens
+- [`docs/LOCATOR.md`](docs/LOCATOR.md): the Locator (internships,
+  conferences, networking events, hackathons): schema, AI eligibility checks,
+  screens and Mobbin references
 - `PLAN.md`: the original redesign plan, kept as history

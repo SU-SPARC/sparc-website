@@ -62,6 +62,21 @@ These files stay in the repo because they aren't content: `public/advisor.webp`,
    Invite and recovery links go to `/auth/update-password`, where the person
    sets a password. `{{ .SiteURL }}` is the Site URL from step 4, so emails
    always point to production, even when they're triggered from a preview.
+
+   Two things to know, learned on the first deployment (October 2026):
+   - **Free projects can't change email templates until custom SMTP is
+     configured** (the API answers "Email template modification is not
+     available for free tier projects using the default email provider"). Do
+     step 7 first, then come back to this step. Until then the default
+     templates are used; their links go through `/auth/callback`, which the
+     site also handles, so invites and resets still work once SMTP exists.
+   - Ready-made bodies for all five templates are in `supabase/templates/`.
+     Paste them into the dashboard, or push them from the CLI with a minimal
+     `config.toml` that declares only `project_id`, the `[auth]` URL settings
+     and the `[auth.email.template.*]` entries (`supabase config push
+     --workdir <that folder> --project-ref <ref>`); the full local
+     `supabase/config.toml` must not be pushed, since it carries local-only
+     settings.
 7. **Email caveat: set up custom SMTP before you rely on email.** Supabase's
    built-in sender only delivers to members of your Supabase organisation, and
    only 2 emails an hour. Until you add SMTP, create accounts with a temporary
@@ -92,7 +107,7 @@ Production, Preview and Development (names as in `.env.example`):
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` | public |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `sb_publishable_…` (Supabase → Project Settings → API Keys) | public |
 | `NEXT_PUBLIC_SITE_URL` | the production URL, no trailing slash | public |
-| `SUPABASE_SECRET_KEY` | `sb_secret_…` | **server only** |
+| `SUPABASE_SECRET_KEY` | the legacy **`service_role`** key (Project Settings → API Keys → Legacy API keys); see note below | **server only** |
 | `AUTH_SMTP_CONFIGURED` | `false`, then `true` after step 2.7 | server only |
 
 `SUPABASE_SECRET_KEY` bypasses every security rule. The site uses it in one
@@ -104,6 +119,15 @@ any other app file mentions it.
 `NEXT_PUBLIC_*` values are baked into the build, so **redeploy** after you
 change one.
 
+**Why the legacy `service_role` key.** On the first deployment (16 October
+2026) the project's new-format `sb_secret_…` key was rejected by the Auth
+admin API ("Invalid API key") and by Storage ("Invalid Compact JWS"), while the
+legacy `service_role` key worked everywhere. The server-only `SUPABASE_SECRET_KEY`
+therefore holds the `service_role` key, and the seed uses it too. Supabase
+plans to retire legacy keys; when you switch, test `/admin/accounts/new` and
+the seed against the new key first. The public key is already the new
+`sb_publishable_…` format, which works fine.
+
 ## 4. First run: seed production
 
 The seed copies the original site's content and photos (from
@@ -112,15 +136,23 @@ Run it once from the repo root after `supabase db push`. Values set in the
 shell override `.env.local`:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co SUPABASE_SECRET_KEY=sb_secret_... \
-SEED_ADMIN_EMAIL=sparc@studentorgs.suffolk.edu SEED_ADMIN_PASSWORD='<a strong password>' npm run seed
+NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co \
+SUPABASE_SECRET_KEY=$(supabase projects api-keys --project-ref <ref> -o json | python3 -c "import json,sys; print(next(k['api_key'] for k in json.load(sys.stdin) if k['name']=='service_role'), end='')") \
+SEED_ADMIN_EMAIL=sparc@studentorgs.suffolk.edu SEED_ADMIN_PASSWORD= npm run seed
 ```
+
+The key is read straight from the CLI so it is never typed or shown. Leaving
+`SEED_ADMIN_PASSWORD` empty makes the seed **generate a strong admin password**
+and save it to `scripts/seed/.env.seed-admin` (gitignored, never printed); open
+that file for the first sign-in, then change the password on
+`/dashboard/profile` and delete the file. Set `SEED_ADMIN_PASSWORD` explicitly
+only if you have a reason to.
 
 The seed creates 12 member cards (6 on the E-Board), 3 projects, 3 events
 with 3 recordings, 3 news items, 22 gallery photos (one featured), 6 links and
 40 media rows. It compresses the photos to WebP: about 48 MB of originals
 becomes about 8 MB. It also creates the shared e-board **admin** account from
-`SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`.
+`SEED_ADMIN_EMAIL`.
 
 The seed is idempotent, so running it again only re-uploads the same files. It
 never deletes anything, and an existing admin keeps its password.

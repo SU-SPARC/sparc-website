@@ -7,6 +7,10 @@
  * upsert, so a second run changes nothing but re-uploads identical bytes.
  * Uses the secret key (bypasses RLS). See scripts/seed/README.md. */
 
+import { randomBytes } from "node:crypto";
+import { writeFileSync } from "node:fs";
+import path from "node:path";
+
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
 
@@ -23,13 +27,32 @@ config({ path: ".env.local", quiet: true });
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SECRET = process.env.SUPABASE_SECRET_KEY;
 const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL;
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
-if (!URL || !SECRET || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
+if (!URL || !SECRET || !ADMIN_EMAIL) {
   console.error(
-    "Missing NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY, SEED_ADMIN_EMAIL or SEED_ADMIN_PASSWORD (env or .env.local)",
+    "Missing NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SECRET_KEY or SEED_ADMIN_EMAIL (env or .env.local)",
   );
   process.exit(1);
 }
+
+// The admin password. Against the local stack any value will do and .env.local
+// supplies one. Against a hosted project, a placeholder or missing password
+// means "generate a strong one": it is written once to scripts/seed/.env.seed-admin
+// (gitignored by the .env* rule) and never printed, so it stays out of terminal
+// logs and chat transcripts. Change it on /dashboard/profile after first sign-in.
+const IS_LOCAL = /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(URL);
+const PLACEHOLDER_PASSWORDS = new Set(["", "change-me-locally", "change-me"]);
+function resolveAdminPassword(): string {
+  const fromEnv = process.env.SEED_ADMIN_PASSWORD ?? "";
+  if (IS_LOCAL || !PLACEHOLDER_PASSWORDS.has(fromEnv)) return fromEnv || "change-me-locally";
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  const bytes = randomBytes(24);
+  const generated = Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+  const file = path.join(process.cwd(), "scripts", "seed", ".env.seed-admin");
+  writeFileSync(file, `SEED_ADMIN_EMAIL=${ADMIN_EMAIL}\nSEED_ADMIN_PASSWORD=${generated}\n`, { mode: 0o600 });
+  console.log(`admin password generated and saved to ${file} (not printed). Change it after first sign-in.`);
+  return generated;
+}
+const ADMIN_PASSWORD = resolveAdminPassword();
 
 type Client = SupabaseClient<Database>;
 const db: Client = createClient<Database>(URL, SECRET, {

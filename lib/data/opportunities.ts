@@ -98,15 +98,22 @@ async function session() {
   return { supabase, uid: user?.id ?? null };
 }
 
+/** `publishedOnly`: the members' view. RLS already hides unpublished rows
+ *  from members; the flag keeps an editor's /dashboard/locator identical to
+ *  what members see. */
+export type ReadOptions = { publishedOnly?: boolean };
+
 /** One kind's rows. Internships: deadline_on asc nulls last; dated kinds:
  *  starts_on asc nulls last; then created_at desc. */
-export async function listOpportunities(kind: OpportunityKind): Promise<OpportunityWithCheck[]> {
+export async function listOpportunities(
+  kind: OpportunityKind,
+  { publishedOnly = false }: ReadOptions = {},
+): Promise<OpportunityWithCheck[]> {
   const { supabase, uid } = await session();
   const dateCol = kind === "internship" ? "deadline_on" : "starts_on";
-  const { data, error } = await supabase
-    .from("opportunities")
-    .select(SELECT)
-    .eq("kind", kind)
+  let q = supabase.from("opportunities").select(SELECT).eq("kind", kind);
+  if (publishedOnly) q = q.eq("published", true);
+  const { data, error } = await q
     .order(dateCol, { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false })
     .order("id");
@@ -114,10 +121,15 @@ export async function listOpportunities(kind: OpportunityKind): Promise<Opportun
   return (data as unknown as OpportunityRowWithCheck[]).map((r) => withCheck(r, uid));
 }
 
-export async function getOpportunity(id: string): Promise<OpportunityWithCheck | null> {
+export async function getOpportunity(
+  id: string,
+  { publishedOnly = false }: ReadOptions = {},
+): Promise<OpportunityWithCheck | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const { supabase, uid } = await session();
-  const { data, error } = await supabase.from("opportunities").select(SELECT).eq("id", id).maybeSingle();
+  let q = supabase.from("opportunities").select(SELECT).eq("id", id);
+  if (publishedOnly) q = q.eq("published", true);
+  const { data, error } = await q.maybeSingle();
   if (error) throw new Error(`getOpportunity: ${error.message}`);
   return data ? withCheck(data as unknown as OpportunityRowWithCheck, uid) : null;
 }

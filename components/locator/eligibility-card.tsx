@@ -3,7 +3,11 @@
 /* "Your eligibility" rail card (docs/LOCATOR.md, "Eligibility card";
  * R-L07, R-L13, R-L14, R-L15). States: not configured, no profile, idle,
  * checking, result, error. The result is persisted by the action, so a
- * reload shows the same card. No modal, no toast, no progress ring. */
+ * reload shows the same card. No modal, no toast, no progress ring.
+ *
+ * `mode` picks the audience: "admin" (default) links to the editors'
+ * Locator profile and names the env var's doc; "member" links to
+ * /dashboard/locator/profile and keeps the not-configured line plain. */
 
 import { Check, CircleCheck, CircleHelp, CircleX, X, type LucideIcon } from "lucide-react";
 import Link from "next/link";
@@ -13,7 +17,7 @@ import { RailCard } from "@/components/admin/edit-layout";
 import { Button } from "@/components/forms/button";
 import { TimeAgo } from "@/components/forms/time-ago";
 import { checkEligibility } from "@/lib/actions/locator-ai";
-import { VERDICT_LABELS } from "@/lib/data/locator";
+import { type LocatorMode, profilePath, VERDICT_LABELS } from "@/lib/data/locator";
 import type { EligibilityCheck, EligibilityVerdict } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +35,8 @@ export interface EligibilityCardProps {
   currentHash: string | null;
   aiConfigured: boolean;
   hasProfile: boolean;
+  /** Editors' or members' screens (links and copy). Default "admin". */
+  mode?: LocatorMode;
 }
 
 function GlyphList({
@@ -60,16 +66,31 @@ function GlyphList({
   );
 }
 
-const PROFILE_LINE = (
-  <>
-    <p className="text-sm text-ink-muted">Fill in your Locator profile so the check knows your year, major and goals.</p>
-    <Link href="/admin/locator/profile" className="text-sm text-ink underline underline-offset-4 hover:text-accent-text">
-      Locator profile →
-    </Link>
-  </>
-);
+const NOT_CONFIGURED: Record<LocatorMode, string> = {
+  admin: "AI checks need the club’s Anthropic API key on the server. See docs/LOCATOR.md.",
+  member: "AI eligibility checks aren’t set up on this site yet. Ask the e-board.",
+};
 
-export function EligibilityCard({ opportunityId, initial, currentHash, aiConfigured, hasProfile }: EligibilityCardProps) {
+function ProfileLine({ href }: { href: string }) {
+  return (
+    <>
+      <p className="text-sm text-ink-muted">Fill in your Locator profile so the check knows your year, major and goals.</p>
+      <Link href={href} className="text-sm text-ink underline underline-offset-4 hover:text-accent-text">
+        Locator profile →
+      </Link>
+    </>
+  );
+}
+
+export function EligibilityCard({
+  opportunityId,
+  initial,
+  currentHash,
+  aiConfigured,
+  hasProfile,
+  mode = "admin",
+}: EligibilityCardProps) {
+  const profileHref = profilePath(mode);
   const [result, setResult] = React.useState<EligibilityCheck | null>(initial);
   const [error, setError] = React.useState<string | null>(null);
   const [needsProfile, setNeedsProfile] = React.useState(!hasProfile);
@@ -79,11 +100,17 @@ export function EligibilityCard({ opportunityId, initial, currentHash, aiConfigu
   if (!aiConfigured) {
     return (
       <RailCard title="Your eligibility">
-        <p className="text-sm text-ink-muted">AI checks need the club&apos;s Anthropic API key on the server. See docs/LOCATOR.md.</p>
+        <p className="text-sm text-ink-muted">{NOT_CONFIGURED[mode]}</p>
       </RailCard>
     );
   }
-  if (needsProfile) return <RailCard title="Your eligibility">{PROFILE_LINE}</RailCard>;
+  if (needsProfile) {
+    return (
+      <RailCard title="Your eligibility">
+        <ProfileLine href={profileHref} />
+      </RailCard>
+    );
+  }
 
   const run = () => {
     setError(null);
@@ -143,7 +170,7 @@ export function EligibilityCard({ opportunityId, initial, currentHash, aiConfigu
       {incomplete ? (
         <p className="text-xs text-ink-muted">
           Your profile is missing your major, year or goals, so this check is less sure.{" "}
-          <Link href="/admin/locator/profile" className="underline underline-offset-4 hover:text-ink">
+          <Link href={profileHref} className="underline underline-offset-4 hover:text-ink">
             Locator profile
           </Link>
         </p>

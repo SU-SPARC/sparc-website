@@ -7,10 +7,16 @@
  * then Undated, then Past. The ⋯ menu runs the eligibility check, marks the
  * listing verified, publishes, and deletes through a ConfirmDialog.
  *
+ * `mode="member"` is the read-only list under /dashboard/locator
+ * (docs/LOCATOR.md, "Members view"): no New button, no Published / Hidden
+ * chips or state pills, rows link to the member detail page, and the ⋯ menu
+ * keeps only "View posting" and "Check my eligibility".
+ *
  * `today` comes from the server (America/New_York) so grouping and
  * "Closing soon" match the server render. */
 
 import { CalendarDays } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
@@ -34,8 +40,10 @@ import {
   formatDateRange,
   KIND_CONFIG,
   kindPath,
+  type LocatorMode,
   monthKey,
   monthLabel,
+  profilePath,
   rowFilterKeys,
   TERM_LABELS,
   VERDICT_LABELS,
@@ -58,9 +66,12 @@ export interface LocatorListProps {
   today: DateOnly;
   notice?: string;
   aiConfigured: boolean;
+  /** "admin" (default): the editors' list. "member": read-only under /dashboard/locator. */
+  mode?: LocatorMode;
 }
 
 type Section = { key: string; label: string; rows: OpportunityWithCheck[]; past?: boolean };
+type CheckError = { code: string; error: string };
 
 /** Upcoming/ongoing by month, then Undated (newest first), then Past (most recent first). */
 function groupByMonth(rows: OpportunityWithCheck[], today: DateOnly): Section[] {
@@ -106,25 +117,31 @@ function omit<T>(map: Record<string, T>, id: string): Record<string, T> {
   return next;
 }
 
-function errorText(code: string, error: string): string {
+function errorText({ code, error }: CheckError): string {
   return code === "refused" ? "The AI declined to assess this listing." : error;
 }
 
-export function LocatorList({ kind, rows, today, notice, aiConfigured }: LocatorListProps) {
+export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "admin" }: LocatorListProps) {
   const cfg = KIND_CONFIG[kind];
+  const member = mode === "member";
+  const base = kindPath(kind, mode);
   const router = useRouter();
   const [query, setQuery] = React.useState("");
   const [filter, setFilter] = React.useState("all");
   const [deleting, setDeleting] = React.useState<OpportunityWithCheck | null>(null);
   const [checking, setChecking] = React.useState<Record<string, boolean>>({});
-  const [checkErrors, setCheckErrors] = React.useState<Record<string, string>>({});
+  const [checkErrors, setCheckErrors] = React.useState<Record<string, CheckError>>({});
   const [, startTransition] = React.useTransition();
 
   const keysById = React.useMemo(() => new Map(rows.map((r) => [r.id, rowFilterKeys(r, today)])), [rows, today]);
   const filters = [
     { key: "all", label: "All" },
-    { key: "published", label: "Published" },
-    { key: "hidden", label: "Hidden" },
+    ...(member
+      ? []
+      : [
+          { key: "published", label: "Published" },
+          { key: "hidden", label: "Hidden" },
+        ]),
     ...cfg.filters,
   ];
   const matchesFilter = (r: OpportunityWithCheck, key: string) =>
@@ -145,7 +162,7 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured }: Locator
     startTransition(async () => {
       const res = await checkEligibility(id);
       setChecking((c) => omit(c, id));
-      if (!res.ok) setCheckErrors((e) => ({ ...e, [id]: errorText(res.code, res.error) }));
+      if (!res.ok) setCheckErrors((e) => ({ ...e, [id]: { code: res.code, error: res.error } }));
       router.refresh();
     });
   };
@@ -162,18 +179,23 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured }: Locator
     const err = checkErrors[r.id];
     const labels = kind === "internship" ? r.internship_terms.map((t) => TERM_LABELS[t]) : [AREA_LABELS[r.area]];
 
+    const editorItems: ActionMenuItem[] = member
+      ? []
+      : [
+          { label: "Mark verified today", onSelect: () => startTransition(() => markOpportunityVerified(r.id)) },
+          {
+            label: r.published ? "Unpublish" : "Publish",
+            onSelect: () => startTransition(() => setOpportunityPublished(r.id, !r.published)),
+          },
+          { type: "divider" },
+          { label: "Delete…", tone: "danger", onSelect: () => setDeleting(r) },
+        ];
     const items: ActionMenuItem[] = [
       { label: "View posting", href: r.url, external: true },
       ...(aiConfigured
         ? [{ label: busy ? "Checking…" : "Check my eligibility", disabled: busy, onSelect: () => runCheck(r.id) }]
         : []),
-      { label: "Mark verified today", onSelect: () => startTransition(() => markOpportunityVerified(r.id)) },
-      {
-        label: r.published ? "Unpublish" : "Publish",
-        onSelect: () => startTransition(() => setOpportunityPublished(r.id, !r.published)),
-      },
-      { type: "divider" },
-      { label: "Delete…", tone: "danger", onSelect: () => setDeleting(r) },
+      ...editorItems,
     ];
 
     return (
@@ -181,7 +203,7 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured }: Locator
         key={r.id}
         thumb={kind === "internship" ? <ListThumb name={r.organizer} /> : <DateBlock date={r.starts_on} />}
         title={past ? <span className="text-ink-muted">{r.title}</span> : r.title}
-        href={`${kindPath(kind)}/${r.id}`}
+        href={`${base}/${r.id}`}
         meta={
           <>
             {metaText}
@@ -197,7 +219,15 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured }: Locator
               </span>
             ) : err ? (
               <span role="alert" className="block whitespace-normal text-danger">
-                {err}
+                {errorText(err)}
+                {err.code === "no_profile" ? (
+                  <>
+                    {" "}
+                    <Link href={profilePath(mode)} className="underline underline-offset-4 hover:text-ink">
+                      Locator profile
+                    </Link>
+                  </>
+                ) : null}
               </span>
             ) : null}
           </>
@@ -221,7 +251,7 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured }: Locator
             ),
           },
         ]}
-        state={<StatePill published={r.published} />}
+        state={member ? undefined : <StatePill published={r.published} />}
         controls={<ActionMenu label={`Actions for ${r.title}`} items={items} />}
       />
     );
@@ -231,7 +261,7 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured }: Locator
     { label: kind === "internship" ? "Company" : "Date", srOnly: true },
     { label: cfg.noun.charAt(0).toUpperCase() + cfg.noun.slice(1) },
     { label: "Details" },
-    { label: "Status" },
+    ...(member ? [] : [{ label: "Status" }]),
     { label: "Actions", srOnly: true, end: true },
   ];
 
@@ -242,10 +272,12 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured }: Locator
           {cfg.label}
           <span className="text-base font-normal text-ink-muted tabular-nums">{rows.length}</span>
         </h1>
-        <ButtonLink href={`${kindPath(kind)}/new`} variant="primary">
-          <span className="sm:hidden">New</span>
-          <span className="max-sm:hidden">New {cfg.noun}</span>
-        </ButtonLink>
+        {member ? null : (
+          <ButtonLink href={`${base}/new`} variant="primary">
+            <span className="sm:hidden">New</span>
+            <span className="max-sm:hidden">New {cfg.noun}</span>
+          </ButtonLink>
+        )}
       </header>
 
       {rows.length > 0 ? (
@@ -287,12 +319,14 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured }: Locator
         <EmptyState
           title={`No ${cfg.plural} yet.`}
           action={
-            <ButtonLink href={`${kindPath(kind)}/new`} variant="outline">
-              New {cfg.noun}
-            </ButtonLink>
+            member ? undefined : (
+              <ButtonLink href={`${base}/new`} variant="outline">
+                New {cfg.noun}
+              </ButtonLink>
+            )
           }
         >
-          <p>{cfg.purpose}</p>
+          <p>{member ? `The e-board hasn't listed any ${cfg.plural} yet. Check back soon.` : cfg.purpose}</p>
           <div className="mt-3 flex justify-center">
             <SearchElsewhere kind={kind} query="" />
           </div>
@@ -329,20 +363,22 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured }: Locator
         </div>
       )}
 
-      <ConfirmDialog
-        open={deleting !== null && rows.some((r) => r.id === deleting.id)}
-        onOpenChange={(o) => {
-          if (!o) setDeleting(null);
-        }}
-        title={deleting ? `Delete ${deleting.title}?` : ""}
-        confirmLabel={`Delete ${cfg.noun}`}
-        pendingLabel="Deleting…"
-        onConfirm={async () => {
-          if (deleting) await deleteOpportunity(deleting.id);
-        }}
-      >
-        <p>Removes this {cfg.noun} from Locator. Eligibility checks for it are removed too. This can&apos;t be undone.</p>
-      </ConfirmDialog>
+      {member ? null : (
+        <ConfirmDialog
+          open={deleting !== null && rows.some((r) => r.id === deleting.id)}
+          onOpenChange={(o) => {
+            if (!o) setDeleting(null);
+          }}
+          title={deleting ? `Delete ${deleting.title}?` : ""}
+          confirmLabel={`Delete ${cfg.noun}`}
+          pendingLabel="Deleting…"
+          onConfirm={async () => {
+            if (deleting) await deleteOpportunity(deleting.id);
+          }}
+        >
+          <p>Removes this {cfg.noun} from Locator. Eligibility checks for it are removed too. This can&apos;t be undone.</p>
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

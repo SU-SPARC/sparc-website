@@ -5,8 +5,10 @@ import { z } from "zod";
 import { AI_NOT_CONFIGURED_CHECK, AI_NOT_CONFIGURED_IMPORT, aiConfigured, LOCATOR_MODEL } from "@/lib/ai/client";
 import { fetchPageText, FetchPageError } from "@/lib/ai/fetch-page";
 import { extractOpportunity, inputsHash, LocatorAiError, runEligibilityCheck } from "@/lib/ai/locator";
+import { requireUser } from "@/lib/auth";
 import { getCareerProfile, getOpportunity } from "@/lib/data/opportunities";
 import type { EligibilityCheck } from "@/lib/data/types";
+import { createClient } from "@/lib/supabase/server";
 
 import { editorSession } from "./content-helpers";
 import { ok, zodFail } from "./form-data";
@@ -16,8 +18,12 @@ export type EligibilityActionResult =
   | { ok: true; check: EligibilityCheck; profileComplete: boolean }
   | { ok: false; code: "not_configured" | "no_profile" | "refused" | "rate_limited" | "failed"; error: string };
 
+/** Any signed-in account: the check reads the caller's own profile and a
+ *  listing RLS lets them see (members: published rows only), and writes
+ *  their own eligibility_checks row. Import stays editor-only below. */
 export async function checkEligibility(opportunityId: string): Promise<EligibilityActionResult> {
-  const { current, supabase } = await editorSession();
+  const current = await requireUser("/dashboard/locator");
+  const supabase = await createClient();
   try {
     const found = await getOpportunity(opportunityId);
     if (!found) return { ok: false, code: "failed", error: "Listing not found." };

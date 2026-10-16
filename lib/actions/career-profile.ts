@@ -61,7 +61,7 @@ const CareerProfileShape = z.object({
 
 /** Upserts the caller's own Locator profile (RLS: own row only). */
 export async function saveCareerProfile(_prev: FormState, fd: FormData): Promise<FormState> {
-  const { user } = await requireUser("/admin/locator/profile");
+  const { user } = await requireUser("/dashboard/locator/profile");
   const parsed = CareerProfileShape.safeParse(formObject(fd));
   if (!parsed.success) return zodFail(parsed.error);
   const supabase = await createClient();
@@ -70,5 +70,6 @@ export async function saveCareerProfile(_prev: FormState, fd: FormData): Promise
     .upsert({ profile_id: user.id, ...parsed.data }, { onConflict: "profile_id" });
   if (error) return { error: `Couldn't save: ${error.message}` };
   revalidatePath("/admin/locator", "layout");
+  revalidatePath("/dashboard/locator", "layout");
   return ok();
 }

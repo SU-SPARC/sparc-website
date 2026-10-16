@@ -141,9 +141,20 @@ export function kindFromSlug(slug: string): OpportunityKind | null {
   return BY_SLUG.get(slug) ?? null;
 }
 
-/** "/admin/locator/internships" */
-export function kindPath(kind: OpportunityKind): string {
-  return `/admin/locator/${KIND_CONFIG[kind].slug}`;
+/** Whose screens: the editors' /admin/locator or the members' read-only
+ *  /dashboard/locator (docs/LOCATOR.md, "Members view"). */
+export type LocatorMode = "admin" | "member";
+
+const LOCATOR_BASE: Record<LocatorMode, string> = { admin: "/admin/locator", member: "/dashboard/locator" };
+
+/** "/admin/locator/internships", or "/dashboard/locator/internships" for members. */
+export function kindPath(kind: OpportunityKind, mode: LocatorMode = "admin"): string {
+  return `${LOCATOR_BASE[mode]}/${KIND_CONFIG[kind].slug}`;
+}
+
+/** "/admin/locator/profile", or "/dashboard/locator/profile" for members. */
+export function profilePath(mode: LocatorMode = "admin"): string {
+  return `${LOCATOR_BASE[mode]}/profile`;
 }
 
 const SITE_BY_HOST: [RegExp, string][] = [

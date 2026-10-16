@@ -8,7 +8,8 @@ wins on layout; token rules in `app/globals.css` win over everything.
 ## What it is
 
 Four screens under `/admin/locator` where the e-board collects and searches
-opportunities for members:
+opportunities for members, and the same four lists read-only under
+`/dashboard/locator` for every signed-in member ("Members view" below):
 
 | screen | URL | what goes in it |
 |---|---|---|
@@ -45,8 +46,8 @@ query), applying from the site, email digests, a public page.
 | role | Locator |
 |---|---|
 | anon | nothing (published rows are readable by RLS, but no page exists) |
-| member | no access to `/admin` (existing 403). May own a `career_profiles` row; unused in v1 |
-| editor / admin | all four screens: create, edit, publish, verify, delete; AI import and eligibility checks against their **own** profile |
+| member | read-only `/dashboard/locator`: the four lists (published rows only), each listing's page, eligibility checks against their **own** profile, and their own Locator profile at `/dashboard/locator/profile`. No `/admin` (existing 403) |
+| editor / admin | all four `/admin/locator` screens: create, edit, publish, verify, delete; AI import and eligibility checks against their **own** profile. `/dashboard/locator` works for them too and shows exactly what members see |
 
 ## Schema: `supabase/migrations/0003_locator.sql`
 
@@ -194,7 +195,9 @@ export type KindConfig = {
 };
 export const KIND_CONFIG: Record<OpportunityKind, KindConfig>;
 export function kindFromSlug(slug: string): OpportunityKind | null;
-export function kindPath(kind: OpportunityKind): string;            // "/admin/locator/internships"
+export type LocatorMode = "admin" | "member";                         // whose screens: /admin/locator or /dashboard/locator
+export function kindPath(kind: OpportunityKind, mode?: LocatorMode): string;   // "/admin/locator/internships"; mode "member" → "/dashboard/locator/internships"
+export function profilePath(mode?: LocatorMode): string;              // "/admin/locator/profile" | "/dashboard/locator/profile"
 export const AREA_LABELS: Record<OpportunityArea, string>;          // Suffolk · Boston · Outside Boston · Online
 export const FORMAT_LABELS: Record<OpportunityFormat, string>;      // In person · Online · Hybrid
 export const TERM_LABELS: Record<InternshipTerm, string>;           // Co-op · Semester part-time · Summer · Winter
@@ -217,10 +220,11 @@ and the embedded check is the caller's own (RLS).
 
 ```ts
 export type OpportunityWithCheck = Opportunity & { check: EligibilityCheck | null };
-export async function listOpportunities(kind: OpportunityKind): Promise<OpportunityWithCheck[]>;
+export type ReadOptions = { publishedOnly?: boolean };               // the members' view adds .eq("published", true)
+export async function listOpportunities(kind: OpportunityKind, opts?: ReadOptions): Promise<OpportunityWithCheck[]>;
   // internships: deadline_on asc nulls last, then created_at desc
   // dated kinds: starts_on asc nulls last, then created_at desc (the UI regroups: upcoming by month, undated, past)
-export async function getOpportunity(id: string): Promise<OpportunityWithCheck | null>;
+export async function getOpportunity(id: string, opts?: ReadOptions): Promise<OpportunityWithCheck | null>;
 export async function getCareerProfile(): Promise<CareerProfile | null>;     // the caller's own row
 export async function countOpportunities(): Promise<Record<OpportunityKind, { total: number; hidden: number }>>;
 ```
@@ -256,7 +260,10 @@ saveCareerProfile(prev: FormState, fd: FormData): Promise<FormState>
   // upsert own row (profile_id = user id) → ok()
 ```
 
-`lib/actions/locator-ai.ts` ("use server"), `requireEditor()` first:
+`lib/actions/locator-ai.ts` ("use server"): `checkEligibility` is
+`requireUser()` (any signed-in account, so members can run it from
+`/dashboard/locator`; RLS limits them to published listings and their own
+check row), `importOpportunityFromUrl` is `editorSession()`:
 
 ```ts
 export type EligibilityActionResult =
@@ -304,13 +311,23 @@ app/(admin)/admin/locator/[kind]/loading.tsx         header + 5 static rows (bri
 app/(admin)/admin/locator/[kind]/error.tsx           "Couldn't load …" + Try again
 app/(admin)/admin/locator/[kind]/new/page.tsx        ImportFromUrl + OpportunityForm
 app/(admin)/admin/locator/[kind]/[id]/page.tsx       OpportunityForm + EligibilityCard rail + DangerZone
-components/locator/locator-list.tsx                  client: search, chips, grouping, rows, ⋯ menu, delete dialog
+app/(members)/dashboard/locator/layout.tsx           members: "Dashboard / Locator" line + LocatorMemberNav tabs
+app/(members)/dashboard/locator/page.tsx             redirect("/dashboard/locator/internships")
+app/(members)/dashboard/locator/profile/page.tsx     members: "Your Locator profile" (CareerProfileForm), requireUser
+app/(members)/dashboard/locator/[kind]/page.tsx      members: LocatorList mode="member", listOpportunities(kind, { publishedOnly: true })
+app/(members)/dashboard/locator/[kind]/loading.tsx   same skeleton as the admin list
+app/(members)/dashboard/locator/[kind]/error.tsx     same error body as the admin list
+app/(members)/dashboard/locator/[kind]/[id]/page.tsx members: OpportunityDetail + EligibilityCard rail (mode="member"); 404 unless published
+components/locator/locator-list.tsx                  client: search, chips, grouping, rows, ⋯ menu, delete dialog; `mode` prop
 components/locator/opportunity-form.tsx              client: the edit form (EditForm + EditColumns)
+components/locator/opportunity-detail.tsx            read-only facts for the members' listing page
+components/locator/member-nav.tsx                    client: the members' kind tabs + "My Locator profile"
 components/locator/import-from-url.tsx               client: URL field + Import, fills the form
-components/locator/eligibility-card.tsx              client: rail card, all states below
-components/locator/career-profile-form.tsx           client
+components/locator/eligibility-card.tsx              client: rail card, all states below; `mode` prop
+components/locator/career-profile-form.tsx           client (both profile pages)
 components/locator/search-elsewhere.tsx              outbound links row
 components/admin/admin-sidebar.tsx                   new group "Locator" + SECTION_NAMES entries
+components/admin/members-topbar.tsx                  "Locator" between Projects and Profile
 app/(admin)/admin/page.tsx                           four Locator rows in the counts table (countOpportunities)
 ```
 
@@ -370,8 +387,8 @@ New screen: `EditHeader` title "New internship", then **ImportFromUrl** above th
 
 | state | shows |
 |---|---|
-| not configured | one line "AI checks need the club’s Anthropic API key on the server. See docs/LOCATOR.md." (the env var name itself may appear only in `lib/ai/client.ts`; `verify.sh` enforces it) |
-| no profile | "Fill in your Locator profile so the check knows your year, major and goals." + text link "Locator profile →" (`/admin/locator/profile`) |
+| not configured | one line "AI checks need the club’s Anthropic API key on the server. See docs/LOCATOR.md." (the env var name itself may appear only in `lib/ai/client.ts`; `verify.sh` enforces it). `mode="member"`: "AI eligibility checks aren’t set up on this site yet. Ask the e-board." |
+| no profile | "Fill in your Locator profile so the check knows your year, major and goals." + text link "Locator profile →" (`profilePath(mode)`: `/admin/locator/profile`, or `/dashboard/locator/profile` for members) |
 | idle | outline button "Check my eligibility" + `text-xs text-ink-muted` "Uses your Locator profile and this listing. Takes a few seconds." |
 | checking | button disabled, label "Checking…", `aria-live="polite"` |
 | result | verdict line: icon + word (`CircleCheck` + "Eligible" `text-success`; `CircleCheck` + "Likely eligible" `text-ink`; `CircleHelp` + "Unclear" `text-warning`; `CircleX` + "Not eligible" `text-danger`), then "Confidence: medium" `text-xs`. Lists with a leading glyph per line (R-L13, R-L14): reasons (`Check` 14px), blockers (`X` 14px `text-danger`), unknowns (`CircleHelp` 14px `text-warning`), next steps (numbered). "Career fit" line: "4/5" `tabular-nums` + `fit_note`. Footer: `<time>` "Checked 2d ago" (`TimeAgo`) + text button "Re-check". When `inputs_hash` differs from the current hash (the listing or the profile changed since), a `text-xs text-warning` line "The listing or your profile changed since this check." |
@@ -382,6 +399,44 @@ No modals, no toasts, no progress rings (brief §12). The result is persisted, s
 ## Locator profile (`/admin/locator/profile`)
 
 Single column `max-w-text`, `EditForm` → `saveCareerProfile`. One `FormSection` "About you": Major, Minor (optional), Degree level (`Select`), Expected graduation year (number), Skills (comma), Interests (comma), Career goals (Textarea, helper "What roles or fields you're aiming for. The eligibility check scores fit against this."), Availability and constraints (Textarea, helper "Hours per week, travel, terms you can work."), Work authorization (`Select`, default "Prefer not to say", helper "Only you can see this. It's used so the check can read sponsorship requirements."). Rail: `RailCard` "Privacy": "Your Locator profile is readable only by you. Editors and admins can't see it." Save bar as brief §3.
+
+## Members view (`/dashboard/locator`)
+
+Every signed-in account, member included, gets the same four lists
+read-only inside the members shell (brief §6; "Locator" sits between
+Projects and Profile in the top bar). Editors keep `/admin/locator` for
+editing; `/dashboard/locator` shows them exactly what members see.
+
+- **Shell** (`app/(members)/dashboard/locator/layout.tsx`): a "Dashboard /
+  Locator" line, then `LocatorMemberNav`: Internships · Conferences ·
+  Networking · Hackathons · My Locator profile as a tab row (kinds match by
+  prefix, the profile exactly; the top bar's active style). Each page renders
+  its own `h1` below.
+- **Lists** (`/dashboard/locator/<kind>`): `LocatorList mode="member"` over
+  `listOpportunities(kind, { publishedOnly: true })`. Differences from the
+  admin list: no "New" button, no Published / Hidden chips or state pills, no
+  Status column, the ⋯ menu keeps "View posting ↗" and "Check my eligibility"
+  (when `aiConfigured()`), rows link to the member listing page, the empty
+  state reads "The e-board hasn't listed any internships yet. Check back
+  soon." with the "Search elsewhere" links and no action. A `no_profile`
+  check error links to `/dashboard/locator/profile`.
+- **Listing** (`/dashboard/locator/<kind>/<id>`): header "Internships /
+  Wayfair SWE Intern", a primary "View posting ↗" button (new tab), the
+  organizer line (linked to `organizer_url` when set). `EditColumns` with
+  `OpportunityDetail` in the main column: Overview (summary, description,
+  pills for terms or area, posting site, tags), Who can apply (`eligibility`
+  text, else "The listing doesn't say…"), When and where (`dl`: Dates,
+  deadline with "Closing soon" / "Passed", Format, Location, Pay or Cost,
+  Terms), then a `text-xs` freshness line from `verified_on`. Rail:
+  `EligibilityCard mode="member"`. `getOpportunity(id, { publishedOnly:
+  true })`, so an unpublished id is a 404 for everyone.
+- **Profile** (`/dashboard/locator/profile`): `CareerProfileForm`, same as
+  the admin page; `saveCareerProfile` revalidates both `/admin/locator` and
+  `/dashboard/locator`.
+- **Actions**: `checkEligibility` is `requireUser()`; the opportunity read
+  goes through RLS, so a member can only check a published listing.
+  `importOpportunityFromUrl` and every `lib/actions/opportunities.ts` action
+  stay editor-only.
 
 ## Seed and scripts
 

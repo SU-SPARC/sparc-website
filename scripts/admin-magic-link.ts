@@ -38,22 +38,29 @@ const admin = createClient(url, key, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
 });
 
-const { data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email });
-if (error) {
-  console.error(`generateLink: ${error.message}`);
-  process.exit(1);
+async function main() {
+  const { data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email: email! });
+  if (error) {
+    console.error(`generateLink: ${error.message}`);
+    process.exit(1);
+  }
+
+  const tokenHash = data.properties?.hashed_token;
+  if (!tokenHash) {
+    console.error("No token returned; does the account exist?");
+    process.exit(1);
+  }
+
+  const link = `${site}/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink&next=${encodeURIComponent("/dashboard/profile")}`;
+  console.log("");
+  console.log(`One-time sign-in link for ${email} (works once, expires in about an hour):`);
+  console.log("");
+  console.log(link);
+  console.log("");
+  console.log("Open it in a browser, then set a new password on the profile page.");
 }
 
-const tokenHash = data.properties?.hashed_token;
-if (!tokenHash) {
-  console.error("No token returned; does the account exist?");
+main().catch((err) => {
+  console.error(err instanceof Error ? err.message : String(err));
   process.exit(1);
-}
-
-const link = `${site}/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=magiclink&next=${encodeURIComponent("/dashboard/profile")}`;
-console.log("");
-console.log(`One-time sign-in link for ${email} (works once, expires in about an hour):`);
-console.log("");
-console.log(link);
-console.log("");
-console.log("Open it in a browser, then set a new password on the profile page.");
+});

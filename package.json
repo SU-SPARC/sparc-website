@@ -13,7 +13,8 @@
     "db:types": "supabase gen types --local --lang typescript > lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts",
     "rls:check": "tsx scripts/rls-check.ts",
     "seed": "tsx scripts/seed/index.ts",
-    "rls:check-pm": "tsx scripts/rls-check-pm.ts"
+    "rls:check-pm": "tsx scripts/rls-check-pm.ts",
+    "admin:magic-link": "tsx scripts/admin-magic-link.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

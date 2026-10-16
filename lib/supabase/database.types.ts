@@ -34,6 +34,135 @@ export type Database = {
   };
   public: {
     Tables: {
+      career_profiles: {
+        Row: {
+          constraints: string | null;
+          degree_level: string;
+          expected_grad_year: number | null;
+          goals: string | null;
+          interests: string[];
+          major: string | null;
+          minor: string | null;
+          profile_id: string;
+          skills: string[];
+          updated_at: string;
+          work_auth: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          constraints?: string | null;
+          degree_level?: string;
+          expected_grad_year?: number | null;
+          goals?: string | null;
+          interests?: string[];
+          major?: string | null;
+          minor?: string | null;
+          profile_id: string;
+          skills?: string[];
+          updated_at?: string;
+          work_auth?: string;
+        };
+        Update: {
+          constraints?: string | null;
+          degree_level?: string;
+          expected_grad_year?: number | null;
+          goals?: string | null;
+          interests?: string[];
+          major?: string | null;
+          minor?: string | null;
+          profile_id?: string;
+          skills?: string[];
+          updated_at?: string;
+          work_auth?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_profiles_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_profiles_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      eligibility_checks: {
+        Row: {
+          blockers: string[];
+          checked_at: string;
+          confidence: string;
+          fit_note: string | null;
+          fit_score: number | null;
+          inputs_hash: string;
+          model: string;
+          next_steps: string[];
+          opportunity_id: string;
+          profile_id: string;
+          reasons: string[];
+          unknowns: string[];
+          verdict: Database["public"]["Enums"]["eligibility_verdict"];
+        };
+        ComputedFields: never;
+        Insert: {
+          blockers?: string[];
+          checked_at?: string;
+          confidence: string;
+          fit_note?: string | null;
+          fit_score?: number | null;
+          inputs_hash: string;
+          model: string;
+          next_steps?: string[];
+          opportunity_id: string;
+          profile_id: string;
+          reasons?: string[];
+          unknowns?: string[];
+          verdict: Database["public"]["Enums"]["eligibility_verdict"];
+        };
+        Update: {
+          blockers?: string[];
+          checked_at?: string;
+          confidence?: string;
+          fit_note?: string | null;
+          fit_score?: number | null;
+          inputs_hash?: string;
+          model?: string;
+          next_steps?: string[];
+          opportunity_id?: string;
+          profile_id?: string;
+          reasons?: string[];
+          unknowns?: string[];
+          verdict?: Database["public"]["Enums"]["eligibility_verdict"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "eligibility_checks_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "eligibility_checks_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "eligibility_checks_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       events: {
         Row: {
           cover_media_id: string | null;
@@ -296,6 +425,115 @@ export type Database = {
             columns: ["media_id"];
             isOneToOne: false;
             referencedRelation: "media";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      opportunities: {
+        Row: {
+          area: Database["public"]["Enums"]["opportunity_area"];
+          created_at: string;
+          created_by: string | null;
+          dates_note: string | null;
+          deadline_on: string | null;
+          description: string | null;
+          eligibility: string | null;
+          ends_on: string | null;
+          format: Database["public"]["Enums"]["opportunity_format"];
+          id: string;
+          internship_terms: Database["public"]["Enums"]["internship_term"][];
+          kind: Database["public"]["Enums"]["opportunity_kind"];
+          location: string | null;
+          organizer: string;
+          organizer_blurb: string | null;
+          organizer_url: string | null;
+          pay: string | null;
+          posting_site: string | null;
+          published: boolean;
+          slug: string;
+          source: string;
+          starts_on: string | null;
+          summary: string | null;
+          tags: string[];
+          title: string;
+          updated_at: string;
+          url: string;
+          verified_on: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          area?: Database["public"]["Enums"]["opportunity_area"];
+          created_at?: string;
+          created_by?: string | null;
+          dates_note?: string | null;
+          deadline_on?: string | null;
+          description?: string | null;
+          eligibility?: string | null;
+          ends_on?: string | null;
+          format?: Database["public"]["Enums"]["opportunity_format"];
+          id?: string;
+          internship_terms?: Database["public"]["Enums"]["internship_term"][];
+          kind: Database["public"]["Enums"]["opportunity_kind"];
+          location?: string | null;
+          organizer: string;
+          organizer_blurb?: string | null;
+          organizer_url?: string | null;
+          pay?: string | null;
+          posting_site?: string | null;
+          published?: boolean;
+          slug: string;
+          source?: string;
+          starts_on?: string | null;
+          summary?: string | null;
+          tags?: string[];
+          title: string;
+          updated_at?: string;
+          url: string;
+          verified_on?: string | null;
+        };
+        Update: {
+          area?: Database["public"]["Enums"]["opportunity_area"];
+          created_at?: string;
+          created_by?: string | null;
+          dates_note?: string | null;
+          deadline_on?: string | null;
+          description?: string | null;
+          eligibility?: string | null;
+          ends_on?: string | null;
+          format?: Database["public"]["Enums"]["opportunity_format"];
+          id?: string;
+          internship_terms?: Database["public"]["Enums"]["internship_term"][];
+          kind?: Database["public"]["Enums"]["opportunity_kind"];
+          location?: string | null;
+          organizer?: string;
+          organizer_blurb?: string | null;
+          organizer_url?: string | null;
+          pay?: string | null;
+          posting_site?: string | null;
+          published?: boolean;
+          slug?: string;
+          source?: string;
+          starts_on?: string | null;
+          summary?: string | null;
+          tags?: string[];
+          title?: string;
+          updated_at?: string;
+          url?: string;
+          verified_on?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunities_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -964,8 +1202,14 @@ export type Database = {
       };
     };
     Enums: {
+      eligibility_verdict: "eligible" | "likely" | "unclear" | "not_eligible";
+      internship_term: "coop" | "semester_part_time" | "summer" | "winter";
       member_status: "current" | "alumni";
       methodology: "kanban" | "scrumban" | "scrum" | "safe";
+      opportunity_area: "suffolk" | "boston" | "outside_boston" | "online";
+      opportunity_format: "in_person" | "online" | "hybrid";
+      opportunity_kind:
+        "internship" | "conference" | "networking" | "hackathon";
       project_kind: "team" | "personal";
       project_status: "proposed" | "in_progress" | "completed" | "archived";
       supervisor_kind: "faculty" | "student";
@@ -1101,8 +1345,13 @@ export const Constants = {
   },
   public: {
     Enums: {
+      eligibility_verdict: ["eligible", "likely", "unclear", "not_eligible"],
+      internship_term: ["coop", "semester_part_time", "summer", "winter"],
       member_status: ["current", "alumni"],
       methodology: ["kanban", "scrumban", "scrum", "safe"],
+      opportunity_area: ["suffolk", "boston", "outside_boston", "online"],
+      opportunity_format: ["in_person", "online", "hybrid"],
+      opportunity_kind: ["internship", "conference", "networking", "hackathon"],
       project_kind: ["team", "personal"],
       project_status: ["proposed", "in_progress", "completed", "archived"],
       supervisor_kind: ["faculty", "student"],

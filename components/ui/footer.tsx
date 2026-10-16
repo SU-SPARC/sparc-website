@@ -17,6 +17,7 @@
  * No theme switcher here. That control belongs in the nav.
  */
 
+import { LogIn } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { FaDiscord, FaEnvelope, FaGithub, FaLinkedin } from "react-icons/fa";
@@ -416,13 +417,15 @@ const Footer = () => {
           >
             {EMAIL}
           </a>
-          {/* The e-board and members sign in here; deliberately small and
-              in the strip, not in the nav or the link list above. */}
+          {/* The e-board and members sign in here. A real button (the site's
+              quiet link-chip pattern, see /join) rather than a text link, so
+              it can be found; still in the strip, not in the nav. */}
           <Link
             href="/login"
-            className="text-label text-ink-muted transition-colors hover:text-accent-text"
+            className="lift inline-flex min-h-11 items-center gap-2 rounded-control border border-line bg-surface-1 px-4 py-2.5 text-sm text-ink transition-colors hover:border-line-strong"
             style={WIDTH_NORMAL}
           >
+            <LogIn aria-hidden="true" className="size-4" />
             Sign in
           </Link>
           {/* ink-muted, not ink-faint: this is 13px text, so it owes 4.5:1

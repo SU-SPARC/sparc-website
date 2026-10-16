@@ -417,17 +417,6 @@ const Footer = () => {
           >
             {EMAIL}
           </a>
-          {/* The e-board and members sign in here. A real button (the site's
-              quiet link-chip pattern, see /join) rather than a text link, so
-              it can be found; still in the strip, not in the nav. */}
-          <Link
-            href="/login"
-            className="lift inline-flex min-h-11 items-center gap-2 rounded-control border border-line bg-surface-1 px-4 py-2.5 text-sm text-ink transition-colors hover:border-line-strong"
-            style={WIDTH_NORMAL}
-          >
-            <LogIn aria-hidden="true" className="size-4" />
-            Sign in
-          </Link>
           {/* ink-muted, not ink-faint: this is 13px text, so it owes 4.5:1
               and ink-faint does not clear it — see micro-label.tsx. */}
           <p className="w-full text-label text-ink-muted" style={WIDTH_NORMAL}>
@@ -442,6 +431,20 @@ const Footer = () => {
           <p className="w-full text-label text-ink-muted" style={WIDTH_NORMAL}>
             Designed by Allan Nguyen
           </p>
+          {/* Member login: the last thing on every public page, on its own row
+              under the credits (client instruction, Oct 2026). A real button
+              (the site's quiet link-chip pattern, see /join) rather than a
+              text link, so it can be found; not in the nav. */}
+          <div className="mt-2 w-full border-t border-line pt-4">
+            <Link
+              href="/login"
+              className="lift inline-flex min-h-11 items-center gap-2 rounded-control border border-line bg-surface-1 px-4 py-2.5 text-sm text-ink transition-colors hover:border-line-strong"
+              style={WIDTH_NORMAL}
+            >
+              <LogIn aria-hidden="true" className="size-4" />
+              Member login
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

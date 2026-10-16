@@ -7,6 +7,8 @@ import Link from "next/link";
 import { MicroLabel } from "@/components/ui/micro-label";
 import { editorPage } from "@/lib/actions/queries";
 import { isAdminRole } from "@/lib/auth";
+import { KIND_CONFIG, KINDS, kindPath } from "@/lib/data/locator";
+import { countOpportunities } from "@/lib/data/opportunities";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Overview" };
@@ -36,6 +38,7 @@ export default async function AdminOverview() {
       ]),
     ),
   ]);
+  const locator = await countOpportunities();
   const accounts = isAdmin ? await supabase.from("profiles").select("id", { count: "exact", head: true }) : null;
   const pendingCount = pending.count ?? 0;
 
@@ -81,6 +84,17 @@ export default async function AdminOverview() {
                 </th>
                 <td className="py-2.5 text-right text-ink tabular-nums">{counts[i][0].count ?? 0}</td>
                 <td className="py-2.5 text-right text-ink-muted tabular-nums">{counts[i][1].count ?? 0}</td>
+              </tr>
+            ))}
+            {KINDS.map((k) => (
+              <tr key={k} className="border-t border-line">
+                <th scope="row" className="py-2.5 font-normal">
+                  <Link href={kindPath(k)} className="text-ink underline-offset-4 hover:underline">
+                    {KIND_CONFIG[k].label}
+                  </Link>
+                </th>
+                <td className="py-2.5 text-right text-ink tabular-nums">{locator[k].total}</td>
+                <td className="py-2.5 text-right text-ink-muted tabular-nums">{locator[k].hidden}</td>
               </tr>
             ))}
             {accounts ? (

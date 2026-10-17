@@ -138,10 +138,22 @@ export async function setOpportunityPublished(id: string, published: boolean): P
   revalidateSite();
 }
 
+/* Bookkeeping updates. The mark_editor_edit trigger (0004) stamps
+ * editor_edited_at only when an editor changes a descriptive column (summary,
+ * description, eligibility, tags, area, format, terms, dates note, organizer
+ * fields), so these plain updates leave the sync's ownership rules untouched. */
+
 /** verified_on = today in America/New_York. */
 export async function markOpportunityVerified(id: string): Promise<void> {
   const { supabase } = await editorSession();
   await supabase.from("opportunities").update({ verified_on: isoDateOnly(new Date()) }).eq("id", id);
+  revalidateSite();
+}
+
+/** reviewed_at = now, for a sync row an editor has looked at. */
+export async function markOpportunityReviewed(id: string): Promise<void> {
+  const { supabase } = await editorSession();
+  await supabase.from("opportunities").update({ reviewed_at: new Date().toISOString() }).eq("id", id);
   revalidateSite();
 }
 

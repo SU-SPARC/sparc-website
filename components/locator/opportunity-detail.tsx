@@ -1,15 +1,27 @@
 /* OpportunityDetail — the read-only listing members open from the list at
  * /dashboard/locator/<kind>/<id> (docs/LOCATOR.md, "Members view"). The
  * facts an editor types into OpportunityForm, laid out as text: Overview,
- * Who can apply, When and where, then a freshness line. The eligibility
+ * Who can apply, When and where, then a source line ("Source: Greenhouse",
+ * the posting link, "Closed <date>" once a sync stops seeing it) and a
+ * freshness line. Never Unreviewed, external ids or sync controls. The eligibility
  * card sits in the rail (the page passes it to EditColumns). Server-safe. */
 
+import { ArrowUpRight } from "lucide-react";
 import * as React from "react";
 
 import { FormSection } from "@/components/admin/edit-layout";
 import { Pill } from "@/components/ui/pill";
 import { formatDateOnly } from "@/lib/data/dates";
-import { AREA_LABELS, deadlineStatus, FORMAT_LABELS, formatDateRange, KIND_CONFIG, TERM_LABELS } from "@/lib/data/locator";
+import {
+  AREA_LABELS,
+  closedOnLabel,
+  deadlineStatus,
+  FORMAT_LABELS,
+  formatDateRange,
+  KIND_CONFIG,
+  sourceLabel,
+  TERM_LABELS,
+} from "@/lib/data/locator";
 import type { DateOnly, Opportunity } from "@/lib/data/types";
 
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
@@ -28,6 +40,7 @@ export function OpportunityDetail({ opportunity: o, today }: { opportunity: Oppo
   const deadline = deadlineStatus(o.deadline_on, today);
   const labels = internship ? o.internship_terms.map((t) => TERM_LABELS[t]) : [AREA_LABELS[o.area]];
   const chips = [...labels, ...(o.posting_site ? [o.posting_site] : []), ...o.tags];
+  const closedOn = closedOnLabel(o);
 
   return (
     <>
@@ -79,6 +92,21 @@ export function OpportunityDetail({ opportunity: o, today }: { opportunity: Oppo
           ) : null}
         </dl>
       </FormSection>
+
+      <p className="text-sm text-ink-muted">
+        Source: <span className="text-ink">{sourceLabel(o)}</span> ·{" "}
+        <a
+          href={o.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-ink underline-offset-4 hover:underline"
+        >
+          Posting
+          <ArrowUpRight aria-hidden="true" className="size-4 text-ink-muted" />
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
+        {closedOn ? <> · Closed {closedOn}</> : null}
+      </p>
 
       <p className="text-xs text-ink-muted">
         {o.verified_on ? <>The e-board last checked this listing on {formatDateOnly(o.verified_on)}.</> : <>The e-board hasn&apos;t re-checked this listing yet.</>}{" "}

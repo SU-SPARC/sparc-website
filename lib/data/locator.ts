@@ -2,7 +2,7 @@
  * No "server-only" here; client components import this module directly
  * (lib/data/index.ts is server-only). See docs/LOCATOR.md. */
 
-import { formatDateOnly, parseDateOnly } from "./dates";
+import { formatDateOnly, isoDateOnly, parseDateOnly } from "./dates";
 import type {
   DateOnly,
   EligibilityVerdict,
@@ -31,8 +31,9 @@ export type KindConfig = {
   purpose: string;
   /** false for internships (sorted by deadline); true for the event kinds (grouped by month) */
   dated: boolean;
-  /** the kind's own FilterChips, after All / Published / Hidden */
-  filters: { key: string; label: string }[];
+  /** the kind's own FilterChips, after All / Published / Hidden / Closed.
+   *  `editorOnly` chips (Unreviewed) never reach the members' list. */
+  filters: { key: string; label: string; editorOnly?: boolean }[];
 };
 
 export const AREA_LABELS: Record<OpportunityArea, string> = {
@@ -69,6 +70,33 @@ export const WORK_AUTH_LABELS: Record<WorkAuth, string> = {
   prefer_not_to_say: "Prefer not to say",
 };
 
+const UNREVIEWED_CHIP = { key: "unreviewed", label: "Unreviewed", editorOnly: true };
+
+/** The editors' Closed chip; the list puts it right after Hidden. */
+export const CLOSED_CHIP = { key: "closed", label: "Closed" };
+
+const SOURCE_LABELS: Record<Opportunity["source"], string> = {
+  seed: "Research",
+  import: "Import",
+  manual: "Manual",
+  sync: "Sync",
+};
+
+/** "Greenhouse", "Research (16 Oct 2026)", …; falls back on the source kind. */
+export function sourceLabel(o: Pick<Opportunity, "source" | "source_name">): string {
+  return o.source_name ?? SOURCE_LABELS[o.source];
+}
+
+/** A sync row no editor has looked at yet (and still open). */
+export function isUnreviewed(o: Pick<Opportunity, "source" | "reviewed_at" | "closed_at">): boolean {
+  return o.source === "sync" && !o.reviewed_at && !o.closed_at;
+}
+
+/** "Oct 20, 2026": the club-zone calendar date of `closed_at`, or null. */
+export function closedOnLabel(o: Pick<Opportunity, "closed_at">): string | null {
+  return o.closed_at ? formatDateOnly(isoDateOnly(new Date(o.closed_at))) : null;
+}
+
 export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
   internship: {
     kind: "internship",
@@ -84,6 +112,7 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
       { key: "summer", label: TERM_LABELS.summer },
       { key: "winter", label: TERM_LABELS.winter },
       { key: "closing_soon", label: "Closing soon" },
+      UNREVIEWED_CHIP,
     ],
   },
   conference: {
@@ -100,6 +129,7 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
       { key: "boston", label: AREA_LABELS.boston },
       { key: "online", label: AREA_LABELS.online },
       { key: "ieee", label: "IEEE" },
+      UNREVIEWED_CHIP,
     ],
   },
   networking: {
@@ -116,6 +146,7 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
       { key: "boston", label: AREA_LABELS.boston },
       { key: "outside_boston", label: AREA_LABELS.outside_boston },
       { key: "online", label: AREA_LABELS.online },
+      UNREVIEWED_CHIP,
     ],
   },
   hackathon: {
@@ -131,6 +162,7 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
       { key: "boston", label: AREA_LABELS.boston },
       { key: "outside_boston", label: AREA_LABELS.outside_boston },
       { key: "online", label: AREA_LABELS.online },
+      UNREVIEWED_CHIP,
     ],
   },
 };
@@ -245,7 +277,8 @@ export function monthLabel(key: string): string {
 }
 
 /** Every filter key the row matches: its terms, its area, 'upcoming' | 'past',
- *  'closing_soon', and 'ieee' when tagged. ('ongoing' counts as upcoming.) */
+ *  'closing_soon', 'ieee' when tagged, 'unreviewed' (open sync rows nobody
+ *  has reviewed) and 'closed'. ('ongoing' counts as upcoming.) */
 export function rowFilterKeys(o: Opportunity, today: DateOnly): string[] {
   const keys = new Set<string>(o.internship_terms);
   keys.add(o.area);
@@ -254,6 +287,8 @@ export function rowFilterKeys(o: Opportunity, today: DateOnly): string[] {
   if (ds === "past") keys.add("past");
   if (deadlineStatus(o.deadline_on, today) === "closing_soon") keys.add("closing_soon");
   if (o.tags.includes("ieee")) keys.add("ieee");
+  if (isUnreviewed(o)) keys.add("unreviewed");
+  if (o.closed_at) keys.add("closed");
   return [...keys];
 }
 

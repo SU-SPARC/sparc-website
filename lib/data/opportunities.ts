@@ -44,6 +44,15 @@ export function toOpportunity(row: OpportunityRow): Opportunity {
     published: row.published,
     created_at: row.created_at,
     updated_at: row.updated_at,
+    source_name: row.source_name,
+    source_url: row.source_url,
+    external_id: row.external_id,
+    posted_at: row.posted_at,
+    first_seen_at: row.first_seen_at,
+    last_seen_at: row.last_seen_at,
+    closed_at: row.closed_at,
+    reviewed_at: row.reviewed_at,
+    editor_edited_at: row.editor_edited_at,
   };
 }
 

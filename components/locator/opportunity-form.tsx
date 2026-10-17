@@ -3,7 +3,9 @@
 /* OpportunityForm — the Locator edit form (docs/LOCATOR.md, "Edit and New
  * screens"; brief §3). EditForm → saveOpportunity, EditColumns with the
  * rail: Status, the eligibility card (passed in by the edit page),
- * Verified, Record.
+ * Verified, the Source card (also passed in), Record. Sync rows carry a
+ * note under Basics on which fields the sync keeps refreshing
+ * (docs/LOCATOR-SYNC.md).
  *
  * Defaults come from the saved row, or from an imported draft on the New
  * screen. The parent remounts the form (key) when a new draft arrives, so
@@ -64,9 +66,11 @@ export interface OpportunityFormProps {
   draft?: OpportunityDraft | null;
   /** Rail block between Status and Verified (the eligibility card). */
   eligibility?: React.ReactNode;
+  /** Rail block under Verified (the Source card). */
+  source?: React.ReactNode;
 }
 
-export function OpportunityForm({ kind, opportunity: o, draft, eligibility }: OpportunityFormProps) {
+export function OpportunityForm({ kind, opportunity: o, draft, eligibility, source }: OpportunityFormProps) {
   const cfg = KIND_CONFIG[kind];
   const isNew = o === null;
   // Saved row first, then any field the imported draft found.
@@ -102,6 +106,7 @@ export function OpportunityForm({ kind, opportunity: o, draft, eligibility }: Op
             <PublishCard defaultPublished={o?.published ?? true} helperOn="Listed in Locator" />
             {eligibility}
             <VerifiedCard id={o?.id ?? null} verifiedOn={o?.verified_on ?? null} />
+            {source}
             <RecordCard createdAt={o?.created_at} updatedAt={o?.updated_at} />
           </>
         }
@@ -142,6 +147,12 @@ export function OpportunityForm({ kind, opportunity: o, draft, eligibility }: Op
           <Field label="Posting site" name="posting_site" optional helper="Filled from the URL when left empty.">
             <Input name="posting_site" value={postingSite} onChange={(e) => setPostingSite(e.target.value)} />
           </Field>
+          {o?.source === "sync" ? (
+            <p className="text-xs text-ink-muted">
+              Title, link, location, pay and dates follow the source on every sync. Everything else is yours once you
+              save.
+            </p>
+          ) : null}
         </FormSection>
 
         <FormSection title="Details">

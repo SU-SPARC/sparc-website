@@ -1,14 +1,17 @@
 /* Admin overview: pending requests first, then plain counts in a short
- * table (brief §12: no stat tiles, sparklines or trend arrows). */
+ * table, then one or two sentences on the Locator sync (brief §12: no stat
+ * tiles, sparklines or trend arrows). */
 
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { TimeAgo } from "@/components/forms/time-ago";
 import { MicroLabel } from "@/components/ui/micro-label";
 import { editorPage } from "@/lib/actions/queries";
 import { isAdminRole } from "@/lib/auth";
 import { KIND_CONFIG, KINDS, kindPath } from "@/lib/data/locator";
 import { countOpportunities } from "@/lib/data/opportunities";
+import { getLatestSyncSummary } from "@/lib/data/sync-runs";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Overview" };
@@ -38,7 +41,7 @@ export default async function AdminOverview() {
       ]),
     ),
   ]);
-  const locator = await countOpportunities();
+  const [locator, sync] = await Promise.all([countOpportunities(), getLatestSyncSummary()]);
   const accounts = isAdmin ? await supabase.from("profiles").select("id", { count: "exact", head: true }) : null;
   const pendingCount = pending.count ?? 0;
 
@@ -110,6 +113,31 @@ export default async function AdminOverview() {
             ) : null}
           </tbody>
         </table>
+      </section>
+
+      <section aria-labelledby="locator-sync" className="flex flex-col gap-2">
+        <MicroLabel as="h2" id="locator-sync">
+          Locator sync
+        </MicroLabel>
+        {sync ? (
+          <>
+            <p className="text-sm text-ink">
+              {sync.last_finished_at ? (
+                <>
+                  Last run <TimeAgo date={sync.last_finished_at} />
+                </>
+              ) : (
+                "Running now"
+              )}
+              : {sync.inserted} new, {sync.closed} closed.
+            </p>
+            {sync.failing.length ? (
+              <p className="text-sm text-warning">Failing: {sync.failing.join(", ")}.</p>
+            ) : null}
+          </>
+        ) : (
+          <p className="text-sm text-ink-muted">No sync has run yet.</p>
+        )}
       </section>
     </div>
   );

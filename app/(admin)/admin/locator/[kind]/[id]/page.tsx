@@ -7,6 +7,7 @@ import { DangerZone } from "@/components/admin/edit-client";
 import { StatusBanner } from "@/components/forms/status-banner";
 import { EligibilityCard } from "@/components/locator/eligibility-card";
 import { OpportunityForm } from "@/components/locator/opportunity-form";
+import { SourceCard } from "@/components/locator/source-card";
 import { deleteOpportunity } from "@/lib/actions/opportunities";
 import { editorPage } from "@/lib/actions/queries";
 import { aiConfigured, LOCATOR_MODEL } from "@/lib/ai/client";
@@ -82,6 +83,7 @@ export default async function EditOpportunityPage({
             hasProfile={profile !== null}
           />
         }
+        source={<SourceCard opportunity={opportunity} />}
       />
       <DangerZone
         noun={cfg.noun}

@@ -5,12 +5,15 @@
  * "Search elsewhere", the ?notice= banner, then rows: internships in one
  * table (deadline order from the data layer), dated kinds grouped by month,
  * then Undated, then Past. The ⋯ menu runs the eligibility check, marks the
- * listing verified, publishes, and deletes through a ConfirmDialog.
+ * listing verified (and a sync row reviewed), opens the source, publishes,
+ * and deletes through a ConfirmDialog. Meta names the source ("via
+ * Greenhouse"); closed rows say when (docs/LOCATOR-SYNC.md, phase 2).
  *
  * `mode="member"` is the read-only list under /dashboard/locator
  * (docs/LOCATOR.md, "Members view"): no New button, no Published / Hidden
- * chips or state pills, rows link to the member detail page, and the ⋯ menu
- * keeps only "View posting" and "Check my eligibility".
+ * chips or state pills, no Unreviewed / Closed, rows link to the member
+ * detail page, and the ⋯ menu keeps only "View posting" and "Check my
+ * eligibility".
  *
  * `today` comes from the server (America/New_York) so grouping and
  * "Closing soon" match the server render. */
@@ -31,13 +34,21 @@ import { FilterChip } from "@/components/ui/filter-chip";
 import { MicroLabel } from "@/components/ui/micro-label";
 import { Pill } from "@/components/ui/pill";
 import { checkEligibility } from "@/lib/actions/locator-ai";
-import { deleteOpportunity, markOpportunityVerified, setOpportunityPublished } from "@/lib/actions/opportunities";
+import {
+  deleteOpportunity,
+  markOpportunityReviewed,
+  markOpportunityVerified,
+  setOpportunityPublished,
+} from "@/lib/actions/opportunities";
 import { formatDateOnly, parseDateOnly } from "@/lib/data/dates";
 import {
   AREA_LABELS,
+  CLOSED_CHIP,
+  closedOnLabel,
   dateStatus,
   deadlineStatus,
   formatDateRange,
+  isUnreviewed,
   KIND_CONFIG,
   kindPath,
   type LocatorMode,
@@ -45,6 +56,7 @@ import {
   monthLabel,
   profilePath,
   rowFilterKeys,
+  sourceLabel,
   TERM_LABELS,
   VERDICT_LABELS,
 } from "@/lib/data/locator";
@@ -141,8 +153,9 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
       : [
           { key: "published", label: "Published" },
           { key: "hidden", label: "Hidden" },
+          CLOSED_CHIP,
         ]),
-    ...cfg.filters,
+    ...cfg.filters.filter((f) => !(member && f.editorOnly)),
   ];
   const matchesFilter = (r: OpportunityWithCheck, key: string) =>
     key === "all" ||
@@ -173,7 +186,11 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
       : r.deadline_on
         ? `Due ${formatDateOnly(r.deadline_on)}`
         : r.dates_note;
-    const metaText = [r.organizer, r.location, when].filter(Boolean).join(" · ");
+    const metaText = [r.organizer, r.location, when, member ? null : `via ${sourceLabel(r)}`]
+      .filter(Boolean)
+      .join(" · ");
+    const closedOn = member ? null : closedOnLabel(r);
+    const unreviewed = !member && isUnreviewed(r);
     const closingSoon = deadlineStatus(r.deadline_on, today) === "closing_soon";
     const busy = checking[r.id];
     const err = checkErrors[r.id];
@@ -182,7 +199,20 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
     const editorItems: ActionMenuItem[] = member
       ? []
       : [
+          ...(unreviewed
+            ? [
+                {
+                  label: "Mark reviewed",
+                  onSelect: () =>
+                    startTransition(async () => {
+                      await markOpportunityReviewed(r.id);
+                      router.refresh();
+                    }),
+                },
+              ]
+            : []),
           { label: "Mark verified today", onSelect: () => startTransition(() => markOpportunityVerified(r.id)) },
+          ...(r.source_url ? [{ label: "Open source", href: r.source_url, external: true }] : []),
           {
             label: r.published ? "Unpublish" : "Publish",
             onSelect: () => startTransition(() => setOpportunityPublished(r.id, !r.published)),
@@ -207,7 +237,12 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
         meta={
           <>
             {metaText}
-            {closingSoon ? (
+            {closedOn ? (
+              <>
+                {metaText ? " · " : null}
+                <span className="text-ink-muted">Closed {closedOn}</span>
+              </>
+            ) : closingSoon ? (
               <>
                 {metaText ? " · " : null}
                 <span className="text-warning">Closing soon</span>
@@ -236,6 +271,11 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
           {
             content: (
               <span className="flex flex-wrap gap-1.5">
+                {unreviewed ? (
+                  <Pill className="whitespace-nowrap">
+                    <span className="text-warning">Unreviewed</span>
+                  </Pill>
+                ) : null}
                 {labels.map((l) => (
                   <Pill key={l} className="whitespace-nowrap">
                     {l}

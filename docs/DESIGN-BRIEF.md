@@ -171,7 +171,7 @@ References (open these before building; ids match the Reference index):
 
 ## 6. Members dashboard (`/dashboard`)
 
-**Shell (`app/(members)/layout.tsx`).** 56px sticky top bar, `border-b border-line bg-surface`: mark + "SPARC" → `/dashboard`; nav "Dashboard · Projects · Profile" (+ "Admin" for editor+) using the navbar's active style; right: "View site" and an account button (email → menu with "Sign out"). ≤1023px: nav collapses into the `Expand` menu, same as the public navbar. Content `max-w-page`.
+**Shell (`app/(members)/layout.tsx`).** 56px sticky top bar, `border-b border-line bg-surface`: mark + "SPARC" → `/dashboard`; nav "Dashboard · Projects · Locator · Profile" (+ "Admin" for editor+) using the navbar's active style; right: "View site" and an account button (email → menu with "Sign out"). ≤1023px: nav collapses into the `Expand` menu, same as the public navbar. Content `max-w-page`.
 
 **Layout ≥1024px:** two columns, 2fr / 1fr.
 

@@ -3,7 +3,7 @@
 /* Admin shell navigation (docs/DESIGN-BRIEF.md §1).
  *
  * ≥1024px: 15rem sticky sidebar — head (mark, SPARC, ADMIN), groups
- * Overview / Content / Review / People, foot with "View site ↗",
+ * Overview / Content / Locator / Review / People, foot with "View site ↗",
  * "Dashboard" and the account block (email, role pill, Sign out POST).
  * <1024px: a 56px sticky top bar (mark, "Admin", current section, Menu)
  * opening the same nav in the shared <Expand>; it closes on navigation.
@@ -14,14 +14,19 @@
 
 import {
   ArrowUpRight,
+  Briefcase,
   CalendarDays,
   FolderKanban,
+  Handshake,
   Images,
   Inbox,
   LayoutDashboard,
   Link2,
   Newspaper,
+  Presentation,
+  Trophy,
   UserCog,
+  UserRound,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -59,6 +64,16 @@ function groups(role: "editor" | "admin", pending: number): Group[] {
         { href: "/admin/news", label: "News", icon: Newspaper },
         { href: "/admin/photos", label: "Photos", icon: Images },
         { href: "/admin/links", label: "Links", icon: Link2 },
+      ],
+    },
+    {
+      label: "Locator",
+      items: [
+        { href: "/admin/locator/internships", label: "Internships", icon: Briefcase },
+        { href: "/admin/locator/conferences", label: "Conferences", icon: Presentation },
+        { href: "/admin/locator/networking", label: "Networking", icon: Handshake },
+        { href: "/admin/locator/hackathons", label: "Hackathons", icon: Trophy },
+        { href: "/admin/locator/profile", label: "Locator profile", icon: UserRound },
       ],
     },
     // /admin/projects/requests is agent G's page.
@@ -194,6 +209,11 @@ const SECTION_NAMES: Array<[string, string]> = [
   ["/admin/news", "News"],
   ["/admin/photos", "Photos"],
   ["/admin/links", "Links"],
+  ["/admin/locator/profile", "Locator profile"],
+  ["/admin/locator/internships", "Internships"],
+  ["/admin/locator/conferences", "Conferences"],
+  ["/admin/locator/networking", "Networking"],
+  ["/admin/locator/hackathons", "Hackathons"],
   ["/admin/accounts", "Accounts"],
 ];
 

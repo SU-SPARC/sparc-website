@@ -172,3 +172,126 @@ export type Link = {
   icon: string | null;
   sort_order: number;
 };
+
+// ── Locator (supabase/migrations/0003_locator.sql, docs/LOCATOR.md) ──────
+// Unlike the public types above, these keep their bookkeeping columns: the
+// Locator screens are editor-only and show published state and record dates.
+
+/** `create type opportunity_kind as enum ('internship', 'conference', 'networking', 'hackathon')` */
+export type OpportunityKind = "internship" | "conference" | "networking" | "hackathon";
+/** `create type internship_term as enum ('coop', 'semester_part_time', 'summer', 'winter')` */
+export type InternshipTerm = "coop" | "semester_part_time" | "summer" | "winter";
+/** `create type opportunity_area as enum ('suffolk', 'boston', 'outside_boston', 'online')` */
+export type OpportunityArea = "suffolk" | "boston" | "outside_boston" | "online";
+/** `create type opportunity_format as enum ('in_person', 'online', 'hybrid')` */
+export type OpportunityFormat = "in_person" | "online" | "hybrid";
+/** `create type eligibility_verdict as enum ('eligible', 'likely', 'unclear', 'not_eligible')` */
+export type EligibilityVerdict = "eligible" | "likely" | "unclear" | "not_eligible";
+/** `opportunities.source` check constraint */
+export type OpportunitySource = "manual" | "seed" | "import" | "sync";
+/** `career_profiles.degree_level` check constraint */
+export type DegreeLevel = "undergrad" | "grad" | "other";
+/** `career_profiles.work_auth` check constraint */
+export type WorkAuth = "us_citizen_or_pr" | "needs_sponsorship" | "international_cpt_opt" | "prefer_not_to_say";
+/** `eligibility_checks.confidence` check constraint */
+export type Confidence = "low" | "medium" | "high";
+
+/** Mirrors `opportunities` (minus `created_by`). */
+export type Opportunity = {
+  id: string;
+  kind: OpportunityKind;
+  slug: string;
+  /** role title / conference / event / hackathon name */
+  title: string;
+  /** company / organizer / host */
+  organizer: string;
+  organizer_url: string | null;
+  organizer_blurb: string | null;
+  /** the posting or event page */
+  url: string;
+  posting_site: string | null;
+  summary: string | null;
+  description: string | null;
+  area: OpportunityArea;
+  format: OpportunityFormat;
+  location: string | null;
+  starts_on: DateOnly | null;
+  ends_on: DateOnly | null;
+  deadline_on: DateOnly | null;
+  dates_note: string | null;
+  internship_terms: InternshipTerm[];
+  pay: string | null;
+  eligibility: string | null;
+  tags: string[];
+  source: OpportunitySource;
+  verified_on: DateOnly | null;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+  // Source attribution and sync bookkeeping (0004_locator_sync.sql, docs/LOCATOR-SYNC.md).
+  // Optional so mappers written before 0004 still produce an Opportunity.
+  /** "Greenhouse", "SimplifyJobs", "Research (16 Oct 2026)", "Import", "Manual", … */
+  source_name?: string | null;
+  /** where the information was read from (API/feed URL or research page) */
+  source_url?: string | null;
+  /** stable id at the source, e.g. `greenhouse:<token>:<job id>`; sync rows only */
+  external_id?: string | null;
+  posted_at?: string | null;
+  first_seen_at?: string | null;
+  last_seen_at?: string | null;
+  /** set when a successful sync no longer returns the listing */
+  closed_at?: string | null;
+  /** an editor marked this sync row reviewed */
+  reviewed_at?: string | null;
+  /** set by trigger when an editor saves the row; the sync then keeps its hands off the editorial fields */
+  editor_edited_at?: string | null;
+};
+
+/** Mirrors `sync_runs`: one source in one `npm run locator:sync` run. */
+export type SyncRun = {
+  id: string;
+  source_id: string;
+  adapter: string;
+  started_at: string;
+  finished_at: string | null;
+  fetched: number;
+  kept: number;
+  inserted: number;
+  updated: number;
+  closed: number;
+  ok: boolean;
+  error: string | null;
+  created_at: string;
+};
+
+/** Mirrors `career_profiles`: the caller's own Locator profile. */
+export type CareerProfile = {
+  profile_id: string;
+  major: string | null;
+  minor: string | null;
+  degree_level: DegreeLevel;
+  expected_grad_year: number | null;
+  skills: string[];
+  interests: string[];
+  goals: string | null;
+  constraints: string | null;
+  work_auth: WorkAuth;
+  updated_at: string;
+};
+
+/** Mirrors `eligibility_checks`: one cached AI verdict. */
+export type EligibilityCheck = {
+  opportunity_id: string;
+  profile_id: string;
+  verdict: EligibilityVerdict;
+  confidence: Confidence;
+  reasons: string[];
+  blockers: string[];
+  unknowns: string[];
+  next_steps: string[];
+  fit_score: number | null;
+  fit_note: string | null;
+  model: string;
+  inputs_hash: string;
+  checked_at: string;
+};

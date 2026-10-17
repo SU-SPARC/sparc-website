@@ -66,6 +66,7 @@ MIGRATED=(
   components/board              # CMS G — project boards
   lib                           # CMS C1/D/G — data, actions, auth, supabase
   proxy.ts                      # CMS D — session refresh
+  components/locator            # Locator — opportunity lists, forms, eligibility card
 )
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -243,6 +244,19 @@ fi
 # Prove the gate can fail: a known-bad string must match the same pattern.
 if ! printf 'process.env.SUPABASE_SECRET_KEY\n' | SEARCH '(SUPABASE_SECRET_KEY|SERVICE_ROLE)' - >/dev/null 2>&1; then
   bad 'secret-key gate cannot match a known-bad string'
+fi
+
+# The Anthropic key is server-only too. Only the AI client may read it; the
+# Locator actions import that client. Any other mention is one import away
+# from a client bundle. Scans all app code, not just the migrated list.
+ai_hits=$(SEARCH_R 'ANTHROPIC_API_KEY' app components lib proxy.ts next.config.ts 2>/dev/null \
+  | grep -v '/\._' \
+  | grep -vE '^lib/ai/client\.ts:' || true)
+if [ -n "$ai_hits" ]; then
+  bad 'ANTHROPIC_API_KEY referenced outside lib/ai/client.ts'
+  printf '%s\n' "$ai_hits" | sed 's/^/          /'
+else
+  pass 'anthropic key confined to lib/ai/client.ts'
 fi
 
 echo

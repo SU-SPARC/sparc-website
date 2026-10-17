@@ -1,0 +1,871 @@
+{
+  "jobs": [
+    {
+      "id": "datadog",
+      "adapter": "greenhouse",
+      "token": "datadog",
+      "company": "Datadog",
+      "careers_url": "https://job-boards.greenhouse.io/datadog",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "software",
+        "cloud"
+      ]
+    },
+    {
+      "id": "formlabs",
+      "adapter": "greenhouse",
+      "token": "formlabs",
+      "company": "Formlabs",
+      "careers_url": "https://job-boards.greenhouse.io/formlabs",
+      "office": "Somerville, MA",
+      "priority": "local",
+      "tags": [
+        "hardware",
+        "3d printing"
+      ]
+    },
+    {
+      "id": "tulip",
+      "adapter": "greenhouse",
+      "token": "tulip",
+      "company": "Tulip",
+      "careers_url": "https://job-boards.greenhouse.io/tulip",
+      "office": "Somerville, MA",
+      "priority": "local",
+      "tags": [
+        "software",
+        "manufacturing"
+      ]
+    },
+    {
+      "id": "audaxgroup",
+      "adapter": "greenhouse",
+      "token": "audaxgroup",
+      "company": "Audax Group",
+      "careers_url": "https://job-boards.greenhouse.io/audaxgroup",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "finance"
+      ]
+    },
+    {
+      "id": "vestmark",
+      "adapter": "greenhouse",
+      "token": "vestmark",
+      "company": "Vestmark",
+      "careers_url": "https://job-boards.greenhouse.io/vestmark",
+      "office": "Wakefield, MA",
+      "priority": "local",
+      "tags": [
+        "software",
+        "fintech"
+      ]
+    },
+    {
+      "id": "intersystems",
+      "adapter": "greenhouse",
+      "token": "intersystems",
+      "company": "InterSystems",
+      "careers_url": "https://job-boards.greenhouse.io/intersystems",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "software",
+        "health tech"
+      ]
+    },
+    {
+      "id": "lightmatter",
+      "adapter": "greenhouse",
+      "token": "lightmatter",
+      "company": "Lightmatter",
+      "careers_url": "https://job-boards.greenhouse.io/lightmatter",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "hardware",
+        "ai"
+      ]
+    },
+    {
+      "id": "ginkgobioworks",
+      "adapter": "greenhouse",
+      "token": "ginkgobioworks",
+      "company": "Ginkgo Bioworks",
+      "careers_url": "https://job-boards.greenhouse.io/ginkgobioworks",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "biotech"
+      ]
+    },
+    {
+      "id": "toast",
+      "adapter": "greenhouse",
+      "token": "toast",
+      "company": "Toast",
+      "careers_url": "https://job-boards.greenhouse.io/toast",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "software",
+        "fintech"
+      ]
+    },
+    {
+      "id": "klaviyo",
+      "adapter": "greenhouse",
+      "token": "klaviyo",
+      "company": "Klaviyo",
+      "careers_url": "https://job-boards.greenhouse.io/klaviyo",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "software",
+        "marketing tech"
+      ]
+    },
+    {
+      "id": "cargurus",
+      "adapter": "greenhouse",
+      "token": "cargurus",
+      "company": "CarGurus",
+      "careers_url": "https://job-boards.greenhouse.io/cargurus",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "software"
+      ]
+    },
+    {
+      "id": "hometap",
+      "adapter": "greenhouse",
+      "token": "hometap",
+      "company": "Hometap",
+      "careers_url": "https://job-boards.greenhouse.io/hometap",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "fintech"
+      ]
+    },
+    {
+      "id": "markforged",
+      "adapter": "greenhouse",
+      "token": "markforged",
+      "company": "Markforged",
+      "careers_url": "https://job-boards.greenhouse.io/markforged",
+      "office": "Waltham, MA",
+      "priority": "local",
+      "tags": [
+        "hardware",
+        "3d printing"
+      ]
+    },
+    {
+      "id": "stripe",
+      "adapter": "greenhouse",
+      "token": "stripe",
+      "company": "Stripe",
+      "careers_url": "https://job-boards.greenhouse.io/stripe",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "figma",
+      "adapter": "greenhouse",
+      "token": "figma",
+      "company": "Figma",
+      "careers_url": "https://job-boards.greenhouse.io/figma",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "databricks",
+      "adapter": "greenhouse",
+      "token": "databricks",
+      "company": "Databricks",
+      "careers_url": "https://job-boards.greenhouse.io/databricks",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "pinterest",
+      "adapter": "greenhouse",
+      "token": "pinterest",
+      "company": "Pinterest",
+      "careers_url": "https://job-boards.greenhouse.io/pinterest",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "lyft",
+      "adapter": "greenhouse",
+      "token": "lyft",
+      "company": "Lyft",
+      "careers_url": "https://job-boards.greenhouse.io/lyft",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "coinbase",
+      "adapter": "greenhouse",
+      "token": "coinbase",
+      "company": "Coinbase",
+      "careers_url": "https://job-boards.greenhouse.io/coinbase",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "cloudflare",
+      "adapter": "greenhouse",
+      "token": "cloudflare",
+      "company": "Cloudflare",
+      "careers_url": "https://job-boards.greenhouse.io/cloudflare",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "duolingo",
+      "adapter": "greenhouse",
+      "token": "duolingo",
+      "company": "Duolingo",
+      "careers_url": "https://job-boards.greenhouse.io/duolingo",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "affirm",
+      "adapter": "greenhouse",
+      "token": "affirm",
+      "company": "Affirm",
+      "careers_url": "https://job-boards.greenhouse.io/affirm",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "samsara",
+      "adapter": "greenhouse",
+      "token": "samsara",
+      "company": "Samsara",
+      "careers_url": "https://job-boards.greenhouse.io/samsara",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "roblox",
+      "adapter": "greenhouse",
+      "token": "roblox",
+      "company": "Roblox",
+      "careers_url": "https://job-boards.greenhouse.io/roblox",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "robinhood",
+      "adapter": "greenhouse",
+      "token": "robinhood",
+      "company": "Robinhood",
+      "careers_url": "https://job-boards.greenhouse.io/robinhood",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "palantir",
+      "adapter": "lever",
+      "account": "palantir",
+      "company": "Palantir",
+      "careers_url": "https://jobs.lever.co/palantir",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "field-ai",
+      "adapter": "lever",
+      "account": "field-ai",
+      "company": "Field AI",
+      "careers_url": "https://jobs.lever.co/field-ai",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "robotics",
+        "ai"
+      ]
+    },
+    {
+      "id": "tutorintelligence",
+      "adapter": "lever",
+      "account": "tutorintelligence",
+      "company": "Tutor Intelligence",
+      "careers_url": "https://jobs.lever.co/tutorintelligence",
+      "office": "Watertown, MA",
+      "priority": "local",
+      "tags": [
+        "robotics"
+      ]
+    },
+    {
+      "id": "cesiumastro",
+      "adapter": "lever",
+      "account": "CesiumAstro",
+      "company": "CesiumAstro",
+      "careers_url": "https://jobs.lever.co/CesiumAstro",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "hermeus",
+      "adapter": "lever",
+      "account": "hermeus",
+      "company": "Hermeus",
+      "careers_url": "https://jobs.lever.co/hermeus",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "belvederetrading",
+      "adapter": "lever",
+      "account": "belvederetrading",
+      "company": "Belvedere Trading",
+      "careers_url": "https://jobs.lever.co/belvederetrading",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "immuta",
+      "adapter": "lever",
+      "account": "immuta",
+      "company": "Immuta",
+      "careers_url": "https://jobs.lever.co/immuta",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "tri",
+      "adapter": "lever",
+      "account": "tri",
+      "company": "Toyota Research Institute",
+      "careers_url": "https://jobs.lever.co/tri",
+      "office": "Cambridge, MA",
+      "priority": "local",
+      "tags": [
+        "robotics",
+        "ai"
+      ]
+    },
+    {
+      "id": "neighbor",
+      "adapter": "lever",
+      "account": "neighbor",
+      "company": "Neighbor",
+      "careers_url": "https://jobs.lever.co/neighbor",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "kepler",
+      "adapter": "lever",
+      "account": "kepler",
+      "company": "Kepler Communications",
+      "careers_url": "https://jobs.lever.co/kepler",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "cyvl",
+      "adapter": "ashby",
+      "board": "cyvl",
+      "company": "Cyvl",
+      "careers_url": "https://jobs.ashbyhq.com/cyvl",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "software",
+        "infrastructure"
+      ]
+    },
+    {
+      "id": "ramp",
+      "adapter": "ashby",
+      "board": "ramp",
+      "company": "Ramp",
+      "careers_url": "https://jobs.ashbyhq.com/ramp",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "notion",
+      "adapter": "ashby",
+      "board": "notion",
+      "company": "Notion",
+      "careers_url": "https://jobs.ashbyhq.com/notion",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "sierra",
+      "adapter": "ashby",
+      "board": "sierra",
+      "company": "Sierra",
+      "careers_url": "https://jobs.ashbyhq.com/sierra",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "perplexity",
+      "adapter": "ashby",
+      "board": "perplexity",
+      "company": "Perplexity",
+      "careers_url": "https://jobs.ashbyhq.com/perplexity",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "skydio",
+      "adapter": "ashby",
+      "board": "skydio",
+      "company": "Skydio",
+      "careers_url": "https://jobs.ashbyhq.com/skydio",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "applied",
+      "adapter": "ashby",
+      "board": "applied",
+      "company": "Applied Intuition",
+      "careers_url": "https://jobs.ashbyhq.com/applied",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "bedrock-robotics",
+      "adapter": "ashby",
+      "board": "bedrock-robotics",
+      "company": "Bedrock Robotics",
+      "careers_url": "https://jobs.ashbyhq.com/bedrock-robotics",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "base-power",
+      "adapter": "ashby",
+      "board": "base-power",
+      "company": "Base Power",
+      "careers_url": "https://jobs.ashbyhq.com/base-power",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "etched",
+      "adapter": "ashby",
+      "board": "etched",
+      "company": "Etched",
+      "careers_url": "https://jobs.ashbyhq.com/etched",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "mercor",
+      "adapter": "ashby",
+      "board": "mercor",
+      "company": "Mercor",
+      "careers_url": "https://jobs.ashbyhq.com/mercor",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "fidelity",
+      "adapter": "workday",
+      "tenant": "fmr",
+      "host": "wd1",
+      "sites": [
+        "targeted",
+        "FidelityCareers"
+      ],
+      "company": "Fidelity Investments",
+      "careers_url": "https://fmr.wd1.myworkdayjobs.com/targeted",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "finance"
+      ]
+    },
+    {
+      "id": "draper",
+      "adapter": "workday",
+      "tenant": "draper",
+      "host": "wd5",
+      "sites": [
+        "Draper_Careers"
+      ],
+      "company": "Draper",
+      "careers_url": "https://draper.wd5.myworkdayjobs.com/Draper_Careers",
+      "office": "Cambridge, MA",
+      "priority": "local",
+      "tags": [
+        "engineering",
+        "defense"
+      ]
+    },
+    {
+      "id": "mass-general-brigham",
+      "adapter": "workday",
+      "tenant": "massgeneralbrigham",
+      "host": "wd1",
+      "sites": [
+        "mgbexternal"
+      ],
+      "company": "Mass General Brigham",
+      "careers_url": "https://massgeneralbrigham.wd1.myworkdayjobs.com/mgbexternal",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "health"
+      ]
+    },
+    {
+      "id": "analog-devices",
+      "adapter": "workday",
+      "tenant": "analogdevices",
+      "host": "wd1",
+      "sites": [
+        "External"
+      ],
+      "company": "Analog Devices",
+      "careers_url": "https://analogdevices.wd1.myworkdayjobs.com/External",
+      "office": "Wilmington, MA",
+      "priority": "local",
+      "tags": [
+        "hardware",
+        "semiconductors"
+      ]
+    },
+    {
+      "id": "rtx",
+      "adapter": "workday",
+      "tenant": "globalhr",
+      "host": "wd5",
+      "sites": [
+        "rec_rtx_ext_gateway"
+      ],
+      "company": "RTX",
+      "careers_url": "https://globalhr.wd5.myworkdayjobs.com/rec_rtx_ext_gateway",
+      "office": "Waltham, MA",
+      "priority": "local",
+      "tags": [
+        "aerospace",
+        "defense"
+      ]
+    },
+    {
+      "id": "vertex",
+      "adapter": "workday",
+      "tenant": "vrtx",
+      "host": "wd501",
+      "sites": [
+        "vertex_careers"
+      ],
+      "company": "Vertex Pharmaceuticals",
+      "careers_url": "https://vrtx.wd501.myworkdayjobs.com/vertex_careers",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "biotech"
+      ]
+    },
+    {
+      "id": "moderna",
+      "adapter": "workday",
+      "tenant": "modernatx",
+      "host": "wd1",
+      "sites": [
+        "M_tx"
+      ],
+      "company": "Moderna",
+      "careers_url": "https://modernatx.wd1.myworkdayjobs.com/M_tx",
+      "office": "Cambridge, MA",
+      "priority": "local",
+      "tags": [
+        "biotech"
+      ]
+    },
+    {
+      "id": "thermo-fisher",
+      "adapter": "workday",
+      "tenant": "thermofisher",
+      "host": "wd5",
+      "sites": [
+        "ThermoFisherCareers"
+      ],
+      "company": "Thermo Fisher",
+      "careers_url": "https://thermofisher.wd5.myworkdayjobs.com/ThermoFisherCareers",
+      "office": "Waltham, MA",
+      "priority": "local",
+      "tags": [
+        "biotech"
+      ]
+    },
+    {
+      "id": "state-street",
+      "adapter": "workday",
+      "tenant": "statestreet",
+      "host": "wd1",
+      "sites": [
+        "Global"
+      ],
+      "company": "State Street",
+      "careers_url": "https://statestreet.wd1.myworkdayjobs.com/Global",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "finance"
+      ]
+    },
+    {
+      "id": "athenahealth",
+      "adapter": "workday",
+      "tenant": "athenahealth",
+      "host": "wd1",
+      "sites": [
+        "External"
+      ],
+      "company": "athenahealth",
+      "careers_url": "https://athenahealth.wd1.myworkdayjobs.com/External",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": [
+        "health tech"
+      ]
+    },
+    {
+      "id": "simplify-summer-2027",
+      "adapter": "simplify",
+      "repo": "SimplifyJobs/Summer2027-Internships",
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "simplify-new-grad",
+      "adapter": "simplify",
+      "repo": "SimplifyJobs/New-Grad-Positions",
+      "priority": "national",
+      "tags": [],
+      "enabled": false,
+      "note": "New-grad roles, not internships; enable when the Locator lists full-time roles."
+    },
+    {
+      "id": "simplisafe",
+      "adapter": "greenhouse",
+      "token": "simplisafe",
+      "company": "SimpliSafe",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": []
+    },
+    {
+      "id": "everquote",
+      "adapter": "greenhouse",
+      "token": "everquote",
+      "company": "EverQuote",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": []
+    },
+    {
+      "id": "pathai",
+      "adapter": "greenhouse",
+      "token": "pathai",
+      "company": "PathAI",
+      "office": "Boston, MA",
+      "priority": "local",
+      "tags": []
+    },
+    {
+      "id": "liberty-mutual",
+      "adapter": "workday",
+      "tenant": "libertymutual",
+      "host": "wd5",
+      "sites": [
+        "Careers"
+      ],
+      "company": "Liberty Mutual Insurance",
+      "office": "Boston, MA",
+      "enabled": false,
+      "note": "Not on Workday (iCIMS); every site name 422s. Kept so nobody re-adds it.",
+      "tags": [
+        "insurance"
+      ]
+    },
+    {
+      "id": "mitre",
+      "adapter": "workday",
+      "tenant": "mitre",
+      "host": "wd5",
+      "sites": [
+        "MITRE"
+      ],
+      "company": "MITRE",
+      "office": "Bedford, MA",
+      "enabled": false,
+      "note": "The MITRE site answers but returns 0 postings unauthenticated (the board redirects to a login).",
+      "tags": [
+        "defense",
+        "research"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "devpost",
+      "adapter": "devpost",
+      "pages": 3,
+      "priority": "national",
+      "tags": []
+    },
+    {
+      "id": "mlh-2027",
+      "adapter": "mlh",
+      "season": "2027",
+      "priority": "national",
+      "tags": [
+        "mlh"
+      ]
+    },
+    {
+      "id": "luma-boston",
+      "adapter": "luma_ical",
+      "feed_id": "discplace-VWeZ1zUvnawYHMj",
+      "name": "Luma Boston",
+      "tags": []
+    },
+    {
+      "id": "suffolk-events",
+      "adapter": "suffolk",
+      "feed": "localist",
+      "tags": [
+        "suffolk"
+      ]
+    },
+    {
+      "id": "suffolk-engage",
+      "adapter": "suffolk",
+      "feed": "engage",
+      "tags": [
+        "suffolk"
+      ]
+    },
+    {
+      "id": "boston-python",
+      "adapter": "meetup_ical",
+      "group": "bostonpython",
+      "name": "Boston Python User Group",
+      "tags": [
+        "python"
+      ]
+    },
+    {
+      "id": "boston-new-technology",
+      "adapter": "meetup_ical",
+      "group": "boston_new_technology",
+      "name": "Boston New Technology",
+      "tags": [
+        "startups"
+      ]
+    },
+    {
+      "id": "boston-idea-to-ipo",
+      "adapter": "meetup_ical",
+      "group": "Boston-Idea-to-IPO",
+      "name": "Boston Idea to IPO",
+      "tags": [
+        "startups"
+      ]
+    },
+    {
+      "id": "boston-ai-ml-data-science",
+      "adapter": "meetup_ical",
+      "group": "boston-ai-machine-learning-data-science",
+      "name": "Boston AI, ML & Data Science",
+      "tags": [
+        "ai",
+        "data"
+      ]
+    },
+    {
+      "id": "boston-code-and-coffee",
+      "adapter": "meetup_ical",
+      "group": "boston-code-and-coffee",
+      "name": "Boston Code and Coffee",
+      "tags": [
+        "software"
+      ]
+    },
+    {
+      "id": "boston-game-dev",
+      "adapter": "meetup_ical",
+      "group": "bostongamedev",
+      "name": "Boston Game Dev",
+      "tags": [
+        "games"
+      ]
+    },
+    {
+      "id": "boston-go",
+      "adapter": "meetup_ical",
+      "group": "bostongo",
+      "name": "Boston Go",
+      "tags": [
+        "go"
+      ]
+    },
+    {
+      "id": "boston-kubernetes",
+      "adapter": "meetup_ical",
+      "group": "boston-kubernetes-meetup",
+      "name": "Boston Kubernetes",
+      "tags": [
+        "cloud"
+      ]
+    },
+    {
+      "id": "ai-safety-boston",
+      "adapter": "meetup_ical",
+      "group": "ai-safety-awareness-group-boston",
+      "name": "AI Safety Awareness Group Boston",
+      "tags": [
+        "ai"
+      ]
+    },
+    {
+      "id": "aittg-boston",
+      "adapter": "meetup_ical",
+      "group": "aittg-boston",
+      "name": "AITTG Boston",
+      "tags": [
+        "ai"
+      ]
+    },
+    {
+      "id": "boston-intersystems-developers",
+      "adapter": "meetup_ical",
+      "group": "boston-intersystems-developers-meetup",
+      "name": "Boston InterSystems Developers",
+      "tags": [
+        "software"
+      ]
+    },
+    {
+      "id": "startup-grind-boston",
+      "adapter": "meetup_ical",
+      "group": "Startup-Grind-Boston",
+      "name": "Startup Grind Boston",
+      "tags": [
+        "startups"
+      ]
+    }
+  ]
+}

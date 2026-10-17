@@ -16,7 +16,8 @@
     "rls:check-pm": "tsx scripts/rls-check-pm.ts",
     "admin:magic-link": "tsx scripts/admin-magic-link.ts",
     "seed:locator": "tsx scripts/seed/locator.ts",
-    "rls:check-locator": "tsx scripts/rls-check-locator.ts"
+    "rls:check-locator": "tsx scripts/rls-check-locator.ts",
+    "locator:sync": "tsx scripts/locator-sync/index.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

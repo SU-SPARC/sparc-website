@@ -3,9 +3,11 @@
  *   npm run seed:locator
  *
  * Reads the four research files (a missing one is skipped with a warning),
- * validates every item, and upserts on slug with source = 'seed' and
- * created_by = null. `source_url` stays out of the table. Idempotent: a second
- * run writes the same values. Uses the secret key (bypasses RLS).
+ * validates every item, and upserts on slug with source = 'seed',
+ * source_name = 'Research (16 Oct 2026)', the item's source_url (where the
+ * research read it) and created_by = null. Idempotent: a second run writes
+ * the same values. Uses the secret key (bypasses RLS), so the editor-edit
+ * trigger from 0004 leaves editor_edited_at alone.
  * Deletes nothing. See docs/LOCATOR.md. */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -29,6 +31,9 @@ if (!URL || !SECRET) {
 const db = createClient<Database>(URL, SECRET, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
 });
+
+/** `opportunities.source_name` for every seeded row (0004_locator_sync.sql backfills the same value). */
+const SOURCE_NAME = "Research (16 Oct 2026)";
 
 const DIR = path.join(process.cwd(), "scripts", "seed", "locator");
 // Only these names: the drive also holds `._*.json` AppleDouble files.
@@ -106,12 +111,11 @@ async function main() {
         const issues = parsed.error.issues.map((x) => `${x.path.join(".") || "(item)"}: ${x.message}`).join("; ");
         fail(`${where}: ${issues}`);
       }
-      const item = { ...parsed.data, source_url: undefined };
-      delete item.source_url;
+      const item = parsed.data;
       const dup = seen.get(item.slug);
       if (dup) fail(`${where}: slug also used in ${dup}`);
       seen.set(item.slug, `${name}.json`);
-      rows.push({ ...item, tags: [...new Set(item.tags)], source: "seed", created_by: null });
+      rows.push({ ...item, tags: [...new Set(item.tags)], source: "seed", source_name: SOURCE_NAME, created_by: null });
     });
   }
 

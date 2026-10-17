@@ -2,8 +2,8 @@
  *
  *   npm run rls:check-locator
  *
- * Creates throwaway users (rls-loc-*@test.local) and opportunities (slugs
- * prefixed "rls-loc-"), signs in as each role with a fresh publishable-key
+ * Creates throwaway users (rls-loc-*@test.local), opportunities (slugs
+ * prefixed "rls-loc-") and a sync_runs row (source_id "rls-loc-…"), signs in as each role with a fresh publishable-key
  * client, asserts what each may and may not do, prints a PASS/FAIL table and
  * removes only what it created, also on failure. Exit code 0 only when every
  * check passes. Never point this at production. */
@@ -82,6 +82,12 @@ const ids = {
   users: {} as Record<Who, string>,
   pub: "",
   hidden: "",
+  /** editor edits its summary: editor_edited_at must be stamped */
+  edit: "",
+  /** editor changes only published / verified_on: editor_edited_at must stay null */
+  book: "",
+  /** service role edits its summary: editor_edited_at must stay null */
+  svc: "",
 };
 
 const opp = (suffix: string, extra: Partial<TablesInsert<"opportunities">> = {}): TablesInsert<"opportunities"> => ({
@@ -105,6 +111,7 @@ const checkRow = (opportunity_id: string, profile_id: string): TablesInsert<"eli
 async function cleanup() {
   // eligibility_checks cascade from opportunities and profiles; career_profiles from profiles.
   await admin.from("opportunities").delete().like("slug", `${PREFIX}%`);
+  await admin.from("sync_runs").delete().like("source_id", `${PREFIX}%`);
   const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
   const ours = new Set<string>(Object.values(EMAILS));
   for (const u of list?.users ?? []) {
@@ -137,9 +144,17 @@ async function setup() {
   const rows = await must("opportunities", admin.from("opportunities").insert([
     opp("pub"),
     opp("hidden", { published: false }),
+    opp("edit"),
+    opp("book"),
+    opp("svc"),
   ], { defaultToNull: false }).select("id, slug"));
-  ids.pub = rows.find((r) => r.slug.includes("-pub-"))!.id;
-  ids.hidden = rows.find((r) => r.slug.includes("-hidden-"))!.id;
+  const idOf = (k: string) => rows.find((r) => r.slug.startsWith(`${PREFIX}${k}-`))!.id;
+  ids.pub = idOf("pub");
+  ids.hidden = idOf("hidden");
+  ids.edit = idOf("edit");
+  ids.book = idOf("book");
+  ids.svc = idOf("svc");
+  await must("sync_run", admin.from("sync_runs").insert({ source_id: SYNC_SOURCE(), adapter: "rls", ok: true }).select());
 
   // The second user's own profile and check, written as the service role.
   await must("other profile", admin.from("career_profiles").insert({ profile_id: ids.users.other, major: "RLS other" }).select());
@@ -155,12 +170,19 @@ async function signIn(key: Who): Promise<Client> {
   return c;
 }
 
+async function editedAt(id: string): Promise<string | null> {
+  const { data, error } = await admin.from("opportunities").select("editor_edited_at").eq("id", id).single();
+  if (error) throw new Error(`editor_edited_at: ${error.message}`);
+  return data.editor_edited_at;
+}
+
 async function visibleSlugs(c: Client): Promise<string[]> {
   const { data, error } = await c.from("opportunities").select("slug").like("slug", `${PREFIX}%`);
   if (error) throw new Error(`opportunities: ${error.message}`);
   return data.map((r) => r.slug);
 }
 
+const SYNC_SOURCE = () => `${PREFIX}source-${RUN}`;
 const PUB = () => `${PREFIX}pub-${RUN}`;
 const HIDDEN = () => `${PREFIX}hidden-${RUN}`;
 
@@ -175,6 +197,10 @@ async function anonChecks() {
   });
   await check(who, "cannot insert an opportunity", async () =>
     denied(await c.from("opportunities").insert(opp("anon")).select()));
+  await check(who, "reads no sync_runs", async () => {
+    const r = await c.from("sync_runs").select("id");
+    return r.error || (r.data ?? []).length === 0 ? true : `saw ${r.data!.length}`;
+  });
   await check(who, "reads no career_profiles", async () => {
     const r = await c.from("career_profiles").select("profile_id");
     return r.error || (r.data ?? []).length === 0 ? true : `saw ${r.data!.length}`;
@@ -199,6 +225,12 @@ async function memberChecks() {
     denied(await c.from("opportunities").update({ title: "hacked" }).eq("id", ids.pub).select()));
   await check(who, "cannot delete an opportunity", async () =>
     denied(await c.from("opportunities").delete().eq("id", ids.pub).select()));
+  await check(who, "reads no sync_runs", async () => {
+    const r = await c.from("sync_runs").select("id");
+    return r.error || r.data.length === 0 ? true : `saw ${r.data.length}`;
+  });
+  await check(who, "cannot insert a sync_run", async () =>
+    denied(await c.from("sync_runs").insert({ source_id: `${PREFIX}member-${RUN}`, adapter: "rls" }).select()));
 
   await check(who, "inserts own career_profile", async () =>
     allowed(await c.from("career_profiles").insert({ profile_id: me, major: "RLS member" }).select()));
@@ -285,6 +317,31 @@ async function editorChecks() {
   });
   await check(who, "cannot update another user's career_profile", async () =>
     denied(await c.from("career_profiles").update({ major: "hacked" }).eq("profile_id", ids.users.member).select()));
+
+  await check(who, "reads sync_runs", async () => {
+    const r = await c.from("sync_runs").select("source_id").eq("source_id", SYNC_SOURCE());
+    return !r.error && r.data.length === 1 ? true : `saw ${r.data?.length ?? r.error?.message}`;
+  });
+  await check(who, "cannot insert a sync_run", async () =>
+    denied(await c.from("sync_runs").insert({ source_id: `${PREFIX}editor-${RUN}`, adapter: "rls" }).select()));
+  await check(who, "cannot update a sync_run", async () =>
+    denied(await c.from("sync_runs").update({ ok: false }).eq("source_id", SYNC_SOURCE()).select()));
+  await check(who, "cannot delete a sync_run", async () =>
+    denied(await c.from("sync_runs").delete().eq("source_id", SYNC_SOURCE()).select()));
+
+  await check(who, "editing summary stamps editor_edited_at", async () => {
+    const r = await c.from("opportunities").update({ summary: "Edited by an editor" }).eq("id", ids.edit).select("id");
+    const a = allowed(r);
+    if (a !== true) return a;
+    return (await editedAt(ids.edit)) ? true : "editor_edited_at still null";
+  });
+  await check(who, "changing only published / verified_on leaves editor_edited_at null", async () => {
+    const r = await c.from("opportunities").update({ published: false, verified_on: "2026-10-16" }).eq("id", ids.book).select("id");
+    const a = allowed(r);
+    if (a !== true) return a;
+    const v = await editedAt(ids.book);
+    return v === null ? true : `stamped ${v}`;
+  });
 }
 
 async function serviceChecks() {
@@ -302,6 +359,17 @@ async function serviceChecks() {
   await check(who, "reads every user's eligibility_checks", async () => {
     const r = await admin.from("eligibility_checks").select("profile_id").in("profile_id", Object.values(ids.users));
     return !r.error && r.data.length === 2 ? true : `saw ${r.data?.length ?? r.error?.message}`;
+  });
+  await check(who, "reads sync_runs", async () => {
+    const r = await admin.from("sync_runs").select("id").eq("source_id", SYNC_SOURCE());
+    return !r.error && r.data.length === 1 ? true : `saw ${r.data?.length ?? r.error?.message}`;
+  });
+  await check(who, "editing summary leaves editor_edited_at null", async () => {
+    const r = await admin.from("opportunities").update({ summary: "Edited by the sync" }).eq("id", ids.svc).select("id");
+    const a = allowed(r);
+    if (a !== true) return a;
+    const v = await editedAt(ids.svc);
+    return v === null ? true : `stamped ${v}`;
   });
   await check(who, "check row cascades with its opportunity", async () => {
     await admin.from("opportunities").delete().eq("id", ids.pub);

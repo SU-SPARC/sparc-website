@@ -37,6 +37,14 @@ The surface is editor+ only because it lives in `/admin` (the brief asked for
 that). RLS on the new tables mirrors the content tables, so a members-facing
 page can be added later with no schema change.
 
+**Keeping the lists current.** A scheduled sync (`docs/LOCATOR-SYNC.md`,
+migration 0004) pulls listings twice a day from public job boards (Greenhouse,
+Lever, Ashby, Workday, SimplifyJobs) and event feeds (Devpost, MLH, Meetup, Luma,
+Suffolk calendars), names the source on every row (`source_name`, `source_url`,
+`external_id`), marks vanished postings closed, and leaves an editor's saved
+summary, description, eligibility and tags alone. New sync rows carry an
+**Unreviewed** chip until an editor presses "Mark reviewed".
+
 Non-goals for v1: live search of external job boards (no APIs or keys; each
 screen instead has "Search elsewhere" outbound links carrying the current
 query), applying from the site, email digests, a public page.

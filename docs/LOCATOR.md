@@ -212,12 +212,26 @@ export const TERM_LABELS: Record<InternshipTerm, string>;           // Co-op · 
 export const VERDICT_LABELS: Record<EligibilityVerdict, string>;    // Eligible · Likely eligible · Unclear · Not eligible
 export const WORK_AUTH_LABELS: Record<WorkAuth, string>;
 export function postingSiteFromUrl(url: string): string | null;     // host → 'LinkedIn' | 'Handshake' | 'Indeed' | 'Greenhouse' | 'Lever' | 'Workday' | 'Devpost' | 'MLH' | 'Luma' | 'Eventbrite' | 'Meetup' | 'IEEE' | else the host without www.
+// Date words and states, in lib/data/locator-dates.ts, locator-state.ts and locator-sections.ts, re-exported from locator.ts (DESIGN-BRIEF §13, §15).
 export function deadlineStatus(deadline_on: DateOnly | null, today: DateOnly): "none" | "open" | "closing_soon" | "closed";   // closing_soon = within 14 days
 export function dateStatus(o: { starts_on: DateOnly | null; ends_on: DateOnly | null }, today: DateOnly): "undated" | "upcoming" | "ongoing" | "past";
-export function formatDateRange(starts_on: DateOnly | null, ends_on: DateOnly | null): string | null;  // "Oct 3–4, 2026", "Oct 3, 2026", "Oct 30 – Nov 1, 2026"; uses formatDateOnly, never new Date(str)
+export function formatDateRange(starts_on: DateOnly | null, ends_on: DateOnly | null): string | null;  // "Oct 3–4, 2026", "Oct 30 – Nov 1, 2026"; always carries the year
+export function formatShortDate(date: DateOnly, today: DateOnly): string;   // "Oct 13"; "Oct 13, 2027" outside today's year
+export function relativeDayText(date: DateOnly, today: DateOnly): string;   // "today", "tomorrow", "in 5 days", "3 days ago", "in 2 months"
+export function dateWithRelative(date: DateOnly, today: DateOnly): string;  // "Oct 25, 2026 · in 7 days"
+export function deadlineTiming(deadline_on: DateOnly, today: DateOnly): string;  // "closes in 5 days", "closed 3 days ago"
+export function eventTiming(o, today): string | null;               // "starts in 6 days", "ends tomorrow", "ended 3 days ago"
+export function signupWindowFact(o, today): string | null;          // "Oct 13–25, 2026 · closes in 7 days"
 export function monthKey(d: DateOnly): string;                      // "2026-10"
 export function monthLabel(key: string): string;                    // "October 2026"
-export function rowFilterKeys(o: Opportunity, today: DateOnly): string[];  // every filter key the row matches: its terms, its area, 'upcoming' | 'past', 'closing_soon', 'ieee' when tags include it
+export function listingState(o, today): { word: string; tone: "ink" | "muted" | "warning" | "accent"; detail: string | null };  // the §13 state word + "closes in 7 days"
+export function signupState(o, today): string | null;               // hackathons: "Signup opens Oct 13" | "Signup open" | "Signup closes in 3 days" | "Signup closed"
+export function isPastListing(o, today): boolean;                   // Closed, Deadline passed or Ended
+export function listedAgo(o): string;                               // the instant behind "Listed 3d ago": posted_at ?? first_seen_at ?? created_at
+export function verifiedState(o, today): { text: string; warning: boolean } | null;  // "Verified Oct 16" | "Not verified since Sep 10" (warning, > 30 days) | "Not verified" (warning); null for a sync row seen in the last 2 days
+export function sectionsForEvents<T>(rows: T[], today): { key; label; rows: T[]; collapsed: boolean }[];       // This week, Running now, Later this month, one per month, Undated, Past
+export function sectionsForInternships<T>(rows: T[], today): { key; label; rows: T[]; collapsed: boolean }[];  // Closing this week, Open, No deadline, Deadline passed
+export function rowFilterKeys(o: Opportunity, today: DateOnly): string[];  // its terms, its area, 'upcoming' | 'past' (event kinds) or 'closing_soon' | 'deadline_passed' (internships), 'ieee', 'unreviewed', 'closed'
 export function searchElsewhere(kind: OpportunityKind, query: string): { label: string; href: string }[];
 ```
 
@@ -348,29 +362,39 @@ today; `/admin/locator/profile` highlights "Locator profile" only.
 
 ## List screen (all four kinds, one component)
 
-References are in the Reference index at the end; open them before building.
+References are in the Reference index at the end; open them before building. Layout and states follow DESIGN-BRIEF §2, §13 and §15.
 
-1. **Header**: `h1` with the kind label + count (`text-ink-muted`), right: primary button "New internship" (≤640px: "New"). Same as brief §2.
-2. **Toolbar**: search input (client-side; matches title, organizer, location, tags, posting site) + `FilterChip`s with counts: always All / Published / Hidden, then the kind's own:
+Files: `components/locator/locator-list.tsx` (state, header, sections, delete dialog), `locator-toolbar.tsx` (search + chips + "Search elsewhere"), `locator-section.tsx` (heading + table, collapsible), `locator-row.tsx` (one row and its ⋯ menu), `listing-state.tsx` (the state word).
+
+1. **Header**: `h1` with the kind label + "12 open" (`text-ink-muted`; past rows are not counted), right: primary button "New internship" (≤640px: "New"). Same as brief §2.
+2. **Toolbar**: search input (client-side; matches title, organizer, location, tags, posting site) + `FilterChip`s with counts: always All / Published / Hidden / Closed (editors), then the kind's own:
 
    | kind | extra chips |
    |---|---|
-   | internships | Co-op · Semester part-time · Summer · Winter · Closing soon |
-   | conferences | Upcoming · Past · Boston · Online · IEEE |
-   | networking | Upcoming · Suffolk · Boston · Outside Boston · Online |
-   | hackathons | Upcoming · Boston · Outside Boston · Online |
+   | internships | Co-op · Semester part-time · Summer · Winter · Closing soon · Deadline passed · Unreviewed |
+   | conferences | Upcoming · Past · Boston · Online · IEEE · Unreviewed |
+   | networking | Upcoming · Past · Suffolk · Boston · Outside Boston · Online · Unreviewed |
+   | hackathons | Upcoming · Past · Boston · Outside Boston · Online · Unreviewed |
 
-   Chips use `rowFilterKeys`. One chip active at a time (brief §2 pattern). Counts beside each chip (R-L12).
+   Chips use `rowFilterKeys`. One chip active at a time (brief §2 pattern). Counts beside each chip (R-L12, M12). "Past" / "Deadline passed" match exactly the rows of the collapsed section, so the chip shows it on its own.
 3. **Search elsewhere** line under the toolbar, `text-xs text-ink-muted`: "Search elsewhere:" followed by text links (new tab, `ArrowUpRight` 12px) that carry the current query via `searchElsewhere(kind, query)`. Internships: Handshake, LinkedIn Jobs, Indeed. Conferences: IEEE conference search, Luma Boston, Eventbrite Boston. Networking: Luma Boston, Meetup, Eventbrite Boston. Hackathons: Devpost, MLH, Luma Boston. Use the base page when a query URL cannot be verified by a quick GET.
 4. **Status banner** slot (`?notice=`), then the list.
-5. **Rows** (`ListTable` / `ListRow` from `components/forms/list`), 64px:
-   - Thumb: internships → organizer initials on `bg-surface-2` (R-L04, R-L08 for the idea of a block at the left). Dated kinds → a **date block**: day number `text-sm font-medium` over month `text-label uppercase`, 40px square `rounded-control bg-surface-2` (R-L08, R-L09, R-L18). Undated → `CalendarDays` icon in the same block.
-   - Title = the edit link (`/admin/locator/<kind>/<id>`).
-   - Meta line (`text-xs text-ink-muted`): `organizer · location · when`, where `when` is "Due Jan 15, 2027" / "Rolling" (dates_note) for internships and `formatDateRange` for events; append "Closing soon" in `text-warning` when `deadlineStatus` says so (R-L06 shows the "days left" idea).
-   - `extra` slot: `Pill`s with words only: the internship terms (or the area for other kinds), the posting site, and the person's cached verdict when a check exists ("Eligible" `text-success`, "Likely eligible" `text-ink`, "Unclear" `text-warning`, "Not eligible" `text-danger`), else nothing (no "Not checked" noise).
-   - State: `StatePill` Published / Hidden. Controls: `ActionMenu` ("View posting ↗" → `url`, "Check my eligibility" (runs `checkEligibility`, then `router.refresh()`), "Mark verified today", Publish/Unpublish, divider, "Delete…"). No order buttons: lists sort by date.
-6. **Grouping** (dated kinds only): sections headed by `MicroLabel as="h2"`: one per month for upcoming and ongoing items ("October 2026", "November 2026", …), then "Undated" (items with no `starts_on`, in `created_at` desc), then "Past" (most recent first, rows `text-ink-muted`). Internships: a single table in the data layer's order (R-L01, R-L02).
+5. **Rows** (`ListTable` / `ListRow` from `components/forms/list`, fixed table layout so long meta truncates). One layout for all four kinds (§15):
+
+   | cell | content |
+   |---|---|
+   | Left block | internships: organizer initials on `bg-surface-2`; dated kinds: a **date block** (day number `text-sm font-medium` over month `text-label uppercase`, 40px `rounded-control bg-surface-2`; `CalendarDays` when undated). `opacity-60` on past rows (R-L08, M14). |
+   | Title line | the title (the edit link, or the member detail link; `text-ink-muted` on past rows), then `Pill`s: "Unreviewed" (`text-warning`, editors), terms or area, "via Greenhouse" (editors, `sourceLabel`) or the posting site (members), "3 interested", and the viewer's verdict ("Eligible" `text-success`, "Likely eligible", "Unclear" `text-warning`, "Not eligible" `text-danger`). Pills wrap under the title when it is long. |
+   | Meta line | `organizer · location · dates` (`text-xs text-ink-muted`): `formatDateRange` for events ("Oct 24–25, 2026"), "Due Nov 15, 2026" or the dates note ("Rolling") for internships. "Checking eligibility…" and check errors appear under it. |
+   | Status column | `ListingState compact`: the state word (§13) in its tone, plus the hackathon signup line; then "Listed 3d ago" (`TimeAgo` on `listedAgo`) and, when `verifiedState` warns, "Not verified since Sep 10" in `text-warning`. |
+   | Visibility (editors) | `StatePill` Published / Hidden. |
+   | Actions | `ActionMenu`: "View posting ↗", "Check my eligibility" (when `aiConfigured()`), and for editors "Mark reviewed" (unreviewed sync rows), "Mark verified today", "Open source ↗", Publish/Unpublish, divider, "Delete…". Members keep the first two. |
+
+   Below 640px the status column stacks under the meta line, then the state pill.
+6. **Sections**, each headed by `MicroLabel as="h2"` with its count (`sectionsForEvents` / `sectionsForInternships`): dated kinds **This week** (today and the next six days, plus events under way that span 14 days or fewer), **Running now** (under way and longer than 14 days, both ends counted: the calendar's long-event rule), **Later this month**, one per later month ("November 2026"), **Undated** (newest first), then **Past** (most recently ended first). Internships: **Closing this week**, **Open**, **No deadline**, then **Deadline passed**. The past section (Closed, Deadline passed, Ended) starts collapsed in the shared `Expand` behind a text button "Show 12 past hackathons" / "Show 9 whose deadline passed" ("Hide past hackathons" / "Hide passed deadlines"), unless it is the only section showing.
 7. **States**: empty, filtered-empty, loading, error exactly as brief §2. Delete uses `ConfirmDialog` and the list-notice redirect.
+
+**State words** (`listingState`, §13): Closed (muted; `closed_at` set), Hidden (muted; unpublished with no `closed_at`, editors only, keeping its date line and section), then internships Deadline passed (muted) / Closing soon (warning, ≤ 14 days) / Open (ink, also with no deadline); event kinds Ended (muted) / Today (accent text) / Ongoing (ink) / Upcoming (ink) / Undated (muted). `today` is `isoDateOnly(new Date())` on the server, passed down; never hard-coded.
 
 Mobile (≤640px): as brief §2; chips scroll horizontally; the "Search elsewhere" links wrap.
 
@@ -387,7 +411,9 @@ Main column `FormSection`s:
 | When and where | Area (`RadioCards`: Suffolk / Boston / Outside Boston / Online, one line each); Format (`Select`); Location (optional); Starts / Ends (date inputs, hidden for internships); Deadline (date input, label "Application deadline" / "Registration deadline"); Dates note (optional, helper "Rolling, TBA, last year's dates, …"). |
 | Terms (internships only) | `Checkbox` group `name="internship_terms"`: Co-op, Semester part-time, Summer, Winter. |
 
-Rail: `PublishCard` (helperOn "Listed in Locator"); **Eligibility** card (below); **Verified** card (`RailCard`: "Verified Oct 16, 2026" or "Never verified" in `text-warning`, a "Mark verified today" outline button calling `markOpportunityVerified`, and a `Field` for the verified-on date inside the form); `RecordCard`. Then `DangerZone` ("Removes this internship from Locator. Eligibility checks for it are removed too.").
+Rail: **At a glance** (`AtAGlance`, below); `PublishCard` (helperOn "Listed in Locator"); **Eligibility** card (below); **Verified** card (`RailCard`: "Verified Oct 16, 2026" or "Never verified" in `text-warning`, a "Mark verified today" outline button calling `markOpportunityVerified`, and a `Field` for the verified-on date inside the form); `RecordCard`. Then `DangerZone` ("Removes this internship from Locator. Eligibility checks for it are removed too.").
+
+**At a glance** (`components/locator/at-a-glance.tsx`, DESIGN-BRIEF §15): the first rail card on the edit page and on the members' listing page. `ListingState` large (the word `text-sm font-medium` in its tone, the relative line "starts in 8 days", the hackathon signup line), then a two-column fact grid (`dt` label, `dd` value), nulls omitted: **Deadline** (internships: "Nov 15, 2026 · closes in 28 days", or the dates note) / **Registration** (conferences, networking) / **Signup** (hackathons: "Oct 13–25, 2026 · closes in 7 days"); **Event** ("Oct 26 – Nov 4, 2026 · starts in 8 days"); **Where** (location · format); **Team size**; **Prizes**; **Pay** / **Cost**; **Listed** ("3d ago via Devpost"); **Verified** ("Oct 16, 2026 · 2 days ago", or the warning from `verifiedState`).
 
 New screen: `EditHeader` title "New internship", then **ImportFromUrl** above the form (R-L16, R-L17): a `SurfaceCard` with `MicroLabel` "Import from a link", helper "Paste the posting page. The club's AI fills the form; check every field before saving.", a URL `Input` + outline button "Import" (pending: "Reading page…"). On success the form's fields are set from the draft (controlled inputs keyed by a `draftVersion` counter so `defaultValue` re-applies), a `StatusBanner` tone "info" says "Imported from <host>. <confidence_notes joined>. Check every field before saving.", and the hidden `source` is "import". When `aiConfigured()` is false the card shows one line: "AI import needs the club’s Anthropic API key on the server. See docs/LOCATOR.md." and no button. Field errors from the action show under the URL field.
 
@@ -436,10 +462,13 @@ editing; `/dashboard/locator` shows them exactly what members see.
   `OpportunityDetail` in the main column: Overview (summary, description,
   pills for terms or area, posting site, tags), Who can apply (`eligibility`
   text, else "The listing doesn't say…"), When and where (`dl`: Dates,
-  deadline with "Closing soon" / "Passed", Format, Location, Pay or Cost,
-  Terms), then a `text-xs` freshness line from `verified_on`. Rail:
-  `EligibilityCard mode="member"`. `getOpportunity(id, { publishedOnly:
-  true })`, so an unpublished id is a 404 for everyone.
+  deadline or signup window, Format, Location, Pay or Cost, Terms), then the
+  source line and a `text-xs` freshness line from `verified_on`. Every date
+  carries its relative text ("Nov 15, 2026 · closes in 28 days", "Closed Oct
+  20, 2026 · 2 days ago"). Rail: **At a glance** first, then
+  `EligibilityCard mode="member"`, then (event kinds) `InterestToggle`.
+  `getOpportunity(id, { publishedOnly: true })`, so an unpublished id is a
+  404 for everyone.
 - **Profile** (`/dashboard/locator/profile`): `CareerProfileForm`, same as
   the admin page; `saveCareerProfile` revalidates both `/admin/locator` and
   `/dashboard/locator`.
@@ -489,8 +518,8 @@ revalidates both Locator trees. `saveOpportunity` takes `opens_on`,
 |---|---|
 | Edit form (`/admin/locator/<kind>/<id>`, `/new`) | "Signup opens" before the deadline for every event kind (the deadline reads "Signup closes" for hackathons); hackathons get a "Hackathon details" section: Team size, Prizes, What's provided. Fields a kind does not show are kept as hidden inputs. |
 | Edit page rail (event kinds) | `InterestCard` "Members interested" under Verified, above Source: name, "Enrolling" / "Interested" pill, note, `TimeAgo`; "No one yet." Names only. |
-| Lists (both trees) | hackathon meta `organizer · location · signup window · event dates`; a "3 interested" pill on any row with interest |
-| Members' listing (`/dashboard/locator/<kind>/<id>`) | hackathons: "Signup window" in When and where, and a "Hackathon details" section (nulls omitted). Rail, event kinds: `InterestToggle` "Your interest": "I'm interested" / "I'm enrolling" (the active one accent-filled; pressing it again clears), an optional one-line note, inline "Saved", then "Members going" with everyone's rows. |
+| Lists (both trees) | hackathon rows show the signup line ("Signup closes in 3 days", `signupState`) under the state word; a "3 interested" pill on any row with interest |
+| Members' listing (`/dashboard/locator/<kind>/<id>`) | hackathons: "Signup" in At a glance and "Signup window" in When and where, and a "Hackathon details" section (nulls omitted). Rail, event kinds: `InterestToggle` "Your interest": "I'm interested" / "I'm enrolling" (the active one accent-filled; pressing it again clears), an optional one-line note, inline "Saved", then "Members going" with everyone's rows. |
 
 Files: `components/locator/interest-card.tsx` (`InterestList`, `InterestCard`,
 server-safe), `components/locator/interest-toggle.tsx` (client),

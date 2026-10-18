@@ -382,3 +382,164 @@ Local paths are relative to the session scratchpad (`/private/tmp/claude-501/-Vo
 | R30 | Resend | Log in | [open](https://mobbin.com/screens/f66a3de6-e328-43db-87eb-9a2271aab64f) | https://mobbin.com/api/mcp/short/FIPyDMPe | design-refs/30-resend-login.png | '← Home' top-left; mark + title; Password label row with 'Forgot your password?' right-aligned; eye toggle inside the field. |
 
 Searches run: admin dashboard, content management list, edit form settings, image upload, empty state, kanban board, project board sprint, project card progress, team members roles table, invite member, link in bio (iOS screens + site sections), login email password, delete confirmation (flows), sidebar navigation, mobile board, one-time secret, unsaved-changes save bar. The generic "mobile board" query returned unrelated screens; naming Trello and Jira returned R20–R21. No screen covered original-vs-compressed size or SAFe PI grouping; those specs come from `docs/ARCHITECTURE.md`.
+
+---
+
+# Redesign addendum, October 2026: dashboard calendar, Locator pages, themes, date states
+
+Status: design, 18 October 2026. Sections 13–16 extend this brief for the
+members' dashboard, the Locator screens (`docs/LOCATOR.md`) and the admin
+shell. The rules in §0 and §12 still apply to every screen. References are
+`M<nn>` in the index at the end; local previews live in the session
+scratchpad under `design-refs/`.
+
+## 13. Date states: every listing says whether it is still live
+
+"Today" is always the current calendar date in America/New_York
+(`isoDateOnly(new Date())`), computed on the server and passed down; it is
+never hard-coded. Every listing gets one **state word** and a tone, computed
+by one helper (`listingState(o, today)` in `lib/data/locator.ts`) and shown
+the same way everywhere (list row, detail page, calendar):
+
+| kind | state word (tone) | rule |
+|---|---|---|
+| any | **Closed** (muted) | `closed_at` set |
+| any | **Hidden** (muted) | `published = false`, no `closed_at`, admin side; keeps its date line and its date section |
+| internship | **Deadline passed** (muted) | `deadline_on < today` |
+| internship | **Closing soon** (warning) | deadline within 14 days |
+| internship | **Open** (ink) | deadline later, or no deadline ("Rolling") |
+| event kinds | **Ended** (muted) | `ends_on ?? starts_on` `< today` |
+| event kinds | **Today** (accent text) | starts today |
+| event kinds | **Ongoing** (ink) | `starts_on <= today <= ends_on` |
+| event kinds | **Upcoming** (ink) | `starts_on > today` |
+| event kinds | **Undated** (muted) | no `starts_on` |
+| hackathon signup | **Signup opens <date>** / **Signup open** / **Signup closes in 3 days** / **Signup closed** | from `opens_on` / `deadline_on` relative to today; shown as a second line under the event state |
+
+Next to the state word, every row and detail page shows a **relative line**:
+"Listed 3d ago" (from `posted_at ?? first_seen_at ?? created_at`) and, when
+`verified_on` is older than 30 days or null on a non-sync row, "Not verified
+since Sep 10" in `text-warning`. Rows in a muted state (Closed, Deadline
+passed, Ended) render with `text-ink-muted` titles and sit in a collapsed
+section at the bottom of the list ("Show 12 past events" / "Show 9 whose
+deadline passed", using the shared `Expand`), so old posts never look current.
+Dates always carry the year when it is not the current year.
+
+## 14. Members' dashboard with the Locator calendar (`/dashboard`)
+
+Replaces §6's hub layout. Keep the header (name, role, joined) and the
+notice banner.
+
+Layout ≥1024px: two columns, `lg:grid-cols-[1fr_20rem]`, gap 10.
+
+Left column, in order:
+1. **Calendar card** (`SurfaceCard`): `MicroLabel` "Locator calendar" with
+   the month and year as `text-base font-medium`, prev / next month icon
+   buttons and a "Today" text button at the right (M03, M05). A 7-column
+   grid: weekday initials `text-label text-ink-muted`, then the days as
+   `button`s (36px squares at ≥640px, 44px below), outside-month days
+   `text-ink-faint`, today with a 1px `border-accent` ring, the selected
+   day `bg-surface-2`. Under each day number: a 4px dot when the day has
+   an event (`bg-ink-muted`), an accent dot when the member is **attending**
+   (status interested or enrolled; M04, M06 legend idea). Multi-day events
+   of 14 days or fewer mark every day of their span. Longer ones (long
+   online hackathons, submission windows) mark only their start and end
+   days, are labelled "starts" / "ends" (`text-xs text-ink-muted` after the
+   title) in the day list, and appear once in "Coming up for you", on
+   whichever of the two comes next. A legend line under the grid: "● attending
+   · ● event" in `text-xs text-ink-muted` (the first dot accent). Keyboard:
+   roving tabindex, arrow keys move the focused day, Enter selects,
+   `aria-pressed` on the selected day, `aria-label` "Saturday, October 24:
+   2 events, 1 attending".
+2. **Selected day's events** right under the grid, inside the same card:
+   "Sat, Oct 24" `MicroLabel`, then one line per event: kind (`Pill`),
+   title as a link to `/dashboard/locator/<kind>/<id>`, location or
+   "Online", and an "Enrolling" / "Interested" pill in accent when
+   attending (M01's day card, M07's side list). Empty: "Nothing on Oct 18.
+   Next up: HackHarvard, Oct 24 →" (link selects that day).
+3. **Coming up for you**: the next five events the member is attending; if
+   none, the next five upcoming events with the line "Mark 'I'm
+   interested' on a listing to see it here." (M02's focus list).
+4. The existing **My tasks**, **My projects**, **My requests** sections.
+
+Right column: **My card** as before (narrower), then **Your Locator**:
+three plain lines "2 enrolling · 3 interested", "4 deadlines in the next
+14 days" (internships), link "Open Locator →". No tiles, no sparklines.
+
+Data: `lib/data/calendar.ts` (server-only) `getCalendar({ from, to })` →
+published conferences, networking events and hackathons whose span
+overlaps `[from, to]`, each with `attending: InterestStatus | null` for
+the caller (join `opportunity_interest` for `auth.uid()`), plus
+`getLocatorSummary()` for the right column. The page loads one window:
+the first of last month to the end of five months ahead; the calendar
+navigates inside that window and shows "Beyond this window: open
+Locator" at the edges.
+
+Mobile: single column, card first (calendar), 44px day targets, the
+selected-day list stays inside the card.
+
+## 15. Locator rows and detail: one layout for all four kinds
+
+Row (both admin and members; replaces the current meta line):
+
+| cell | content |
+|---|---|
+| Left block | events: date block (day / MON); internships: organizer initials; closed or ended rows `opacity-60` |
+| Title line | title (link), then `Pill`s: kind-specific (terms or area), "via Source" (admin only), "3 interested" |
+| Meta line | `organizer · location · dates` ("Oct 24–25, 2026", "Due Nov 15, 2026", "Rolling") |
+| Right column | the **state word** (§13) on the first line with its tone, "Listed 3d ago" under it in `text-xs text-ink-muted`; admin only: the StatePill (Published / Hidden) and the ⋯ menu |
+
+Sections: dated kinds: **This week** (including events under way that span
+14 days or fewer), **Running now** (under way and longer than 14 days, both
+ends counted), **Later this month**, then one per month, then **Undated**,
+then the collapsed **Past**. Internships:
+**Closing this week**, **Open**, **No deadline**, then the collapsed
+**Deadline passed**. Section headings stay `MicroLabel as="h2"` with a
+count. Filter chips keep their counts (M12) and gain **Past** / **Deadline
+passed** chips so the collapsed section can be shown on its own.
+
+Detail (members' listing page and the admin edit page's rail) gets an **At
+a glance** card first: the state word large (`text-sm font-medium` with
+tone), then a two-column fact grid: "Signup" (window with relative text:
+"closes in 7 days, Oct 25"), "Event" (dates with relative text), "Where"
+(location · format), "Team size", "Prizes", "Pay / cost", "Listed" ("3d
+ago via Devpost"), "Verified" (date or the warning). Facts that are null
+are omitted. The members' page keeps Your eligibility, Your interest,
+Overview, Who can apply and Source as they are, below the glance card.
+
+Admin edit page: the glance card goes at the top of the rail (above
+Status). Nothing else moves.
+
+## 16. Theme switch in the admin and members shells
+
+A `ThemeSwitch` segmented control (`role="radiogroup"`, three `radio`
+buttons: **Light · Dim · Dark**, lucide `Sun`, `CloudMoon`, `Moon` at 16px
+with the label, 32px tall, `rounded-control border border-line`, the
+active option `bg-surface-2 text-ink`, the others `text-ink-muted`; M08,
+M09). It calls `setTheme` from next-themes (themes already exist as
+`.light`, `.dim`, `.dark` in `globals.css`); the choice persists site-wide
+as the public navbar's toggle already does. Before mount it renders the
+three options disabled so nothing jumps.
+
+Placement: admin sidebar foot, above the account block, with a
+`MicroLabel` "Theme"; the same block in the mobile menu panel; the
+members' top bar, left of the account button (icons only below 640px,
+`aria-label`s carry the names). No settings page, no preview cards.
+
+## Reference index (addendum)
+
+| id | app | screen | Mobbin | image | local | what to take |
+|---|---|---|---|---|---|---|
+| M01 | Workable | Dashboard, day card | [open](https://mobbin.com/screens/7ccd1718-5df0-4271-bb15-28eac3f4a97a) | https://mobbin.com/api/mcp/short/YvdwqTjD | M01-workable-dashboard-day-card.webp | profile card left; a "Thursday 16 April" day card with prev/next and the day's events; lists as plain cards |
+| M02 | Rox | Home, focus list | [open](https://mobbin.com/screens/62b4d10c-498e-49eb-bf78-3b944290f407) | https://mobbin.com/api/mcp/short/wFfxYr9r | M02-rox-home-today-card.webp | "Here's your focus for today"; list rows with source, title, time-ago; a Today card with prev/next |
+| M03 | Midday | Month grid | [open](https://mobbin.com/screens/8cb15741-d890-4c46-b514-53e0038793ec) | https://mobbin.com/api/mcp/short/7cTrxIR0 | M03-midday-month-grid.webp | quiet grid, outside-month days hatched/muted, today shaded, month/week toggle at right |
+| M04 | Proton | Mini month in sidebar | [open](https://mobbin.com/screens/36c81cb9-2bfa-46c6-bd8e-06bcfd0c81fa) | https://mobbin.com/api/mcp/short/tpFKuupR | M04-proton-mini-month-sidebar.webp | compact month, today highlighted, dots + short titles in the main grid |
+| M05 | Skiff | Mini month | [open](https://mobbin.com/screens/940774ea-77a5-4594-a075-d600b53d2b63) | https://mobbin.com/api/mcp/short/qFrfbB6G | M05-skiff-mini-month.webp | small month with today in accent, selected week shaded |
+| M06 | Front | Mini month + legend | [open](https://mobbin.com/screens/fbb5409f-550a-474c-a93e-d4054fc883cc) | https://mobbin.com/api/mcp/short/KO5SZ7iV | M06-front-mini-month-legend.webp | calendar legend as a checklist with colours (we use two dots and words) |
+| M07 | Todoist | Upcoming + side list | [open](https://mobbin.com/screens/00fa2808-750c-499a-8bc7-b9d2c4e758cc) | https://mobbin.com/api/mcp/short/KqBSeHhs | M07-todoist-upcoming-side-list.webp | month grid with a grouped "next 7 days" list beside it |
+| M08 | Profound | Appearance | [open](https://mobbin.com/screens/065209b0-8f6b-4c38-a0a7-56aa8cc0bfc9) | https://mobbin.com/api/mcp/short/I1J1ssFa | M08-profound-theme-segmented.webp | one row: "Theme · Light" with a three-icon segmented control |
+| M09 | GitBook | Theme icons | [open](https://mobbin.com/screens/bce484e1-eaff-4835-855b-8da3552c525f) | https://mobbin.com/api/mcp/short/PbagA0VR | M09-gitbook-theme-icons.webp | sun/moon segmented control in a toolbar |
+| M10 | Better Stack | Theme cards | [open](https://mobbin.com/screens/1ec0d237-177e-40b6-b709-5343ced7691c) | https://mobbin.com/api/mcp/short/jr58SR3z | M10-betterstack-theme-cards.webp | preview cards (what we are NOT doing: no settings page) |
+| M11 | Wrike | Appearance cards | [open](https://mobbin.com/screens/89bad015-20d5-4936-a79c-3cdef882a0d7) | https://mobbin.com/api/mcp/short/dtcAd8gi | M11-wrike-appearance-cards.webp | selected state as a 2px border (we use bg-surface-2 on a 32px segment) |
+| M12 | Remote | Jobs, status chips | [open](https://mobbin.com/screens/41d62eb9-da69-4d4c-8d9c-9329f7edd888) | https://mobbin.com/api/mcp/short/v8XV5KoE | M12-remote-jobs-status-chips.webp | All/Draft/Open/On hold/Closed chips with counts; a status word per row |
+| M13 | Employment Hero | Jobs, status pill | [open](https://mobbin.com/screens/28d12727-c5e7-41b5-a885-ee14a3e91e4e) | https://mobbin.com/api/mcp/short/auKfKJiv | M13-employment-hero-status-pill.webp | OPEN pill + "Created on" date column; "Close this job" in the row menu |
+| M14 | Care.com | Your jobs | [open](https://mobbin.com/screens/a5fc04c8-0654-4b3a-b661-ecbcdf123768) | https://mobbin.com/api/mcp/short/fXTe3sw7 | M14-care-starts-on-line.webp | "Starts on Mon, Feb 23, 2026" as a plain line under the title |

@@ -1,10 +1,12 @@
 "use client";
 
-/* The 7-column month grid of the dashboard calendar (docs/DESIGN-BRIEF.md
- * §14, point 1): weekday initials, then six weeks of day buttons. Each day
- * shows an accent dot when the member is attending something that day and a
- * muted dot for any other event. Outside-month days are faint; days outside
- * the loaded window are disabled.
+/* The 7-column month grid of the compact dashboard calendar
+ * (docs/DESIGN-BRIEF.md §14, point 1, and its amendment): a tight row of
+ * weekday initials, then six weeks of 32px day buttons (44px below 640px,
+ * narrowing to the column on a small phone). Each day shows an accent dot
+ * when the member is attending something that day and a muted dot for any
+ * other event. Outside-month days are faint; days outside the loaded window
+ * are disabled.
  *
  * Keyboard: roving tabindex (only the focused day is in the tab order), the
  * arrow keys move it a day or a week, Enter or Space selects.
@@ -78,10 +80,10 @@ export function CalendarMonthGrid({
   const weeks = monthGrid(year, monthNumber);
 
   return (
-    <div ref={gridRef} role="group" aria-label={monthName} className="flex flex-col gap-1">
+    <div ref={gridRef} role="group" aria-label={monthName} className="flex flex-col">
       <div aria-hidden="true" className="grid grid-cols-7">
         {weekdayInitials.map((initial, index) => (
-          <span key={index} className="py-1 text-center text-label text-ink-muted">
+          <span key={index} className="pb-1 text-center text-label text-ink-muted">
             {initial}
           </span>
         ))}
@@ -144,7 +146,7 @@ function DayButton({ day, today, events, inMonth, inWindow, selected, focused, o
       onKeyDown={(event) => onKeyDown(event, day)}
       className={cn(
         "mx-auto flex h-11 w-full max-w-11 flex-col items-center justify-center gap-1 rounded-control border",
-        "text-sm leading-none tabular-nums transition-colors enabled:hover:bg-surface-2 sm:size-9",
+        "text-sm leading-none tabular-nums transition-colors enabled:hover:bg-surface-2 sm:size-8",
         isToday ? "border-accent" : "border-transparent",
         selected && "bg-surface-2",
         inMonth ? "text-ink" : "text-ink-faint",

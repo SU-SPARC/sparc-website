@@ -1,10 +1,12 @@
 "use client";
 
-/* The "Locator calendar" card on the members' dashboard
- * (docs/DESIGN-BRIEF.md §14, points 1 and 2): month and year with
- * previous / next / Today, the month grid, a two-dot legend, and the
- * selected day's events under it. It moves only inside the window the page
- * loaded; at its first and last month a line points to the Locator.
+/* The compact "Locator calendar" card in the members' dashboard right column
+ * (docs/DESIGN-BRIEF.md §14 and its amendment): a MicroLabel heading above
+ * the card, then one header line (month and year, previous / next, Today),
+ * the month grid with 32px days (44px below 640px), a one-line two-dot
+ * legend, and the selected day's events (at most three) under it. It moves
+ * only inside the window the page loaded; at its first and last month a
+ * line points to the Locator.
  *
  * Used by: app/(members)/dashboard/page.tsx. Children:
  * calendar-month-grid.tsx and calendar-day-events.tsx. */
@@ -77,18 +79,16 @@ export function MiniCalendar({ events, today, windowFrom, windowTo }: MiniCalend
   }
 
   return (
-    <section aria-labelledby="locator-calendar">
-      <SurfaceCard className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <MicroLabel as="h2" id="locator-calendar">
-              Locator calendar
-            </MicroLabel>
-            <p aria-live="polite" className="text-base font-medium text-ink">
-              {monthName}
-            </p>
-          </div>
-          <div className="ml-auto flex items-center gap-1">
+    <section aria-labelledby="locator-calendar" className="flex w-full max-w-sm flex-col gap-3">
+      <MicroLabel as="h2" id="locator-calendar">
+        Locator calendar
+      </MicroLabel>
+      <SurfaceCard className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <p aria-live="polite" className="min-w-0 text-sm font-medium text-ink">
+            {monthName}
+          </p>
+          <div className="flex flex-none items-center">
             <MonthButton label="Previous month" disabled={atFirstMonth} onClick={() => showMonth(addMonths(month, -1))}>
               <ChevronLeft aria-hidden="true" className="size-4" />
             </MonthButton>
@@ -127,7 +127,6 @@ export function MiniCalendar({ events, today, windowFrom, windowTo }: MiniCalend
         </div>
 
         <CalendarDayEvents
-          key={selected}
           day={selected}
           today={today}
           events={sortDayEvents(byDay.get(selected) ?? [])}
@@ -142,7 +141,7 @@ export function MiniCalendar({ events, today, windowFrom, windowTo }: MiniCalend
 /** "● attending · ● event": the accent dot first, as in the grid. */
 function Legend() {
   return (
-    <p className="flex items-center gap-1.5">
+    <p className="flex items-center gap-1.5 whitespace-nowrap">
       <span aria-hidden="true" className="size-1 rounded-full bg-accent" />
       attending
       <span aria-hidden="true">·</span>

@@ -1,7 +1,9 @@
-/* Members' dashboard (docs/DESIGN-BRIEF.md §14). ≥1024px: two columns.
- * Left: the Locator calendar card, "Coming up for you", then My tasks,
- * My projects and My requests. Right (20rem): My card, then "Your Locator".
- * Mobile: one column in that order, calendar first.
+/* Members' dashboard (docs/DESIGN-BRIEF.md §14 and its amendment).
+ * ≥1024px: two columns. Left: "Coming up for you", then My tasks,
+ * My projects and My requests. Right (20rem): My card, "Your Locator",
+ * then the compact Locator calendar card. Below 1024px: one column, the
+ * left column's sections first, then My card, Your Locator and the
+ * calendar.
  *
  * Calendar data comes from lib/data/calendar.ts for one window: the first
  * day of last month to the last day of five months ahead. `today` is the
@@ -73,7 +75,6 @@ export default async function DashboardPage({
 
       <div className="grid gap-10 lg:grid-cols-[1fr_20rem]">
         <div className="flex min-w-0 flex-col gap-10">
-          <MiniCalendar events={events} today={today} windowFrom={windowFrom} windowTo={windowTo} />
           <ComingUp events={events} today={today} />
           <MyTasksSection tasks={pm.tasks} more={pm.moreTasks} showingAll={allTasks} />
           <MyProjectsSection projects={pm.projects} />
@@ -83,6 +84,7 @@ export default async function DashboardPage({
         <div className="flex min-w-0 flex-col gap-10">
           <MyCardSection card={card} />
           <LocatorSummary summary={summary} />
+          <MiniCalendar events={events} today={today} windowFrom={windowFrom} windowTo={windowTo} />
         </div>
       </div>
     </div>

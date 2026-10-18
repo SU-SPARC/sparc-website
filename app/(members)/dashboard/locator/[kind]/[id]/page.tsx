@@ -14,7 +14,7 @@ import { buttonClasses } from "@/components/forms/button";
 import { AtAGlance } from "@/components/locator/at-a-glance";
 import { EligibilityCard } from "@/components/locator/eligibility-card";
 import { InterestToggle } from "@/components/locator/interest-toggle";
-import { OpportunityDetail } from "@/components/locator/opportunity-detail";
+import { OpportunityDetail, OutsideBostonNote } from "@/components/locator/opportunity-detail";
 import { aiConfigured, LOCATOR_MODEL } from "@/lib/ai/client";
 import { inputsHash } from "@/lib/ai/locator";
 import { requireUser } from "@/lib/auth";
@@ -74,6 +74,7 @@ export default async function MemberOpportunityPage({ params }: Params) {
             <span className="sr-only"> (opens in a new tab)</span>
           </a>
         </div>
+        <OutsideBostonNote opportunity={opportunity} />
         <p className="text-sm text-ink-muted">
           {opportunity.organizer_url ? (
             <a

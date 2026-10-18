@@ -2,7 +2,9 @@
  * §15): the state word large, then a two-column fact grid: Deadline /
  * Registration / Signup, Event, Where, Team size, Prizes, Pay or Cost,
  * Listed, Verified. Facts that are null are left out. Every date carries
- * its relative text ("Oct 25, 2026 · closes in 7 days"). First in the rail
+ * its relative text ("Oct 25, 2026 · closes in 7 days"). A hackathon or
+ * networking event outside Greater Boston prefixes "Where" with "Outside
+ * Boston · " in the danger tone (§18). First in the rail
  * of the members' listing page and of the admin edit page. Server-safe. */
 
 import * as React from "react";
@@ -17,6 +19,7 @@ import {
   eventTiming,
   FORMAT_LABELS,
   formatDateRange,
+  isOutsideBoston,
   listedAgo,
   signupWindowFact,
   sourceLabel,
@@ -55,13 +58,27 @@ function eventFact(o: Opportunity, today: DateOnly): Fact | null {
   return o.dates_note ? { label: "Event", value: o.dates_note } : null;
 }
 
-/** "Cambridge, MA · In person"; the format is dropped when the location already says it
+/** "Cambridge, MA · In person"; the format is dropped when the place already says it
  *  ("Online (virtual only)"). */
+function placeWithFormat(place: string, format: string): string {
+  return place.toLowerCase().includes(format.toLowerCase()) ? place : `${place} · ${format}`;
+}
+
+/** The place and format. Outside Boston (§18): "Outside Boston · Austin, TX · In person",
+ *  the marker in the danger tone; with no location the area label is the place, so only
+ *  the format follows the marker. */
 function whereFact(o: Opportunity): Fact {
-  const place = o.location ?? AREA_LABELS[o.area];
   const format = FORMAT_LABELS[o.format];
-  const value = place.toLowerCase().includes(format.toLowerCase()) ? place : `${place} · ${format}`;
-  return { label: "Where", value };
+  if (!isOutsideBoston(o)) return { label: "Where", value: placeWithFormat(o.location ?? AREA_LABELS[o.area], format) };
+  const rest = o.location ? placeWithFormat(o.location, format) : format;
+  return {
+    label: "Where",
+    value: (
+      <>
+        <span className="text-danger">{AREA_LABELS.outside_boston}</span> · {rest}
+      </>
+    ),
+  };
 }
 
 function textFact(label: string, value: string | null | undefined): Fact | null {

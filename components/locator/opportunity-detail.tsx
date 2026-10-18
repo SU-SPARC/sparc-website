@@ -8,7 +8,11 @@
  * sync controls. Hackathons show their signup window in place of the
  * deadline and a "Hackathon details" section (team size, prizes, what's
  * provided; nulls omitted). The At a glance, eligibility and interest cards
- * sit in the rail (the page passes them to EditColumns). Server-safe. */
+ * sit in the rail (the page passes them to EditColumns). Server-safe.
+ *
+ * OutsideBostonNote is the header line under the title for a hackathon or
+ * networking event outside Greater Boston (§18); the members' listing page
+ * renders it in its header. */
 
 import { ArrowUpRight } from "lucide-react";
 import * as React from "react";
@@ -23,10 +27,11 @@ import {
   eventTiming,
   FORMAT_LABELS,
   formatDateRange,
+  isOutsideBoston,
   KIND_CONFIG,
   signupWindowFact,
   sourceLabel,
-  TERM_LABELS,
+  jobPillLabels,
 } from "@/lib/data/locator";
 import type { DateOnly, Opportunity } from "@/lib/data/types";
 
@@ -59,11 +64,18 @@ function closedText(o: Opportunity, today: DateOnly): string | null {
   return `Closed ${dateWithRelative(isoDateOnly(new Date(o.closed_at)), today)}`;
 }
 
+/** "Outside Boston" under the listing's title, in the danger tone; nothing
+ *  for Suffolk, Boston, Online or the kinds that are not marked. */
+export function OutsideBostonNote({ opportunity }: { opportunity: Pick<Opportunity, "kind" | "area"> }) {
+  if (!isOutsideBoston(opportunity)) return null;
+  return <p className="text-sm text-danger">{AREA_LABELS.outside_boston}</p>;
+}
+
 export function OpportunityDetail({ opportunity: o, today }: { opportunity: Opportunity; today: DateOnly }) {
   const cfg = KIND_CONFIG[o.kind];
   const internship = o.kind === "internship";
   const hackathon = o.kind === "hackathon";
-  const labels = internship ? o.internship_terms.map((t) => TERM_LABELS[t]) : [AREA_LABELS[o.area]];
+  const labels = internship ? jobPillLabels(o) : [AREA_LABELS[o.area]];
   const chips = [...labels, ...(o.posting_site ? [o.posting_site] : []), ...o.tags];
   const closed = closedText(o, today);
   const hasRange = formatDateRange(o.starts_on, o.ends_on) !== null;

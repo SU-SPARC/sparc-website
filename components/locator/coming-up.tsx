@@ -1,9 +1,11 @@
 /* "Coming up for you" on the members' dashboard (docs/DESIGN-BRIEF.md §14,
  * point 3): the next five events the member is attending, or, when there
  * are none, the next five upcoming events with a hint. Each row: a date
- * block, the title link, the kind, the place and a relative day. A long
- * event (over 14 days) appears once, on whichever of its start or end comes
- * next, with "starts" / "ends" after the title. Server-safe, no state.
+ * block, the title link, the kind, the place (with the "Outside Boston"
+ * marker, §18) and a relative day. A long event (over 14 days) appears
+ * once, on whichever of its start or end comes next, with "starts" /
+ * "ends" after the title. Left column, above My tasks. Server-safe, no
+ * state.
  *
  * Used by: app/(members)/dashboard/page.tsx, with the same events the
  * calendar gets. */
@@ -11,13 +13,13 @@
 import Link from "next/link";
 
 import { MicroLabel } from "@/components/ui/micro-label";
-import { comingUp, eventPlace, type CalendarEvent, type EventOnDay } from "@/lib/data/calendar-events";
+import { comingUp, type CalendarEvent, type EventOnDay } from "@/lib/data/calendar-events";
 import { relativeDay } from "@/lib/data/calendar-helpers";
 import { formatDateOnly, parseDateOnly } from "@/lib/data/dates";
 import { formatDateRange } from "@/lib/data/locator";
 import type { DateOnly } from "@/lib/data/types";
 
-import { AttendingPill, KindPill } from "./calendar-event-meta";
+import { AttendingPill, EventPlace, KindPill } from "./calendar-event-meta";
 
 const linkClass = "text-ink underline underline-offset-4 hover:text-accent-text";
 
@@ -68,7 +70,9 @@ function ComingUpRow({ item, today }: { item: EventOnDay; today: DateOnly }) {
           </Link>
           {moment ? <span className="text-xs text-ink-muted"> · {moment}</span> : null}
         </p>
-        <span className="text-xs text-ink-muted [overflow-wrap:anywhere]">{eventPlace(event)}</span>
+        <span className="text-xs text-ink-muted [overflow-wrap:anywhere]">
+          <EventPlace event={event} />
+        </span>
         <span className="flex flex-wrap gap-1.5">
           <KindPill kind={event.kind} />
           {event.attending ? <AttendingPill status={event.attending} /> : null}

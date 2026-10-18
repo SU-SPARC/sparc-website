@@ -543,3 +543,63 @@ members' top bar, left of the account button (icons only below 640px,
 | M12 | Remote | Jobs, status chips | [open](https://mobbin.com/screens/41d62eb9-da69-4d4c-8d9c-9329f7edd888) | https://mobbin.com/api/mcp/short/v8XV5KoE | M12-remote-jobs-status-chips.webp | All/Draft/Open/On hold/Closed chips with counts; a status word per row |
 | M13 | Employment Hero | Jobs, status pill | [open](https://mobbin.com/screens/28d12727-c5e7-41b5-a885-ee14a3e91e4e) | https://mobbin.com/api/mcp/short/auKfKJiv | M13-employment-hero-status-pill.webp | OPEN pill + "Created on" date column; "Close this job" in the row menu |
 | M14 | Care.com | Your jobs | [open](https://mobbin.com/screens/a5fc04c8-0654-4b3a-b661-ecbcdf123768) | https://mobbin.com/api/mcp/short/fXTe3sw7 | M14-care-starts-on-line.webp | "Starts on Mon, Feb 23, 2026" as a plain line under the title |
+
+## 17. Jobs: type and season (18 October 2026, second round)
+
+The Internships list becomes a jobs list with two filter rows under the
+search box (both rows use `FilterChip`s with counts; one chip active per
+row; the two rows combine with AND):
+
+| row | chips | data |
+|---|---|---|
+| Type | All · Internship · Co-op · New grad | `opportunities.job_type` enum `job_type ('internship', 'coop', 'new_grad')`, default `internship` |
+| Term | All · Summer · Fall · Spring · Winter · Part-time | `internship_terms` (enum `internship_term` gains `spring` and `fall`; `semester_part_time` stays and is labelled "Part-time") |
+
+Rules:
+- `job_type` is set by the editor (radio in the form's Basics section:
+  Internship / Co-op / New grad), by the seed (co-op when the research
+  item's terms contain `coop`, else internship), and by the sync (title
+  says "co-op" → `coop`; "new grad", "new graduate", "university
+  graduate", "early career", "campus hire" → `new_grad`; else
+  `internship`). New-grad titles pass the student-role filter.
+- Term inference maps "fall" → `fall`, "spring" → `spring`, "summer" →
+  `summer`, "winter"/"january" → `winter`, "part-time"/"year-round" →
+  `semester_part_time`. A co-op may carry a season too ("Spring 2027
+  co-op").
+- The row's first pill is the type when it is not an internship ("Co-op",
+  "New grad"), followed by the term pills.
+- Sections stay by deadline (§15). The page title stays "Internships" in
+  the nav; the list header reads "Internships, co-ops and new-grad roles"
+  in `text-sm text-ink-muted` under the h1.
+- The SimplifyJobs New-Grad source is enabled, filtered to Boston / MA /
+  remote US like the internships file.
+
+## 18. Outside Boston: a red marker on hackathons and networking events
+
+For hackathons and networking events with `area = "outside_boston"`
+(in person somewhere other than Greater Boston), every place the listing
+appears shows the word **Outside Boston** in the danger tone, so the
+member sees at once that it means travel:
+
+- list row: the area `Pill` becomes `border-danger text-danger` with the
+  text "Outside Boston" (other areas keep the quiet pill);
+- At a glance: the "Where" value is prefixed "Outside Boston · " in
+  `text-danger`;
+- dashboard calendar day list and "Coming up for you": a `text-xs
+  text-danger` "Outside Boston" after the place;
+- members' listing header: the same word under the title.
+
+Suffolk, Boston and Online stay as they are. Conferences are not marked
+(not requested); the helper `isOutsideBoston(o)` makes adding them a
+one-line change.
+
+## 14 (amendment). Compact calendar in the right column
+
+The calendar card moves to the **right column**, under My card and Your
+Locator, and becomes compact: 32px day cells on every width (44px only
+below 640px), the month header on one line, no weekday row gap, the
+legend on one line, and the selected day's list capped at three entries
+with a "N more in Locator →" link to the members' list filtered to that
+kind. "Coming up for you" stays in the left column above My tasks. The
+left column is therefore: Coming up for you, My tasks, My projects, My
+requests. Right column: My card, Your Locator, Locator calendar.

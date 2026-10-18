@@ -13,7 +13,7 @@ opportunities for members, and the same four lists read-only under
 
 | screen | URL | what goes in it |
 |---|---|---|
-| Internships | `/admin/locator/internships` | internship and co-op postings, filtered by term: Co-op, Semester part-time, Summer, Winter |
+| Internships | `/admin/locator/internships` | internships, co-ops and new-grad roles, filtered by type (Internship, Co-op, New grad) and by term (Summer, Fall, Spring, Winter, Part-time) |
 | Conferences | `/admin/locator/conferences` | tech and research conferences: MIT URTC, Stanford's undergraduate research conference, IEEE and non-IEEE programs |
 | Networking | `/admin/locator/networking` | networking events inside Suffolk and outside: Boston Tech Week, startup gatherings, open and formal meetings |
 | Hackathons | `/admin/locator/hackathons` | university hackathons in Greater Boston (BU, Harvard, MIT, …) and online ones (Microsoft, OpenAI, Anthropic, Google, MLH, Devpost) |
@@ -65,7 +65,8 @@ trigger (`private.set_updated_at`), comments on tables.
 
 ```
 opportunity_kind    enum ('internship', 'conference', 'networking', 'hackathon')
-internship_term     enum ('coop', 'semester_part_time', 'summer', 'winter')
+internship_term     enum ('coop', 'semester_part_time', 'summer', 'winter')   -- + 'spring', 'fall' (0006); 'coop' is legacy
+job_type            enum ('internship', 'coop', 'new_grad')                 -- 0006_job_types.sql
 opportunity_area    enum ('suffolk', 'boston', 'outside_boston', 'online')
 opportunity_format  enum ('in_person', 'online', 'hybrid')
 eligibility_verdict enum ('eligible', 'likely', 'unclear', 'not_eligible')
@@ -90,6 +91,7 @@ opportunities
   deadline_on      date                             -- application / registration / CFP deadline
   dates_note       text                             -- 'Rolling', '2027 dates TBA; 2026 ran Oct 3–4', …
   internship_terms internship_term[] not null default '{}'   -- internships only
+  job_type         job_type not null default 'internship'    -- internships only (0006); editor-owned like the terms
   pay              text                             -- '$35/hr', 'Unpaid', 'Free to attend', …
   eligibility      text                             -- who can apply, as the source states it
   tags             text[] not null default '{}'     -- lowercase: 'ai', 'ieee', 'startups', …
@@ -154,7 +156,8 @@ Field names mirror the columns; date-only columns stay `DateOnly`.
 
 ```ts
 export type OpportunityKind = "internship" | "conference" | "networking" | "hackathon";
-export type InternshipTerm = "coop" | "semester_part_time" | "summer" | "winter";
+export type InternshipTerm = "coop" | "semester_part_time" | "summer" | "winter" | "spring" | "fall";
+export type JobType = "internship" | "coop" | "new_grad";                    // 0006
 export type OpportunityArea = "suffolk" | "boston" | "outside_boston" | "online";
 export type OpportunityFormat = "in_person" | "online" | "hybrid";
 export type EligibilityVerdict = "eligible" | "likely" | "unclear" | "not_eligible";
@@ -169,7 +172,7 @@ export type Opportunity = {
   url: string; posting_site: string | null; summary: string | null; description: string | null;
   area: OpportunityArea; format: OpportunityFormat; location: string | null;
   starts_on: DateOnly | null; ends_on: DateOnly | null; deadline_on: DateOnly | null; dates_note: string | null;
-  internship_terms: InternshipTerm[]; pay: string | null; eligibility: string | null; tags: string[];
+  internship_terms: InternshipTerm[]; job_type: JobType; pay: string | null; eligibility: string | null; tags: string[];
   source: OpportunitySource; verified_on: DateOnly | null; published: boolean;
   created_at: string; updated_at: string;
 };
@@ -208,7 +211,11 @@ export function kindPath(kind: OpportunityKind, mode?: LocatorMode): string;   /
 export function profilePath(mode?: LocatorMode): string;              // "/admin/locator/profile" | "/dashboard/locator/profile"
 export const AREA_LABELS: Record<OpportunityArea, string>;          // Suffolk · Boston · Outside Boston · Online
 export const FORMAT_LABELS: Record<OpportunityFormat, string>;      // In person · Online · Hybrid
-export const TERM_LABELS: Record<InternshipTerm, string>;           // Co-op · Semester part-time · Summer · Winter
+export const TERM_LABELS: Record<InternshipTerm, string>;           // Summer · Fall · Spring · Winter · Part-time (and the legacy Co-op)
+export const TERM_ORDER: readonly InternshipTerm[];                 // summer, fall, spring, winter, semester_part_time: chips, form and pills
+export const JOB_TYPE_LABELS: Record<JobType, string>;              // Internship · Co-op · New grad
+export function jobTypeKey(type: JobType): string;                  // "type:coop", the Type chips' filter key
+export function jobPillLabels(o): string[];                         // ["Co-op", "Spring"]: the type when not an internship, then the terms
 export const VERDICT_LABELS: Record<EligibilityVerdict, string>;    // Eligible · Likely eligible · Unclear · Not eligible
 export const WORK_AUTH_LABELS: Record<WorkAuth, string>;
 export function postingSiteFromUrl(url: string): string | null;     // host → 'LinkedIn' | 'Handshake' | 'Indeed' | 'Greenhouse' | 'Lever' | 'Workday' | 'Devpost' | 'MLH' | 'Luma' | 'Eventbrite' | 'Meetup' | 'IEEE' | else the host without www.
@@ -231,7 +238,7 @@ export function listedAgo(o): string;                               // the insta
 export function verifiedState(o, today): { text: string; warning: boolean } | null;  // "Verified Oct 16" | "Not verified since Sep 10" (warning, > 30 days) | "Not verified" (warning); null for a sync row seen in the last 2 days
 export function sectionsForEvents<T>(rows: T[], today): { key; label; rows: T[]; collapsed: boolean }[];       // This week, Running now, Later this month, one per month, Undated, Past
 export function sectionsForInternships<T>(rows: T[], today): { key; label; rows: T[]; collapsed: boolean }[];  // Closing this week, Open, No deadline, Deadline passed
-export function rowFilterKeys(o: Opportunity, today: DateOnly): string[];  // its terms, its area, 'upcoming' | 'past' (event kinds) or 'closing_soon' | 'deadline_passed' (internships), 'ieee', 'unreviewed', 'closed'
+export function rowFilterKeys(o: Opportunity, today: DateOnly): string[];  // its terms, 'type:<job_type>' (internships), its area, 'upcoming' | 'past' (event kinds) or 'closing_soon' | 'deadline_passed' (internships), 'ieee', 'unreviewed', 'closed'
 export function searchElsewhere(kind: OpportunityKind, query: string): { label: string; href: string }[];
 ```
 
@@ -263,10 +270,12 @@ filter spelled out, add `.eq("eligibility_checks.profile_id", uid)`.
 saveOpportunity(prev: FormState, fd: FormData): Promise<FormState>
   // fd: id?, kind, title, slug, organizer, organizer_url, organizer_blurb, url, posting_site, summary,
   //     description, area, format, location, starts_on, ends_on, deadline_on, dates_note,
-  //     internship_terms (repeated checkbox values), pay, eligibility, tags (comma-separated),
+  //     internship_terms (repeated checkbox values), job_type (internships; default 'internship'),
+  //     pay, eligibility, tags (comma-separated),
   //     verified_on, published, source (hidden: 'import' when the form was prefilled by import, else omitted)
   // zod via lib/actions/form-data helpers. Field errors: slug taken → "{slug} is taken by '{title}'";
-  // ends_on before starts_on → on ends_on; internship_terms non-empty only for kind internship.
+  // ends_on before starts_on → on ends_on; internship_terms non-empty and job_type other than
+  // 'internship' only for kind internship.
   // New: insert with created_by = user id → redirect(withNotice(`${kindPath(kind)}/${id}`, `Created '${title}'.`))
   // Edit: update → ok(). Always revalidateSite().
 setOpportunityPublished(id: string, published: boolean): Promise<void>
@@ -366,17 +375,26 @@ References are in the Reference index at the end; open them before building. Lay
 
 Files: `components/locator/locator-list.tsx` (state, header, sections, delete dialog), `locator-toolbar.tsx` (search + chips + "Search elsewhere"), `locator-section.tsx` (heading + table, collapsible), `locator-row.tsx` (one row and its ⋯ menu), `listing-state.tsx` (the state word).
 
-1. **Header**: `h1` with the kind label + "12 open" (`text-ink-muted`; past rows are not counted), right: primary button "New internship" (≤640px: "New"). Same as brief §2.
+1. **Header**: `h1` with the kind label + "12 open" (`text-ink-muted`; past rows are not counted), right: primary button "New internship" (≤640px: "New"). Same as brief §2. Internships add a `text-sm text-ink-muted` line under the `h1`: "Internships, co-ops and new-grad roles" (`KIND_CONFIG.internship.subtitle`).
 2. **Toolbar**: search input (client-side; matches title, organizer, location, tags, posting site) + `FilterChip`s with counts: always All / Published / Hidden / Closed (editors), then the kind's own:
 
    | kind | extra chips |
    |---|---|
-   | internships | Co-op · Semester part-time · Summer · Winter · Closing soon · Deadline passed · Unreviewed |
+   | internships | Closing soon · Deadline passed · Unreviewed |
    | conferences | Upcoming · Past · Boston · Online · IEEE · Unreviewed |
    | networking | Upcoming · Past · Suffolk · Boston · Outside Boston · Online · Unreviewed |
    | hackathons | Upcoming · Past · Boston · Outside Boston · Online · Unreviewed |
 
    Chips use `rowFilterKeys`. One chip active at a time (brief §2 pattern). Counts beside each chip (R-L12, M12). "Past" / "Deadline passed" match exactly the rows of the collapsed section, so the chip shows it on its own.
+
+   Internships get two more chip rows under the search box (DESIGN-BRIEF §17), each named by a `MicroLabel` and announced as a group:
+
+   | row | chips | key |
+   |---|---|---|
+   | Type | All · Internship · Co-op · New grad | `type:internship`, `type:coop`, `type:new_grad` (`KIND_CONFIG.internship.typeFilters`) |
+   | Term | All · Summer · Fall · Spring · Winter · Part-time | the terms (`KIND_CONFIG.internship.termFilters`) |
+
+   One chip is active per row, and the three rows combine with AND ("Co-op" and "Spring" shows spring co-ops). A chip's count is the rows it would show with the other rows' chips kept, so the counts always add up to what a press would list. "Clear filters" resets all three rows and the search. Members get the same two rows.
 3. **Search elsewhere** line under the toolbar, `text-xs text-ink-muted`: "Search elsewhere:" followed by text links (new tab, `ArrowUpRight` 12px) that carry the current query via `searchElsewhere(kind, query)`. Internships: Handshake, LinkedIn Jobs, Indeed. Conferences: IEEE conference search, Luma Boston, Eventbrite Boston. Networking: Luma Boston, Meetup, Eventbrite Boston. Hackathons: Devpost, MLH, Luma Boston. Use the base page when a query URL cannot be verified by a quick GET.
 4. **Status banner** slot (`?notice=`), then the list.
 5. **Rows** (`ListTable` / `ListRow` from `components/forms/list`, fixed table layout so long meta truncates). One layout for all four kinds (§15):
@@ -384,7 +402,7 @@ Files: `components/locator/locator-list.tsx` (state, header, sections, delete di
    | cell | content |
    |---|---|
    | Left block | internships: organizer initials on `bg-surface-2`; dated kinds: a **date block** (day number `text-sm font-medium` over month `text-label uppercase`, 40px `rounded-control bg-surface-2`; `CalendarDays` when undated). `opacity-60` on past rows (R-L08, M14). |
-   | Title line | the title (the edit link, or the member detail link; `text-ink-muted` on past rows), then `Pill`s: "Unreviewed" (`text-warning`, editors), terms or area, "via Greenhouse" (editors, `sourceLabel`) or the posting site (members), "3 interested", and the viewer's verdict ("Eligible" `text-success`, "Likely eligible", "Unclear" `text-warning`, "Not eligible" `text-danger`). Pills wrap under the title when it is long. |
+   | Title line | the title (the edit link, or the member detail link; `text-ink-muted` on past rows), then `Pill`s: "Unreviewed" (`text-warning`, editors), for internships the job type when it is not an internship ("Co-op", "New grad") then the terms in `TERM_ORDER` (`jobPillLabels`), for the other kinds the area, "via Greenhouse" (editors, `sourceLabel`) or the posting site (members), "3 interested", and the viewer's verdict ("Eligible" `text-success`, "Likely eligible", "Unclear" `text-warning`, "Not eligible" `text-danger`). Pills wrap under the title when it is long. |
    | Meta line | `organizer · location · dates` (`text-xs text-ink-muted`): `formatDateRange` for events ("Oct 24–25, 2026"), "Due Nov 15, 2026" or the dates note ("Rolling") for internships. "Checking eligibility…" and check errors appear under it. |
    | Status column | `ListingState compact`: the state word (§13) in its tone, plus the hackathon signup line; then "Listed 3d ago" (`TimeAgo` on `listedAgo`) and, when `verifiedState` warns, "Not verified since Sep 10" in `text-warning`. |
    | Visibility (editors) | `StatePill` Published / Hidden. |
@@ -406,10 +424,10 @@ Main column `FormSection`s:
 
 | section | fields |
 |---|---|
-| Basics | Title; Slug (`RefField`-style monospace, proposed from the title via `slugifyTitle` on new items); Organizer (label "Company" for internships, "Organizer" for conferences and hackathons, "Host" for networking); Organizer website (optional URL); About the organizer (optional, one line); Posting URL (required, `type="url"`); Posting site (optional text, auto-filled from the URL on blur when empty, via `postingSiteFromUrl`). |
+| Basics | Title; Slug (`RefField`-style monospace, proposed from the title via `slugifyTitle` on new items); Job type (internships only: `RadioCards` Internship / Co-op / New grad, one line each, `name="job_type"`; the other kinds send their stored value as a hidden input); Organizer (label "Company" for internships, "Organizer" for conferences and hackathons, "Host" for networking); Organizer website (optional URL); About the organizer (optional, one line); Posting URL (required, `type="url"`); Posting site (optional text, auto-filled from the URL on blur when empty, via `postingSiteFromUrl`). |
 | Details | Summary (Input, ≤ 200 chars); Description (Textarea, rows 8); Eligibility (Textarea, rows 3, helper "Who can apply, as the source says it. The AI check reads this."); Pay or cost (optional); Tags (comma-separated, helper lists the common tags). |
 | When and where | Area (`RadioCards`: Suffolk / Boston / Outside Boston / Online, one line each); Format (`Select`); Location (optional); Starts / Ends (date inputs, hidden for internships); Deadline (date input, label "Application deadline" / "Registration deadline"); Dates note (optional, helper "Rolling, TBA, last year's dates, …"). |
-| Terms (internships only) | `Checkbox` group `name="internship_terms"`: Co-op, Semester part-time, Summer, Winter. |
+| Terms (internships only) | `Checkbox` group `name="internship_terms"`: Summer, Fall, Spring, Winter, Part-time. The old Co-op term is not offered (co-ops are a job type since 0006), so saving a row that still carries it drops it. |
 
 Rail: **At a glance** (`AtAGlance`, below); `PublishCard` (helperOn "Listed in Locator"); **Eligibility** card (below); **Verified** card (`RailCard`: "Verified Oct 16, 2026" or "Never verified" in `text-warning`, a "Mark verified today" outline button calling `markOpportunityVerified`, and a `Field` for the verified-on date inside the form); `RecordCard`. Then `DangerZone` ("Removes this internship from Locator. Eligibility checks for it are removed too.").
 
@@ -528,9 +546,9 @@ not fit a job posting.
 
 ## Seed and scripts
 
-- `scripts/seed/locator/{internships,conferences,networking,hackathons}.json`: research output. Shape = the `opportunities` columns minus bookkeeping, plus `source_url` (kept out of the table; used only for the report). Validated by zod in the seed. `opens_on`, `team_size`, `prizes` and `provided` (0005) are optional keys, written only when an item has them.
+- `scripts/seed/locator/{internships,conferences,networking,hackathons}.json`: research output. Shape = the `opportunities` columns minus bookkeeping, plus `source_url` (kept out of the table; used only for the report). Validated by zod in the seed. `opens_on`, `team_size`, `prizes` and `provided` (0005) are optional keys, written only when an item has them. `job_type` (0006) is optional too, but always written: the item's own key, else `coop` when its terms include `coop`, else `internship`. Terms may be `summer`, `fall`, `spring`, `winter`, `semester_part_time` (and the legacy `coop`).
 - `scripts/seed/locator.ts` (`npm run seed:locator`): reads the four files, validates, upserts on `slug` with `source = 'seed'`, `created_by = null`, `verified_on` from the file. Idempotent; prints per-kind counts. Env as the main seed (`.env.local`: URL + `SUPABASE_SECRET_KEY`).
-- `scripts/rls-check-locator.ts` (`npm run rls:check-locator`): throwaway users as in `rls-check.ts`; proves anon reads published rows only; member cannot insert/update `opportunities`; editor can; `career_profiles` and `eligibility_checks` are own-row only for select and write (a second user sees nothing); `opportunity_interest` is readable by every signed-in user and writable only by its owner, anon gets nothing; an editor's change to `prizes` stamps `editor_edited_at`; service role bypasses. Target ≥ 16 checks.
+- `scripts/rls-check-locator.ts` (`npm run rls:check-locator`): throwaway users as in `rls-check.ts`; proves anon reads published rows only; member cannot insert/update `opportunities`; editor can; `career_profiles` and `eligibility_checks` are own-row only for select and write (a second user sees nothing); `opportunity_interest` is readable by every signed-in user and writable only by its owner, anon gets nothing; an editor's change to `prizes` (0005) or `job_type` (0006) stamps `editor_edited_at`; service role bypasses. Target ≥ 16 checks.
 
 ## Environment
 

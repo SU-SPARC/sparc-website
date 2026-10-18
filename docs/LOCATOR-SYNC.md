@@ -24,7 +24,7 @@ elsewhere" links), log in anywhere, or delete rows.
 | `lever` | internship | `GET https://api.lever.co/v0/postings/<company>?mode=json` | `lever:<company>:<id>` |
 | `ashby` | internship | `GET https://api.ashbyhq.com/posting-api/job-board/<board>?includeCompensation=true` | `ashby:<board>:<id>` |
 | `workday` | internship | `POST https://<tenant>.<wd>.myworkdayjobs.com/wday/cxs/<tenant>/<site>/jobs` with `{appliedFacets:{}, limit, offset, searchText:"intern"}`; detail `GET …/wday/cxs/<tenant>/<site>/<externalPath>` | `workday:<tenant>:<externalPath>` |
-| `simplify` | internship | raw `listings.json` from the SimplifyJobs internships repo (and New-Grad for later) | `simplify:<id>` |
+| `simplify` | internship | raw `listings.json` from the SimplifyJobs internships repo and the New-Grad repo (`job_type: "new_grad"`) | `simplify:<repo>:<id>` |
 | `devpost` | hackathon | `GET https://devpost.com/api/hackathons?status[]=upcoming&status[]=open&page=n` | `devpost:<id or url slug>` |
 | `mlh` | hackathon | the season events page (JSON if it exists, else the stable HTML cards) | `mlh:<event slug>` |
 | `meetup_ical` | networking | `https://www.meetup.com/<group>/events/ical/` per configured group | `meetup:<group>:<uid>` |
@@ -67,7 +67,8 @@ editor adds a company by adding a line:
       "careers_url": "https://www.klaviyo.com/careers", "office": "Boston, MA", "tags": ["software", "ecommerce"] },
     { "id": "liberty-mutual", "adapter": "workday", "tenant": "libertymutual", "host": "wd5", "site": "Careers",
       "company": "Liberty Mutual Insurance", "careers_url": "…", "office": "Boston, MA", "tags": ["insurance", "data"] },
-    { "id": "simplify-internships", "adapter": "simplify", "repo": "SimplifyJobs/Summer2027-Internships", "path": ".github/scripts/listings.json" }
+    { "id": "simplify-internships", "adapter": "simplify", "repo": "SimplifyJobs/Summer2027-Internships", "path": ".github/scripts/listings.json" },
+    { "id": "simplify-new-grad", "adapter": "simplify", "repo": "SimplifyJobs/New-Grad-Positions", "job_type": "new_grad" }
   ],
   "events": [
     { "id": "devpost-upcoming", "adapter": "devpost" },
@@ -91,14 +92,20 @@ type SyncItem = {
   area: OpportunityArea; format: OpportunityFormat; location: string | null;
   starts_on: DateOnly | null; ends_on: DateOnly | null; deadline_on: DateOnly | null; dates_note: string | null;
   internship_terms: InternshipTerm[]; pay: string | null; eligibility: string | null; tags: string[];
+  job_type?: JobType;         // internships (0006): "internship" | "coop" | "new_grad"; event adapters leave it out
   posted_at: string | null;   // ISO, for "new since" ordering
 };
 ```
 
 Rules applied to job items before they are kept:
 
-- Title must match `/\b(intern|internship|co-?op|apprentice)\b/i` and must not
-  match `/\b(senior|staff|principal|manager|director|lead)\b/i`.
+- Title must match `/\b(intern|internship|co-?op|apprentice)\b/i` or, since 0006, a new-grad
+  phrase `/\b(new grad(uate)?|university graduate|early career|campus hire)\b/i`, and must not
+  match `/\b(senior|staff|principal|manager|director|lead)\b/i` (`isStudentRole`).
+- The job type comes from the title (`inferJobType`): "co-op" → `coop`; "new grad", "new
+  graduate", "university graduate", "early career", "campus hire" → `new_grad`; anything else →
+  `internship`. A co-op may carry a season too: "Software Engineer Co-op (Spring 2027)" is
+  `coop` with the term `spring`.
 - Title must be in a technical field: a title naming a non-technical function (HR, talent,
   marketing, sales, finance, legal, contracts, supply chain, clinical, …) is dropped unless it
   also names a technical one (`engineer`, `software`, `data`, `analytics`, `research`, `cyber`,
@@ -108,12 +115,22 @@ Rules applied to job items before they are kept:
   or `/remote/i` (then `area = "online"`, `format = "online"`); anything else is dropped.
   `area = "boston"` for Massachusetts, `"outside_boston"` for other US cities.
   `format = "hybrid"` when the text says so.
-- Terms are inferred from title and text: `summer` → `summer`; `co-op`/`coop` → `coop`;
-  `winter`/`january`/`winternship` → `winter`; `fall`/`spring`/`part-time`/`year-round` → `semester_part_time`.
-  Nothing inferable → `[]` and `dates_note = "Term not stated in the posting."`.
+- Terms are inferred from the title, else the text (`termsIn`): `summer` → `summer`;
+  `fall`/`autumn` → `fall`; `spring` → `spring`; `winter`/`january`/`winternship` → `winter`;
+  `part-time`/`year-round` → `semester_part_time`. "Co-op" is no longer a term (it is the job
+  type). Nothing inferable → `[]` and `dates_note = "Term not stated in the posting."`, except on
+  new-grad roles, which have no term and get no note.
 - `pay` from structured compensation when the source has it (Ashby, Greenhouse metadata), else null.
 - `description` is the posting's plain text (HTML stripped) cut at 6000 characters; `summary` is
   its first sentence or two (≤ 300 chars). No AI call by default.
+
+SimplifyJobs: the list's own terms map "Summer 2027" → `summer`, "Fall 2026" → `fall`,
+"Spring 2027" → `spring`, "Winter 2027" → `winter`; a listing whose terms have all ended is
+dropped; with no term list the title may name one. The internships list trusts its titles. The
+New-Grad list (`simplify-new-grad`, `"job_type": "new_grad"`) has no terms; every row is
+`new_grad`, kept with the same Massachusetts / US-remote rule, and must also pass the
+not-senior and technical-field rules (that list carries some "Senior Software Engineer" and
+non-technical roles).
 
 Event items: Devpost gives title, url, dates text (parsed to `starts_on`/`ends_on`), location
 ("Online" → `area: "online"`), prize (→ `prizes`, not `pay`), organizer, themes → tags; MLH gives name, dates, city/online;
@@ -165,7 +182,7 @@ Upsert rules in the sync (service role, `onConflict: source_name,external_id`):
 | column group | on insert | on later runs |
 |---|---|---|
 | `title, url, location, pay, posting_site, posted_at, starts_on, ends_on, deadline_on, last_seen_at` | from the source | **always** from the source (the source is the truth for these) |
-| `summary, description, eligibility, tags, area, format, internship_terms, dates_note, organizer_url`, and since 0005 `opens_on, team_size, prizes, provided` | from the source | from the source **only while `editor_edited_at` is null**; once an editor has saved the row, these are theirs |
+| `summary, description, eligibility, tags, area, format, internship_terms, dates_note, organizer_url`, since 0005 `opens_on, team_size, prizes, provided`, and since 0006 `job_type` | from the source | from the source **only while `editor_edited_at` is null**; once an editor has saved the row, these are theirs |
 | `published` | `true` | untouched, except re-opened rows (below) |
 | `source = 'sync'`, `source_name`, `source_url`, `external_id`, `first_seen_at` | set | never changed |
 | `closed_at` | null | set to now when a **successful** run of that source no longer returns the item; cleared (and `published` set back to true) if it returns |

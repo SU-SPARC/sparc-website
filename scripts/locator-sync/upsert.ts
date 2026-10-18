@@ -5,7 +5,8 @@
  *   always from the source   title, url, location, pay, posting_site, posted_at,
  *                            starts_on, ends_on, deadline_on, last_seen_at
  *   until an editor edits    summary, description, eligibility, tags, area, format,
- *                            internship_terms, dates_note, organizer_url
+ *                            internship_terms, dates_note, organizer_url,
+ *                            opens_on, team_size, prizes, provided (0005)
  *   set once on insert       kind, slug, organizer, source = 'sync', source_name,
  *                            source_url, external_id, first_seen_at, published = true
  *   published                untouched, except a closed row that comes back (re-opened)
@@ -75,6 +76,10 @@ function editorialColumns(i: SyncItem) {
     internship_terms: i.internship_terms,
     dates_note: i.dates_note,
     organizer_url: i.organizer_url,
+    opens_on: i.opens_on ?? null,
+    team_size: i.team_size ?? null,
+    prizes: i.prizes ?? null,
+    provided: i.provided ?? null,
   } satisfies TablesUpdate<"opportunities">;
 }
 

@@ -84,7 +84,8 @@ licence, so rows only link to the employer's posting. Id `simplify:<repo>:<id>`.
 
 **devpost** (`pages` default 3): `GET devpost.com/api/hackathons?status[]=upcoming&status[]=open&page=n`
 (9 per page) plus one `search=boston` page. The submission-period text ("Oct 05 - 27, 2026")
-becomes `starts_on` / `ends_on` / `deadline_on`; themes become tags; the prize HTML becomes `pay`.
+becomes `starts_on` / `ends_on` / `deadline_on`; themes become tags; the prize HTML becomes `prizes`
+("$10,000 in prizes"; `pay`, the cost, stays null).
 Online → area online; Massachusetts → boston; other US → outside_boston; elsewhere dropped.
 Id `devpost:<id>`.
 

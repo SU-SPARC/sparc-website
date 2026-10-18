@@ -116,7 +116,7 @@ Rules applied to job items before they are kept:
   its first sentence or two (≤ 300 chars). No AI call by default.
 
 Event items: Devpost gives title, url, dates text (parsed to `starts_on`/`ends_on`), location
-("Online" → `area: "online"`), prize, organizer, themes → tags; MLH gives name, dates, city/online;
+("Online" → `area: "online"`), prize (→ `prizes`, not `pay`), organizer, themes → tags; MLH gives name, dates, city/online;
 Meetup iCal gives SUMMARY/DTSTART/DTEND/LOCATION/URL/DESCRIPTION for the next 120 days. Past events are skipped.
 
 ## Writes and ownership (who may change which column)
@@ -165,7 +165,7 @@ Upsert rules in the sync (service role, `onConflict: source_name,external_id`):
 | column group | on insert | on later runs |
 |---|---|---|
 | `title, url, location, pay, posting_site, posted_at, starts_on, ends_on, deadline_on, last_seen_at` | from the source | **always** from the source (the source is the truth for these) |
-| `summary, description, eligibility, tags, area, format, internship_terms, dates_note, organizer_url` | from the source | from the source **only while `editor_edited_at` is null**; once an editor has saved the row, these are theirs |
+| `summary, description, eligibility, tags, area, format, internship_terms, dates_note, organizer_url`, and since 0005 `opens_on, team_size, prizes, provided` | from the source | from the source **only while `editor_edited_at` is null**; once an editor has saved the row, these are theirs |
 | `published` | `true` | untouched, except re-opened rows (below) |
 | `source = 'sync'`, `source_name`, `source_url`, `external_id`, `first_seen_at` | set | never changed |
 | `closed_at` | null | set to now when a **successful** run of that source no longer returns the item; cleared (and `published` set back to true) if it returns |

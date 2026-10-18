@@ -65,12 +65,16 @@ const OpportunityShape = z.object({
   location: zMax(200),
   starts_on: zOptDateOnly,
   ends_on: zOptDateOnly,
+  opens_on: zOptDateOnly,
   deadline_on: zOptDateOnly,
   dates_note: zMax(300),
   internship_terms: z.array(z.enum(TERMS, { error: "Pick a listed term." })),
   pay: zMax(120),
   eligibility: zMax(2000),
   tags: zTags,
+  team_size: zMax(120),
+  prizes: zMax(600),
+  provided: zMax(600),
   verified_on: zOptDateOnly,
   published: zBool,
   source: z
@@ -106,6 +110,9 @@ export async function saveOpportunity(_prev: FormState, fd: FormData): Promise<F
   if (values.starts_on && values.ends_on && values.ends_on < values.starts_on) {
     extra.ends_on = ["The end date can't be before the start date."];
   }
+  if (values.opens_on && values.deadline_on && values.opens_on > values.deadline_on) {
+    extra.opens_on = ["Signup can't open after it closes."];
+  }
   if (values.kind !== "internship" && values.internship_terms.length > 0) {
     extra.internship_terms = ["Terms apply to internships only."];
   }
@@ -138,10 +145,11 @@ export async function setOpportunityPublished(id: string, published: boolean): P
   revalidateSite();
 }
 
-/* Bookkeeping updates. The mark_editor_edit trigger (0004) stamps
- * editor_edited_at only when an editor changes a descriptive column (summary,
- * description, eligibility, tags, area, format, terms, dates note, organizer
- * fields), so these plain updates leave the sync's ownership rules untouched. */
+/* Bookkeeping updates. The mark_editor_edit trigger (0004, extended in 0005)
+ * stamps editor_edited_at only when an editor changes a descriptive column
+ * (summary, description, eligibility, tags, area, format, terms, dates note,
+ * organizer fields, signup opens, team size, prizes, provided), so these
+ * plain updates leave the sync's ownership rules untouched. */
 
 /** verified_on = today in America/New_York. */
 export async function markOpportunityVerified(id: string): Promise<void> {

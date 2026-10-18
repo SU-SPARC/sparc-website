@@ -236,6 +236,17 @@ with unannounced dates say so in their dates note. Load or refresh the
 researched starter set with `npm run seed:locator` (it upserts by slug, so
 edits to other fields survive). Details: `docs/LOCATOR.md`.
 
+**Hackathon details and who's going.** On a hackathon's edit page, fill in
+**Signup opens** and **Signup closes** (the registration window; the event's
+own dates stay in Starts / Ends), then **Hackathon details**: Team size
+("1–4"), Prizes and What's provided (meals, travel, credits, mentors, swag),
+as plain text from the event page. Members see these on the listing and can
+press **I'm interested** or **I'm enrolling** with a short note ("looking for a
+frontend teammate"); everyone signed in sees who is going, so teams form on
+their own. The edit page's **Members interested** card lists those names (no
+emails), and the list shows "3 interested" on the row. Members change only
+their own interest; editors can't change it for them.
+
 **Locator sync** (twice a day, automatic). A GitHub Actions workflow
 (`.github/workflows/locator-sync.yml`) runs `npm run locator:sync` at 07:00 and
 19:00 Boston time. It reads public job and event feeds listed in
@@ -248,7 +259,8 @@ published and marked **Unreviewed** until an editor opens them and presses
 **Mark reviewed**. Postings that disappear from their feed are marked
 **Closed** and hidden, never deleted. The sync always refreshes a listing's
 title, link, location, pay and dates; once an editor has saved a listing, its
-summary, description, eligibility and tags are the editor's and are left alone.
+summary, description, eligibility, tags and hackathon details are the
+editor's and are left alone.
 To add a company, add a line to `sources.json` (its README says how) and open a
 pull request; to run the sync by hand, use the workflow's **Run workflow**
 button on GitHub, or locally `npm run locator:sync -- --dry-run` first. The

@@ -1,7 +1,9 @@
 /* Devpost hackathon listing (undocumented JSON behind devpost.com/hackathons):
  *   GET https://devpost.com/api/hackathons?status[]=upcoming&status[]=open&page=n   (9 per page)
  * plus one `search=boston` page so local in-person events are never paged out.
- * Dates are the submission period as text ("Oct 05 - 27, 2026"). */
+ * Dates are the submission period as text ("Oct 05 - 27, 2026"). The prize
+ * pool goes in `prizes`; `pay` (the cost) stays null, since the listing
+ * does not say. */
 
 import { clean, htmlToText, normalizeTags, placeEvent, today } from "../normalize";
 import type { Adapter, SyncItem } from "../types";
@@ -71,11 +73,11 @@ export const devpost: Adapter<"devpost"> = {
       const place = placeEvent(locText, online);
       if (!place) continue;
       const prize = h.prize_amount ? clean(htmlToText(h.prize_amount)) : "";
-      const pay = prize && prize !== "$0" ? `${prize} in prizes` : null;
+      const prizes = prize && prize !== "$0" ? `${prize} in prizes` : null;
       const organizer = clean(h.organization_name ?? "") || "Devpost";
       const bits = [
         `${place.area === "online" ? "Online" : "In-person"} hackathon hosted by ${organizer}`,
-        pay ? `${pay}` : null,
+        prizes,
         h.registrations_count ? `${h.registrations_count.toLocaleString("en-US")} registered` : null,
       ].filter(Boolean);
       items.push({
@@ -98,10 +100,12 @@ export const devpost: Adapter<"devpost"> = {
         deadline_on: dates.ends_on,
         dates_note: `Submission period ${clean(h.submission_period_dates ?? "")}.`,
         internship_terms: [],
-        pay,
+        pay: null,
         eligibility: null,
         tags: normalizeTags([...s.tags, ...(h.themes ?? []).map((t) => t.name)], 5),
         posted_at: null,
+        prizes,
+        team_size: null,
       });
     }
     return { fetched: byId.size, items };

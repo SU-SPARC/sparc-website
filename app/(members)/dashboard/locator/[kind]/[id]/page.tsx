@@ -1,7 +1,8 @@
 /* Members' read-only listing (docs/LOCATOR.md, "Members view"): the facts
  * in OpportunityDetail, "View posting" as the main action, and the
- * eligibility card in the rail. Published rows only; an unpublished or
- * unknown id is a 404 for everyone, editors included. */
+ * eligibility card in the rail, then (event kinds) "Your interest" with
+ * everyone who is going. Published rows only; an unpublished or unknown id
+ * is a 404 for everyone, editors included. */
 
 import { ArrowUpRight } from "lucide-react";
 import type { Metadata } from "next";
@@ -11,13 +12,14 @@ import { notFound, redirect } from "next/navigation";
 import { EditColumns } from "@/components/admin/edit-layout";
 import { buttonClasses } from "@/components/forms/button";
 import { EligibilityCard } from "@/components/locator/eligibility-card";
+import { InterestToggle } from "@/components/locator/interest-toggle";
 import { OpportunityDetail } from "@/components/locator/opportunity-detail";
 import { aiConfigured, LOCATOR_MODEL } from "@/lib/ai/client";
 import { inputsHash } from "@/lib/ai/locator";
 import { requireUser } from "@/lib/auth";
 import { isoDateOnly } from "@/lib/data/dates";
 import { KIND_CONFIG, kindFromSlug, kindPath } from "@/lib/data/locator";
-import { getCareerProfile, getOpportunity } from "@/lib/data/opportunities";
+import { getCareerProfile, getInterest, getOpportunity } from "@/lib/data/opportunities";
 
 type Params = { params: Promise<{ kind: string; id: string }> };
 
@@ -32,13 +34,18 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function MemberOpportunityPage({ params }: Params) {
   const { kind: slug, id } = await params;
   const kind = kindFromSlug(slug) ?? notFound();
-  await requireUser(`${kindPath(kind, "member")}/${id}`);
-  const [found, profile] = await Promise.all([getOpportunity(id, { publishedOnly: true }), getCareerProfile()]);
+  const me = await requireUser(`${kindPath(kind, "member")}/${id}`);
+  const [found, profile, interest] = await Promise.all([
+    getOpportunity(id, { publishedOnly: true }),
+    getCareerProfile(),
+    getInterest(id),
+  ]);
   if (!found) notFound();
   // A listing opened under the wrong kind goes to its own URL.
   if (found.kind !== kind) redirect(`${kindPath(found.kind, "member")}/${found.id}`);
 
-  const { check, ...opportunity } = found;
+  const { check, interest_count: _count, ...opportunity } = found;
+  void _count;
   const cfg = KIND_CONFIG[kind];
   const currentHash = profile ? inputsHash(opportunity, profile, LOCATOR_MODEL) : null;
 
@@ -84,14 +91,24 @@ export default async function MemberOpportunityPage({ params }: Params) {
 
       <EditColumns
         rail={
-          <EligibilityCard
-            opportunityId={opportunity.id}
-            initial={check}
-            currentHash={currentHash}
-            aiConfigured={aiConfigured()}
-            hasProfile={profile !== null}
-            mode="member"
-          />
+          <>
+            <EligibilityCard
+              opportunityId={opportunity.id}
+              initial={check}
+              currentHash={currentHash}
+              aiConfigured={aiConfigured()}
+              hasProfile={profile !== null}
+              mode="member"
+            />
+            {cfg.dated ? (
+              <InterestToggle
+                opportunityId={opportunity.id}
+                initial={interest.mine}
+                members={interest.members}
+                selfId={me.user.id}
+              />
+            ) : null}
+          </>
         }
       >
         <OpportunityDetail opportunity={opportunity} today={isoDateOnly(new Date())} />

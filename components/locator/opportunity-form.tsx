@@ -3,7 +3,10 @@
 /* OpportunityForm — the Locator edit form (docs/LOCATOR.md, "Edit and New
  * screens"; brief §3). EditForm → saveOpportunity, EditColumns with the
  * rail: Status, the eligibility card (passed in by the edit page),
- * Verified, the Source card (also passed in), Record. Sync rows carry a
+ * Verified, the interest card and the Source card (both passed in), Record.
+ * Event kinds get a "Signup opens" date; hackathons a "Hackathon details"
+ * section (team size, prizes, what's provided; 0005). Fields a kind does not
+ * show travel as hidden inputs so a save keeps them. Sync rows carry a
  * note under Basics on which fields the sync keeps refreshing
  * (docs/LOCATOR-SYNC.md).
  *
@@ -40,6 +43,13 @@ const FORMATS: OpportunityFormat[] = ["in_person", "online", "hybrid"];
 const TERMS: InternshipTerm[] = ["coop", "semester_part_time", "summer", "winter"];
 const SUMMARY_MAX = 200;
 
+const DEADLINE_LABEL: Record<OpportunityKind, string> = {
+  internship: "Application deadline",
+  conference: "Registration deadline",
+  networking: "Registration deadline",
+  hackathon: "Signup closes",
+};
+
 const ORGANIZER_LABEL: Record<OpportunityKind, string> = {
   internship: "Company",
   conference: "Organizer",
@@ -66,11 +76,13 @@ export interface OpportunityFormProps {
   draft?: OpportunityDraft | null;
   /** Rail block between Status and Verified (the eligibility card). */
   eligibility?: React.ReactNode;
+  /** Rail block under Verified, above Source (the members-interested card). */
+  interest?: React.ReactNode;
   /** Rail block under Verified (the Source card). */
   source?: React.ReactNode;
 }
 
-export function OpportunityForm({ kind, opportunity: o, draft, eligibility, source }: OpportunityFormProps) {
+export function OpportunityForm({ kind, opportunity: o, draft, eligibility, interest, source }: OpportunityFormProps) {
   const cfg = KIND_CONFIG[kind];
   const isNew = o === null;
   // Saved row first, then any field the imported draft found.
@@ -106,6 +118,7 @@ export function OpportunityForm({ kind, opportunity: o, draft, eligibility, sour
             <PublishCard defaultPublished={o?.published ?? true} helperOn="Listed in Locator" />
             {eligibility}
             <VerifiedCard id={o?.id ?? null} verifiedOn={o?.verified_on ?? null} />
+            {interest}
             {source}
             <RecordCard createdAt={o?.created_at} updatedAt={o?.updated_at} />
           </>
@@ -215,15 +228,52 @@ export function OpportunityForm({ kind, opportunity: o, draft, eligibility, sour
               <input type="hidden" name="ends_on" value={text("ends_on")} />
             </>
           )}
-          <div className="grid gap-5 sm:grid-cols-2">
-            <Field label={kind === "internship" ? "Application deadline" : "Registration deadline"} name="deadline_on" optional>
-              <Input name="deadline_on" type="date" defaultValue={text("deadline_on")} />
-            </Field>
-            <Field label="Dates note" name="dates_note" optional helper="Rolling, TBA, last year's dates, …">
-              <Input name="dates_note" defaultValue={text("dates_note")} />
-            </Field>
-          </div>
+          {cfg.dated ? (
+            <>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label="Signup opens" name="opens_on" optional>
+                  <Input name="opens_on" type="date" defaultValue={text("opens_on")} />
+                </Field>
+                <Field label={DEADLINE_LABEL[kind]} name="deadline_on" optional>
+                  <Input name="deadline_on" type="date" defaultValue={text("deadline_on")} />
+                </Field>
+              </div>
+              <Field label="Dates note" name="dates_note" optional helper="Rolling, TBA, last year's dates, …">
+                <Input name="dates_note" defaultValue={text("dates_note")} />
+              </Field>
+            </>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2">
+              <input type="hidden" name="opens_on" value={text("opens_on")} />
+              <Field label={DEADLINE_LABEL[kind]} name="deadline_on" optional>
+                <Input name="deadline_on" type="date" defaultValue={text("deadline_on")} />
+              </Field>
+              <Field label="Dates note" name="dates_note" optional helper="Rolling, TBA, last year's dates, …">
+                <Input name="dates_note" defaultValue={text("dates_note")} />
+              </Field>
+            </div>
+          )}
         </FormSection>
+
+        {kind === "hackathon" ? (
+          <FormSection title="Hackathon details">
+            <Field label="Team size" name="team_size" optional helper="1–4, Solo or up to 5, …">
+              <Input name="team_size" defaultValue={text("team_size")} />
+            </Field>
+            <Field label="Prizes" name="prizes" optional helper="As the organizer states them: pool, tracks, sponsor prizes.">
+              <Textarea name="prizes" rows={2} defaultValue={text("prizes")} />
+            </Field>
+            <Field label="What's provided" name="provided" optional helper="Meals, travel reimbursement, cloud credits, mentors, swag, …">
+              <Textarea name="provided" rows={2} defaultValue={text("provided")} />
+            </Field>
+          </FormSection>
+        ) : (
+          <>
+            <input type="hidden" name="team_size" value={text("team_size")} />
+            <input type="hidden" name="prizes" value={text("prizes")} />
+            <input type="hidden" name="provided" value={text("provided")} />
+          </>
+        )}
 
         {kind === "internship" ? (
           <FormSection title="Terms">

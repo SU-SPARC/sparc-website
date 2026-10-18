@@ -6,6 +6,7 @@ import { formatDateOnly, isoDateOnly, parseDateOnly } from "./dates";
 import type {
   DateOnly,
   EligibilityVerdict,
+  InterestStatus,
   InternshipTerm,
   Opportunity,
   OpportunityArea,
@@ -68,6 +69,12 @@ export const WORK_AUTH_LABELS: Record<WorkAuth, string> = {
   needs_sponsorship: "Will need visa sponsorship",
   international_cpt_opt: "International student (CPT / OPT)",
   prefer_not_to_say: "Prefer not to say",
+};
+
+/** The pill word for a member's interest ("Enrolling" reads better beside a name than "Enrolled"). */
+export const INTEREST_LABELS: Record<InterestStatus, string> = {
+  interested: "Interested",
+  enrolled: "Enrolling",
 };
 
 const UNREVIEWED_CHIP = { key: "unreviewed", label: "Unreviewed", editorOnly: true };
@@ -264,6 +271,23 @@ export function formatDateRange(starts_on: DateOnly | null, ends_on: DateOnly | 
   const md = (v: DateOnly) => formatDateOnly(v, { month: "short", day: "numeric" });
   if (s.month === e.month) return `${md(start)}–${e.day}, ${e.year}`;
   return `${md(start)} – ${md(end)}, ${e.year}`;
+}
+
+/** "Signup Oct 1 – Nov 15, 2026", "Signup closes Nov 15, 2026",
+ *  "Signup opens Oct 1, 2026", or null when neither date is set.
+ *  opens_on (0005) is when signup opens; deadline_on is when it closes. */
+export function signupWindowLabel(o: Pick<Opportunity, "opens_on" | "deadline_on">): string | null {
+  const opens = o.opens_on ?? null;
+  const closes = o.deadline_on;
+  if (opens && closes) return `Signup ${formatDateRange(opens, closes)}`;
+  if (closes) return `Signup closes ${formatDateOnly(closes)}`;
+  if (opens) return `Signup opens ${formatDateOnly(opens)}`;
+  return null;
+}
+
+/** "3 interested"; null for none. Counts interested and enrolled alike. */
+export function interestLabel(n: number): string | null {
+  return n > 0 ? `${n} interested` : null;
 }
 
 /** "2026-10" */

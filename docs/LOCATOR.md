@@ -332,6 +332,8 @@ components/locator/opportunity-detail.tsx            read-only facts for the mem
 components/locator/member-nav.tsx                    client: the members' kind tabs + "My Locator profile"
 components/locator/import-from-url.tsx               client: URL field + Import, fills the form
 components/locator/eligibility-card.tsx              client: rail card, all states below; `mode` prop
+components/locator/interest-card.tsx                 server-safe: InterestList + editors' "Members interested" rail card (0005)
+components/locator/interest-toggle.tsx               client: members' "Your interest" rail card (0005)
 components/locator/career-profile-form.tsx           client (both profile pages)
 components/locator/search-elsewhere.tsx              outbound links row
 components/admin/admin-sidebar.tsx                   new group "Locator" + SECTION_NAMES entries
@@ -446,11 +448,60 @@ editing; `/dashboard/locator` shows them exactly what members see.
   `importOpportunityFromUrl` and every `lib/actions/opportunities.ts` action
   stay editor-only.
 
+## Hackathon details and member interest
+
+Hackathon listings carry the signup window, team size, prizes and what the
+event provides, and members can say they are interested or enrolling so
+people can form teams. Schema: `supabase/migrations/0005_hackathon_interest.sql`.
+
+**Schema.**
+
+| change | detail |
+|---|---|
+| `opportunities.opens_on date` | signup/registration opens; `deadline_on` is when it closes |
+| `opportunities.team_size text` | "1–4", "Solo or up to 5" |
+| `opportunities.prizes text` | plain text; the Devpost sync writes "$10,000 in prizes" here (`pay` stays the cost) |
+| `opportunities.provided text` | meals, travel, credits, mentors, swag, … |
+| `private.mark_editor_edit()` | replaced with the same body plus the four columns, so an editor's change to any of them stamps `editor_edited_at`; the sync treats them as editor-owned (docs/LOCATOR-SYNC.md, "Writes and ownership") |
+| `opportunity_interest` | `(opportunity_id, profile_id)` primary key, `status` `'interested'` or `'enrolled'`, optional `note` (≤ 200 chars), `created_at`, `updated_at` (trigger). Cascades with the listing and the account. |
+
+Grants: `select, insert, update, delete` to `authenticated`, nothing to
+`anon`. RLS: every signed-in user reads every row (that is how teammates find
+each other); insert, update and delete only where `profile_id = (select
+auth.uid())`, whatever the role. Editors cannot change anyone's interest.
+
+**Data and actions.** `listOpportunities` and `getOpportunity` embed
+`opportunity_interest(count)` as `interest_count` (signed-in callers only).
+`getInterest(id)` returns `{ mine, members }`: the caller's own row and every
+row with a name from the `people` view (display name, else the linked member
+card's name; never an email), enrolled first, then most recent.
+`setMyInterest(opportunityId, status | null, note?)` (`lib/actions/interest.ts`,
+`requireUser()`) upserts the caller's row, or deletes it for `null`, and
+revalidates both Locator trees. `saveOpportunity` takes `opens_on`,
+`team_size` (≤ 60), `prizes` (≤ 600) and `provided` (≤ 600), and rejects
+`opens_on` after `deadline_on`. Helpers: `signupWindowLabel(o)` ("Signup Oct 1
+– Nov 15, 2026", "Signup closes …", "Signup opens …") and `interestLabel(n)`
+("3 interested").
+
+**Who sees what.**
+
+| screen | shows |
+|---|---|
+| Edit form (`/admin/locator/<kind>/<id>`, `/new`) | "Signup opens" before the deadline for every event kind (the deadline reads "Signup closes" for hackathons); hackathons get a "Hackathon details" section: Team size, Prizes, What's provided. Fields a kind does not show are kept as hidden inputs. |
+| Edit page rail (event kinds) | `InterestCard` "Members interested" under Verified, above Source: name, "Enrolling" / "Interested" pill, note, `TimeAgo`; "No one yet." Names only. |
+| Lists (both trees) | hackathon meta `organizer · location · signup window · event dates`; a "3 interested" pill on any row with interest |
+| Members' listing (`/dashboard/locator/<kind>/<id>`) | hackathons: "Signup window" in When and where, and a "Hackathon details" section (nulls omitted). Rail, event kinds: `InterestToggle` "Your interest": "I'm interested" / "I'm enrolling" (the active one accent-filled; pressing it again clears), an optional one-line note, inline "Saved", then "Members going" with everyone's rows. |
+
+Files: `components/locator/interest-card.tsx` (`InterestList`, `InterestCard`,
+server-safe), `components/locator/interest-toggle.tsx` (client),
+`lib/actions/interest.ts`. Internships show neither card: "enrolling" does
+not fit a job posting.
+
 ## Seed and scripts
 
-- `scripts/seed/locator/{internships,conferences,networking,hackathons}.json`: research output. Shape = the `opportunities` columns minus bookkeeping, plus `source_url` (kept out of the table; used only for the report). Validated by zod in the seed.
+- `scripts/seed/locator/{internships,conferences,networking,hackathons}.json`: research output. Shape = the `opportunities` columns minus bookkeeping, plus `source_url` (kept out of the table; used only for the report). Validated by zod in the seed. `opens_on`, `team_size`, `prizes` and `provided` (0005) are optional keys, written only when an item has them.
 - `scripts/seed/locator.ts` (`npm run seed:locator`): reads the four files, validates, upserts on `slug` with `source = 'seed'`, `created_by = null`, `verified_on` from the file. Idempotent; prints per-kind counts. Env as the main seed (`.env.local`: URL + `SUPABASE_SECRET_KEY`).
-- `scripts/rls-check-locator.ts` (`npm run rls:check-locator`): throwaway users as in `rls-check.ts`; proves anon reads published rows only; member cannot insert/update `opportunities`; editor can; `career_profiles` and `eligibility_checks` are own-row only for select and write (a second user sees nothing); service role bypasses. Target ≥ 16 checks.
+- `scripts/rls-check-locator.ts` (`npm run rls:check-locator`): throwaway users as in `rls-check.ts`; proves anon reads published rows only; member cannot insert/update `opportunities`; editor can; `career_profiles` and `eligibility_checks` are own-row only for select and write (a second user sees nothing); `opportunity_interest` is readable by every signed-in user and writable only by its owner, anon gets nothing; an editor's change to `prizes` stamps `editor_edited_at`; service role bypasses. Target ≥ 16 checks.
 
 ## Environment
 

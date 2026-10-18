@@ -449,12 +449,15 @@ export type Database = {
           kind: Database["public"]["Enums"]["opportunity_kind"];
           last_seen_at: string | null;
           location: string | null;
+          opens_on: string | null;
           organizer: string;
           organizer_blurb: string | null;
           organizer_url: string | null;
           pay: string | null;
           posted_at: string | null;
           posting_site: string | null;
+          prizes: string | null;
+          provided: string | null;
           published: boolean;
           reviewed_at: string | null;
           slug: string;
@@ -464,6 +467,7 @@ export type Database = {
           starts_on: string | null;
           summary: string | null;
           tags: string[];
+          team_size: string | null;
           title: string;
           updated_at: string;
           url: string;
@@ -489,12 +493,15 @@ export type Database = {
           kind: Database["public"]["Enums"]["opportunity_kind"];
           last_seen_at?: string | null;
           location?: string | null;
+          opens_on?: string | null;
           organizer: string;
           organizer_blurb?: string | null;
           organizer_url?: string | null;
           pay?: string | null;
           posted_at?: string | null;
           posting_site?: string | null;
+          prizes?: string | null;
+          provided?: string | null;
           published?: boolean;
           reviewed_at?: string | null;
           slug: string;
@@ -504,6 +511,7 @@ export type Database = {
           starts_on?: string | null;
           summary?: string | null;
           tags?: string[];
+          team_size?: string | null;
           title: string;
           updated_at?: string;
           url: string;
@@ -528,12 +536,15 @@ export type Database = {
           kind?: Database["public"]["Enums"]["opportunity_kind"];
           last_seen_at?: string | null;
           location?: string | null;
+          opens_on?: string | null;
           organizer?: string;
           organizer_blurb?: string | null;
           organizer_url?: string | null;
           pay?: string | null;
           posted_at?: string | null;
           posting_site?: string | null;
+          prizes?: string | null;
+          provided?: string | null;
           published?: boolean;
           reviewed_at?: string | null;
           slug?: string;
@@ -543,6 +554,7 @@ export type Database = {
           starts_on?: string | null;
           summary?: string | null;
           tags?: string[];
+          team_size?: string | null;
           title?: string;
           updated_at?: string;
           url?: string;
@@ -559,6 +571,56 @@ export type Database = {
           {
             foreignKeyName: "opportunities_created_by_fkey";
             columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      opportunity_interest: {
+        Row: {
+          created_at: string;
+          note: string | null;
+          opportunity_id: string;
+          profile_id: string;
+          status: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          note?: string | null;
+          opportunity_id: string;
+          profile_id: string;
+          status: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          note?: string | null;
+          opportunity_id?: string;
+          profile_id?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_interest_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunity_interest_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunity_interest_profile_id_fkey";
+            columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];

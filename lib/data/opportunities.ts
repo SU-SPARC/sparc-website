@@ -1,5 +1,7 @@
 /* Locator reads (server only). Session client, so RLS decides: editors see
- * hidden rows, and the embedded eligibility check is the caller's own. */
+ * hidden rows, and the embedded eligibility check is the caller's own.
+ * Interest rows (0005) are readable by every signed-in user, so the count
+ * and getInterest() show the whole club. */
 
 import "server-only";
 
@@ -7,13 +9,26 @@ import type { Tables } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 
 import { KINDS } from "./locator";
-import type { CareerProfile, EligibilityCheck, Opportunity, OpportunityKind } from "./types";
+import type {
+  CareerProfile,
+  EligibilityCheck,
+  InterestedMember,
+  InterestStatus,
+  Opportunity,
+  OpportunityInterest,
+  OpportunityKind,
+} from "./types";
 
-export type OpportunityWithCheck = Opportunity & { check: EligibilityCheck | null };
+export type OpportunityWithCheck = Opportunity & {
+  check: EligibilityCheck | null;
+  /** members who marked the listing interested or enrolled (0 when signed out) */
+  interest_count: number;
+};
 
 type OpportunityRow = Tables<"opportunities">;
 type CheckRow = Tables<"eligibility_checks">;
-type OpportunityRowWithCheck = OpportunityRow & { check: CheckRow[] | CheckRow | null };
+type CountEmbed = { count: number }[] | { count: number } | null;
+type OpportunityRowWithCheck = OpportunityRow & { check: CheckRow[] | CheckRow | null; interest?: CountEmbed };
 
 export function toOpportunity(row: OpportunityRow): Opportunity {
   return {
@@ -53,6 +68,10 @@ export function toOpportunity(row: OpportunityRow): Opportunity {
     closed_at: row.closed_at,
     reviewed_at: row.reviewed_at,
     editor_edited_at: row.editor_edited_at,
+    opens_on: row.opens_on,
+    team_size: row.team_size,
+    prizes: row.prizes,
+    provided: row.provided,
   };
 }
 
@@ -90,14 +109,22 @@ export function toCareerProfile(row: Tables<"career_profiles">): CareerProfile {
   };
 }
 
-function withCheck(row: OpportunityRowWithCheck, uid: string | null): OpportunityWithCheck {
-  const { check, ...rest } = row;
-  const rows = Array.isArray(check) ? check : check ? [check] : [];
-  const own = rows.find((c) => c.profile_id === uid) ?? null;
-  return { ...toOpportunity(rest), check: own ? toEligibilityCheck(own) : null };
+function countOf(embed: CountEmbed | undefined): number {
+  const first = Array.isArray(embed) ? embed[0] : embed;
+  return first?.count ?? 0;
 }
 
-const SELECT = "*, check:eligibility_checks(*)";
+function withCheck(row: OpportunityRowWithCheck, uid: string | null): OpportunityWithCheck {
+  const { check, interest, ...rest } = row;
+  const rows = Array.isArray(check) ? check : check ? [check] : [];
+  const own = rows.find((c) => c.profile_id === uid) ?? null;
+  return { ...toOpportunity(rest), check: own ? toEligibilityCheck(own) : null, interest_count: countOf(interest) };
+}
+
+/** anon has no grant on opportunity_interest, so the count is embedded only
+ *  for a signed-in caller. */
+const selectFor = (uid: string | null) =>
+  uid ? "*, check:eligibility_checks(*), interest:opportunity_interest(count)" : "*, check:eligibility_checks(*)";
 
 async function session() {
   const supabase = await createClient();
@@ -120,7 +147,7 @@ export async function listOpportunities(
 ): Promise<OpportunityWithCheck[]> {
   const { supabase, uid } = await session();
   const dateCol = kind === "internship" ? "deadline_on" : "starts_on";
-  let q = supabase.from("opportunities").select(SELECT).eq("kind", kind);
+  let q = supabase.from("opportunities").select(selectFor(uid)).eq("kind", kind);
   if (publishedOnly) q = q.eq("published", true);
   const { data, error } = await q
     .order(dateCol, { ascending: true, nullsFirst: false })
@@ -136,11 +163,78 @@ export async function getOpportunity(
 ): Promise<OpportunityWithCheck | null> {
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const { supabase, uid } = await session();
-  let q = supabase.from("opportunities").select(SELECT).eq("id", id);
+  let q = supabase.from("opportunities").select(selectFor(uid)).eq("id", id);
   if (publishedOnly) q = q.eq("published", true);
   const { data, error } = await q.maybeSingle();
   if (error) throw new Error(`getOpportunity: ${error.message}`);
   return data ? withCheck(data as unknown as OpportunityRowWithCheck, uid) : null;
+}
+
+type InterestRow = Pick<Tables<"opportunity_interest">, "opportunity_id" | "profile_id" | "status" | "note" | "updated_at"> & {
+  person: { display_name: string | null; member_id: string | null } | { display_name: string | null; member_id: string | null }[] | null;
+};
+
+const STATUS_ORDER: Record<InterestStatus, number> = { enrolled: 0, interested: 1 };
+
+/** Everyone's interest in one listing, and the caller's own row. Names come
+ *  from the `people` view (display name, else the linked member card's
+ *  name); no emails. Enrolled first, then most recently updated. Signed
+ *  out: nothing. */
+export async function getInterest(
+  opportunityId: string,
+): Promise<{ mine: OpportunityInterest | null; members: InterestedMember[] }> {
+  const empty = { mine: null, members: [] };
+  if (!/^[0-9a-f-]{36}$/i.test(opportunityId)) return empty;
+  const { supabase, uid } = await session();
+  if (!uid) return empty;
+  const { data, error } = await supabase
+    .from("opportunity_interest")
+    .select("opportunity_id, profile_id, status, note, updated_at, person:people(display_name, member_id)")
+    .eq("opportunity_id", opportunityId)
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error(`getInterest: ${error.message}`);
+  const rows = (data ?? []) as unknown as InterestRow[];
+  const person = (r: InterestRow) => (Array.isArray(r.person) ? r.person[0] : r.person) ?? null;
+
+  // Accounts without a display name fall back on their member card's name.
+  const memberIds = [
+    ...new Set(
+      rows.flatMap((r) => {
+        const p = person(r);
+        return p && !p.display_name?.trim() && p.member_id ? [p.member_id] : [];
+      }),
+    ),
+  ];
+  const cardNames = new Map<string, string>();
+  if (memberIds.length) {
+    const { data: cards } = await supabase.from("members").select("id, name").in("id", memberIds);
+    for (const c of cards ?? []) cardNames.set(c.id, c.name);
+  }
+
+  const members: InterestedMember[] = rows
+    .map((r) => {
+      const p = person(r);
+      const name = p?.display_name?.trim() || (p?.member_id ? cardNames.get(p.member_id) : undefined) || "A member";
+      return {
+        profile_id: r.profile_id,
+        display_name: name,
+        status: r.status as InterestStatus,
+        note: r.note,
+        updated_at: r.updated_at,
+      };
+    })
+    .sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || b.updated_at.localeCompare(a.updated_at));
+  const own = rows.find((r) => r.profile_id === uid);
+  const mine: OpportunityInterest | null = own
+    ? {
+        opportunity_id: own.opportunity_id,
+        profile_id: own.profile_id,
+        status: own.status as InterestStatus,
+        note: own.note,
+        updated_at: own.updated_at,
+      }
+    : null;
+  return { mine, members };
 }
 
 /** The caller's own Locator profile, or null (signed out or not filled in). */

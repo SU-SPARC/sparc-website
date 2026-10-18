@@ -245,6 +245,38 @@ export type Opportunity = {
   reviewed_at?: string | null;
   /** set by trigger when an editor saves the row; the sync then keeps its hands off the editorial fields */
   editor_edited_at?: string | null;
+  // Hackathon details (0005_hackathon_interest.sql). Any kind may carry them;
+  // the screens show them for hackathons. Editor-owned like summary.
+  /** signup/registration opens; `deadline_on` is when it closes */
+  opens_on?: DateOnly | null;
+  /** "1–4", "Solo or up to 5" */
+  team_size?: string | null;
+  /** plain text */
+  prizes?: string | null;
+  /** meals, travel, credits, mentors, swag, … */
+  provided?: string | null;
+};
+
+/** `opportunity_interest.status` check constraint */
+export type InterestStatus = "interested" | "enrolled";
+
+/** Mirrors `opportunity_interest`: one person's interest in one listing. */
+export type OpportunityInterest = {
+  opportunity_id: string;
+  profile_id: string;
+  status: InterestStatus;
+  /** "Looking for a frontend teammate." */
+  note: string | null;
+  updated_at: string;
+};
+
+/** An `opportunity_interest` row with the person's name from the `people` view (no email). */
+export type InterestedMember = {
+  profile_id: string;
+  display_name: string;
+  status: InterestStatus;
+  note: string | null;
+  updated_at: string;
 };
 
 /** Mirrors `sync_runs`: one source in one `npm run locator:sync` run. */

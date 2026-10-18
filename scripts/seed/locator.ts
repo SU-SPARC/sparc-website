@@ -7,7 +7,9 @@
  * source_name = 'Research (16 Oct 2026)', the item's source_url (where the
  * research read it) and created_by = null. Idempotent: a second run writes
  * the same values. Uses the secret key (bypasses RLS), so the editor-edit
- * trigger from 0004 leaves editor_edited_at alone.
+ * trigger from 0004 leaves editor_edited_at alone. The hackathon keys from
+ * 0005 (opens_on, team_size, prizes, provided) are optional and written only
+ * when an item has them.
  * Deletes nothing. See docs/LOCATOR.md. */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -68,6 +70,11 @@ const Item = z
     tags: z.array(z.string().regex(/^[a-z0-9][a-z0-9 .+#-]*$/, { error: "tags must be lowercase" })),
     verified_on: date.nullable(),
     source_url: url.nullable(),
+    // Hackathon details (0005). Optional: written only when the item has the key.
+    opens_on: date.nullable().optional(),
+    team_size: optText.optional(),
+    prizes: optText.optional(),
+    provided: optText.optional(),
   })
   .strict()
   .refine((o) => !o.starts_on || !o.ends_on || o.ends_on >= o.starts_on, {
@@ -77,6 +84,10 @@ const Item = z
   .refine((o) => o.kind === "internship" || o.internship_terms.length === 0, {
     error: "internship_terms on a non-internship",
     path: ["internship_terms"],
+  })
+  .refine((o) => !o.opens_on || !o.deadline_on || o.opens_on <= o.deadline_on, {
+    error: "opens_on is after deadline_on",
+    path: ["opens_on"],
   });
 
 function fail(msg: string): never {
@@ -125,8 +136,18 @@ async function main() {
   }
 
   // published is left out, so an editor's Hide on a seeded row survives a re-run.
-  const { error } = await db.from("opportunities").upsert(rows, { onConflict: "slug" });
-  if (error) fail(`upsert: ${error.message}`);
+  // A bulk upsert sends the union of every row's keys and nulls the missing
+  // ones, so rows are upserted in groups that share a key set: an item
+  // without, say, `prizes` leaves the column as it is.
+  const groups = new Map<string, TablesInsert<"opportunities">[]>();
+  for (const r of rows) {
+    const sig = Object.keys(r).sort().join(",");
+    groups.set(sig, [...(groups.get(sig) ?? []), r]);
+  }
+  for (const group of groups.values()) {
+    const { error } = await db.from("opportunities").upsert(group, { onConflict: "slug" });
+    if (error) fail(`upsert: ${error.message}`);
+  }
 
   const counts = new Map<string, number>();
   for (const r of rows) counts.set(r.kind, (counts.get(r.kind) ?? 0) + 1);

@@ -6,6 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import { DangerZone } from "@/components/admin/edit-client";
 import { StatusBanner } from "@/components/forms/status-banner";
 import { EligibilityCard } from "@/components/locator/eligibility-card";
+import { InterestCard } from "@/components/locator/interest-card";
 import { OpportunityForm } from "@/components/locator/opportunity-form";
 import { SourceCard } from "@/components/locator/source-card";
 import { deleteOpportunity } from "@/lib/actions/opportunities";
@@ -13,7 +14,7 @@ import { editorPage } from "@/lib/actions/queries";
 import { aiConfigured, LOCATOR_MODEL } from "@/lib/ai/client";
 import { inputsHash } from "@/lib/ai/locator";
 import { KIND_CONFIG, kindFromSlug, kindPath } from "@/lib/data/locator";
-import { getCareerProfile, getOpportunity } from "@/lib/data/opportunities";
+import { getCareerProfile, getInterest, getOpportunity } from "@/lib/data/opportunities";
 
 type Params = { params: Promise<{ kind: string; id: string }> };
 
@@ -31,12 +32,14 @@ export default async function EditOpportunityPage({
   const me = await editorPage(`${kindPath(kind)}/${id}`);
   if (!me) return null;
   const { notice } = await searchParams;
-  const [found, profile] = await Promise.all([getOpportunity(id), getCareerProfile()]);
+  const [found, profile, interest] = await Promise.all([getOpportunity(id), getCareerProfile(), getInterest(id)]);
   if (!found) notFound();
   // A listing opened under the wrong kind goes to its own URL.
   if (found.kind !== kind) redirect(`${kindPath(found.kind)}/${found.id}`);
 
-  const { check, ...opportunity } = found;
+  // interest_count is the list's; the card below has the names.
+  const { check, interest_count: _count, ...opportunity } = found;
+  void _count;
   const cfg = KIND_CONFIG[kind];
   const currentHash = profile ? inputsHash(opportunity, profile, LOCATOR_MODEL) : null;
 
@@ -83,6 +86,7 @@ export default async function EditOpportunityPage({
             hasProfile={profile !== null}
           />
         }
+        interest={cfg.dated ? <InterestCard members={interest.members} /> : null}
         source={<SourceCard opportunity={opportunity} />}
       />
       <DangerZone

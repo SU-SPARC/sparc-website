@@ -41,6 +41,15 @@ export type SyncItem = {
   tags: string[];
   /** ISO instant */
   posted_at: string | null;
+  // Hackathon details (0005). Optional: adapters that know nothing about them
+  // leave them out, which writes null while the row is the sync's.
+  /** signup opens; `deadline_on` is when it closes */
+  opens_on?: DateOnly | null;
+  team_size?: string | null;
+  /** plain text, e.g. "$10,000 in prizes" */
+  prizes?: string | null;
+  /** meals, travel, credits, … */
+  provided?: string | null;
 };
 
 // ── sources.json ─────────────────────────────────────────────────────────

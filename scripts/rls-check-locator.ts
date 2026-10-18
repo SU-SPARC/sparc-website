@@ -3,7 +3,8 @@
  *   npm run rls:check-locator
  *
  * Creates throwaway users (rls-loc-*@test.local), opportunities (slugs
- * prefixed "rls-loc-") and a sync_runs row (source_id "rls-loc-…"), signs in as each role with a fresh publishable-key
+ * prefixed "rls-loc-"), opportunity_interest rows on them (0005) and a
+ * sync_runs row (source_id "rls-loc-…"), signs in as each role with a fresh publishable-key
  * client, asserts what each may and may not do, prints a PASS/FAIL table and
  * removes only what it created, also on failure. Exit code 0 only when every
  * check passes. Never point this at production. */
@@ -88,6 +89,8 @@ const ids = {
   book: "",
   /** service role edits its summary: editor_edited_at must stay null */
   svc: "",
+  /** editor edits its prizes (0005): editor_edited_at must be stamped */
+  prizes: "",
 };
 
 const opp = (suffix: string, extra: Partial<TablesInsert<"opportunities">> = {}): TablesInsert<"opportunities"> => ({
@@ -99,6 +102,12 @@ const opp = (suffix: string, extra: Partial<TablesInsert<"opportunities">> = {})
   ...extra,
 });
 
+const interestRow = (
+  opportunity_id: string,
+  profile_id: string,
+  status: "interested" | "enrolled" = "interested",
+): TablesInsert<"opportunity_interest"> => ({ opportunity_id, profile_id, status });
+
 const checkRow = (opportunity_id: string, profile_id: string): TablesInsert<"eligibility_checks"> => ({
   opportunity_id,
   profile_id,
@@ -109,7 +118,8 @@ const checkRow = (opportunity_id: string, profile_id: string): TablesInsert<"eli
 });
 
 async function cleanup() {
-  // eligibility_checks cascade from opportunities and profiles; career_profiles from profiles.
+  // eligibility_checks and opportunity_interest cascade from opportunities and
+  // profiles; career_profiles from profiles.
   await admin.from("opportunities").delete().like("slug", `${PREFIX}%`);
   await admin.from("sync_runs").delete().like("source_id", `${PREFIX}%`);
   const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
@@ -147,6 +157,7 @@ async function setup() {
     opp("edit"),
     opp("book"),
     opp("svc"),
+    opp("prizes"),
   ], { defaultToNull: false }).select("id, slug"));
   const idOf = (k: string) => rows.find((r) => r.slug.startsWith(`${PREFIX}${k}-`))!.id;
   ids.pub = idOf("pub");
@@ -154,11 +165,19 @@ async function setup() {
   ids.edit = idOf("edit");
   ids.book = idOf("book");
   ids.svc = idOf("svc");
+  ids.prizes = idOf("prizes");
   await must("sync_run", admin.from("sync_runs").insert({ source_id: SYNC_SOURCE(), adapter: "rls", ok: true }).select());
 
   // The second user's own profile and check, written as the service role.
   await must("other profile", admin.from("career_profiles").insert({ profile_id: ids.users.other, major: "RLS other" }).select());
   await must("other check", admin.from("eligibility_checks").insert(checkRow(ids.pub, ids.users.other)).select());
+  // The second user's interest in the published listing (0005).
+  await must("other interest", admin.from("opportunity_interest").insert({
+    opportunity_id: ids.pub,
+    profile_id: ids.users.other,
+    status: "interested",
+    note: "RLS: looking for a teammate",
+  }).select());
   // The editor's own profile, so "editor cannot read others" is not vacuous.
   await must("editor profile", admin.from("career_profiles").insert({ profile_id: ids.users.editor, major: "RLS editor" }).select());
 }
@@ -209,6 +228,12 @@ async function anonChecks() {
     const r = await c.from("eligibility_checks").select("profile_id");
     return r.error || (r.data ?? []).length === 0 ? true : `saw ${r.data!.length}`;
   });
+  await check(who, "reads no opportunity_interest", async () => {
+    const r = await c.from("opportunity_interest").select("profile_id");
+    return r.error || (r.data ?? []).length === 0 ? true : `saw ${r.data!.length}`;
+  });
+  await check(who, "cannot insert opportunity_interest", async () =>
+    denied(await c.from("opportunity_interest").insert(interestRow(ids.pub, ids.users.member)).select()));
 }
 
 async function memberChecks() {
@@ -263,6 +288,47 @@ async function memberChecks() {
     denied(await c.from("eligibility_checks").insert(checkRow(ids.pub, ids.users.editor)).select()));
   await check(who, "cannot update another user's eligibility_check", async () =>
     denied(await c.from("eligibility_checks").update({ verdict: "not_eligible" }).eq("profile_id", ids.users.other).select()));
+  await check(who, "inserts own opportunity_interest", async () =>
+    allowed(await c.from("opportunity_interest").insert(interestRow(ids.pub, me)).select()));
+  await check(who, "updates own opportunity_interest", async () =>
+    allowed(
+      await c
+        .from("opportunity_interest")
+        .update({ status: "enrolled", note: "RLS: need a designer" })
+        .eq("opportunity_id", ids.pub)
+        .eq("profile_id", me)
+        .select(),
+    ));
+  await check(who, "deletes own opportunity_interest", async () => {
+    const ins = allowed(await c.from("opportunity_interest").insert(interestRow(ids.edit, me)).select());
+    if (ins !== true) return `insert: ${ins}`;
+    return allowed(
+      await c.from("opportunity_interest").delete().eq("opportunity_id", ids.edit).eq("profile_id", me).select(),
+    );
+  });
+  await check(who, "reads everyone's opportunity_interest", async () => {
+    const r = await c.from("opportunity_interest").select("profile_id").eq("opportunity_id", ids.pub);
+    if (r.error) return r.error.message;
+    const seen = new Set(r.data.map((x) => x.profile_id));
+    return seen.has(me) && seen.has(ids.users.other) ? true : `saw ${seen.size} row(s)`;
+  });
+  await check(who, "cannot insert opportunity_interest for someone else", async () =>
+    denied(await c.from("opportunity_interest").insert(interestRow(ids.pub, ids.users.editor)).select()));
+  await check(who, "cannot update another user's opportunity_interest", async () =>
+    denied(
+      await c.from("opportunity_interest").update({ status: "enrolled", note: "hacked" }).eq("profile_id", ids.users.other).select(),
+    ));
+  await check(who, "cannot move own opportunity_interest to someone else", async () =>
+    denied(
+      await c
+        .from("opportunity_interest")
+        .update({ profile_id: ids.users.editor })
+        .eq("opportunity_id", ids.pub)
+        .eq("profile_id", me)
+        .select(),
+    ));
+  await check(who, "cannot delete another user's opportunity_interest", async () =>
+    denied(await c.from("opportunity_interest").delete().eq("profile_id", ids.users.other).select()));
   await check(who, "embed returns only own check", async () => {
     const r = await c.from("opportunities").select("id, check:eligibility_checks(profile_id)").eq("id", ids.pub).single();
     if (r.error) return r.error.message;
@@ -281,6 +347,10 @@ async function otherChecks() {
   await check(who, "sees nothing of the member's eligibility_checks", async () => {
     const r = await c.from("eligibility_checks").select("profile_id").eq("profile_id", ids.users.member);
     return r.error || r.data.length === 0 ? true : `saw ${r.data.length}`;
+  });
+  await check(who, "reads the member's opportunity_interest", async () => {
+    const r = await c.from("opportunity_interest").select("profile_id, status").eq("profile_id", ids.users.member);
+    return !r.error && r.data.length === 1 && r.data[0].status === "enrolled" ? true : `saw ${r.data?.length ?? r.error?.message}`;
   });
   await check(who, "still reads own career_profile", async () => {
     const r = await c.from("career_profiles").select("profile_id");
@@ -335,6 +405,22 @@ async function editorChecks() {
     if (a !== true) return a;
     return (await editedAt(ids.edit)) ? true : "editor_edited_at still null";
   });
+  await check(who, "editing prizes stamps editor_edited_at", async () => {
+    const r = await c.from("opportunities").update({ prizes: "$1,000 in prizes" }).eq("id", ids.prizes).select("id");
+    const a = allowed(r);
+    if (a !== true) return a;
+    return (await editedAt(ids.prizes)) ? true : "editor_edited_at still null";
+  });
+  await check(who, "reads every member's opportunity_interest", async () => {
+    const r = await c.from("opportunity_interest").select("profile_id").eq("opportunity_id", ids.pub);
+    if (r.error) return r.error.message;
+    const seen = new Set(r.data.map((x) => x.profile_id));
+    return seen.has(ids.users.member) && seen.has(ids.users.other) ? true : `saw ${seen.size} row(s)`;
+  });
+  await check(who, "cannot update another user's opportunity_interest", async () =>
+    denied(await c.from("opportunity_interest").update({ note: "edited by an editor" }).eq("profile_id", ids.users.other).select()));
+  await check(who, "cannot delete another user's opportunity_interest", async () =>
+    denied(await c.from("opportunity_interest").delete().eq("profile_id", ids.users.member).select()));
   await check(who, "changing only published / verified_on leaves editor_edited_at null", async () => {
     const r = await c.from("opportunities").update({ published: false, verified_on: "2026-10-16" }).eq("id", ids.book).select("id");
     const a = allowed(r);
@@ -374,6 +460,10 @@ async function serviceChecks() {
   await check(who, "check row cascades with its opportunity", async () => {
     await admin.from("opportunities").delete().eq("id", ids.pub);
     const r = await admin.from("eligibility_checks").select("profile_id").eq("opportunity_id", ids.pub);
+    return !r.error && r.data.length === 0 ? true : `left ${r.data?.length ?? r.error?.message}`;
+  });
+  await check(who, "interest rows cascade with their opportunity", async () => {
+    const r = await admin.from("opportunity_interest").select("profile_id").eq("opportunity_id", ids.pub);
     return !r.error && r.data.length === 0 ? true : `left ${r.data?.length ?? r.error?.message}`;
   });
 }

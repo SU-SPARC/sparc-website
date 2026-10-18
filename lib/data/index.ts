@@ -18,6 +18,7 @@ export { getLinks } from "./links";
 export {
   listOpportunities,
   getOpportunity,
+  getInterest,
   getCareerProfile,
   countOpportunities,
   type OpportunityWithCheck,

@@ -3,8 +3,11 @@
  * facts an editor types into OpportunityForm, laid out as text: Overview,
  * Who can apply, When and where, then a source line ("Source: Greenhouse",
  * the posting link, "Closed <date>" once a sync stops seeing it) and a
- * freshness line. Never Unreviewed, external ids or sync controls. The eligibility
- * card sits in the rail (the page passes it to EditColumns). Server-safe. */
+ * freshness line. Never Unreviewed, external ids or sync controls. Hackathons
+ * show their signup window in place of the deadline and a "Hackathon
+ * details" section (team size, prizes, what's provided; nulls omitted). The
+ * eligibility and interest cards sit in the rail (the page passes them to
+ * EditColumns). Server-safe. */
 
 import { ArrowUpRight } from "lucide-react";
 import * as React from "react";
@@ -24,13 +27,22 @@ import {
 } from "@/lib/data/locator";
 import type { DateOnly, Opportunity } from "@/lib/data/types";
 
-function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+function Fact({ label, children, wide }: { label: string; children: React.ReactNode; wide?: boolean }) {
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className={wide ? "flex flex-col gap-0.5 sm:col-span-2" : "flex flex-col gap-0.5"}>
       <dt className="text-xs text-ink-muted">{label}</dt>
-      <dd className="text-sm text-ink [overflow-wrap:anywhere]">{children}</dd>
+      <dd className="whitespace-pre-line text-sm text-ink [overflow-wrap:anywhere]">{children}</dd>
     </div>
   );
+}
+
+/** "Oct 1 – Nov 15, 2026", "Closes Nov 15, 2026", "Opens Oct 1, 2026", or null. */
+function signupWindow(o: Opportunity): string | null {
+  const opens = o.opens_on ?? null;
+  if (opens && o.deadline_on) return formatDateRange(opens, o.deadline_on);
+  if (o.deadline_on) return `Closes ${formatDateOnly(o.deadline_on)}`;
+  if (opens) return `Opens ${formatDateOnly(opens)}`;
+  return null;
 }
 
 export function OpportunityDetail({ opportunity: o, today }: { opportunity: Opportunity; today: DateOnly }) {
@@ -41,6 +53,21 @@ export function OpportunityDetail({ opportunity: o, today }: { opportunity: Oppo
   const labels = internship ? o.internship_terms.map((t) => TERM_LABELS[t]) : [AREA_LABELS[o.area]];
   const chips = [...labels, ...(o.posting_site ? [o.posting_site] : []), ...o.tags];
   const closedOn = closedOnLabel(o);
+  const hackathon = o.kind === "hackathon";
+  const signup = hackathon ? signupWindow(o) : null;
+  const deadlineMark =
+    deadline === "closing_soon" ? (
+      <span className="text-warning"> · Closing soon</span>
+    ) : deadline === "closed" ? (
+      <span className="text-ink-muted"> · Passed</span>
+    ) : null;
+  const details = hackathon
+    ? ([
+        ["Team size", o.team_size],
+        ["Prizes", o.prizes],
+        ["What's provided", o.provided],
+      ] as [string, string | null | undefined][]).filter((d): d is [string, string] => Boolean(d[1]))
+    : [];
 
   return (
     <>
@@ -71,19 +98,31 @@ export function OpportunityDetail({ opportunity: o, today }: { opportunity: Oppo
         <dl className="grid gap-4 sm:grid-cols-2">
           {cfg.dated ? <Fact label="Dates">{when ?? o.dates_note ?? "To be announced"}</Fact> : null}
           {cfg.dated && when && o.dates_note ? <Fact label="Dates note">{o.dates_note}</Fact> : null}
-          <Fact label={internship ? "Application deadline" : "Registration deadline"}>
-            {o.deadline_on ? (
-              <>
-                {formatDateOnly(o.deadline_on)}
-                {deadline === "closing_soon" ? <span className="text-warning"> · Closing soon</span> : null}
-                {deadline === "closed" ? <span className="text-ink-muted"> · Passed</span> : null}
-              </>
-            ) : !cfg.dated && o.dates_note ? (
-              o.dates_note
-            ) : (
-              "None listed"
-            )}
-          </Fact>
+          {hackathon ? (
+            <Fact label="Signup window">
+              {signup ? (
+                <>
+                  {signup}
+                  {deadlineMark}
+                </>
+              ) : (
+                "None listed"
+              )}
+            </Fact>
+          ) : (
+            <Fact label={internship ? "Application deadline" : "Registration deadline"}>
+              {o.deadline_on ? (
+                <>
+                  {formatDateOnly(o.deadline_on)}
+                  {deadlineMark}
+                </>
+              ) : !cfg.dated && o.dates_note ? (
+                o.dates_note
+              ) : (
+                "None listed"
+              )}
+            </Fact>
+          )}
           <Fact label="Format">{FORMAT_LABELS[o.format]}</Fact>
           <Fact label="Location">{o.location ?? AREA_LABELS[o.area]}</Fact>
           {o.pay ? <Fact label={internship ? "Pay" : "Cost"}>{o.pay}</Fact> : null}
@@ -92,6 +131,18 @@ export function OpportunityDetail({ opportunity: o, today }: { opportunity: Oppo
           ) : null}
         </dl>
       </FormSection>
+
+      {details.length ? (
+        <FormSection title="Hackathon details">
+          <dl className="grid gap-4 sm:grid-cols-2">
+            {details.map(([label, value]) => (
+              <Fact key={label} label={label} wide={label !== "Team size"}>
+                {value}
+              </Fact>
+            ))}
+          </dl>
+        </FormSection>
+      ) : null}
 
       <p className="text-sm text-ink-muted">
         Source: <span className="text-ink">{sourceLabel(o)}</span> ·{" "}

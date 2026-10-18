@@ -8,6 +8,8 @@
  * listing verified (and a sync row reviewed), opens the source, publishes,
  * and deletes through a ConfirmDialog. Meta names the source ("via
  * Greenhouse"); closed rows say when (docs/LOCATOR-SYNC.md, phase 2).
+ * Hackathon meta adds the signup window before the event dates, and any
+ * row with member interest gets a "3 interested" pill (0005).
  *
  * `mode="member"` is the read-only list under /dashboard/locator
  * (docs/LOCATOR.md, "Members view"): no New button, no Published / Hidden
@@ -48,6 +50,7 @@ import {
   dateStatus,
   deadlineStatus,
   formatDateRange,
+  interestLabel,
   isUnreviewed,
   KIND_CONFIG,
   kindPath,
@@ -56,6 +59,7 @@ import {
   monthLabel,
   profilePath,
   rowFilterKeys,
+  signupWindowLabel,
   sourceLabel,
   TERM_LABELS,
   VERDICT_LABELS,
@@ -186,9 +190,11 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
       : r.deadline_on
         ? `Due ${formatDateOnly(r.deadline_on)}`
         : r.dates_note;
-    const metaText = [r.organizer, r.location, when, member ? null : `via ${sourceLabel(r)}`]
+    const signup = kind === "hackathon" ? signupWindowLabel(r) : null;
+    const metaText = [r.organizer, r.location, signup, when, member ? null : `via ${sourceLabel(r)}`]
       .filter(Boolean)
       .join(" · ");
+    const interested = interestLabel(r.interest_count);
     const closedOn = member ? null : closedOnLabel(r);
     const unreviewed = !member && isUnreviewed(r);
     const closingSoon = deadlineStatus(r.deadline_on, today) === "closing_soon";
@@ -282,6 +288,7 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
                   </Pill>
                 ))}
                 {r.posting_site ? <Pill className="whitespace-nowrap">{r.posting_site}</Pill> : null}
+                {interested ? <Pill className="whitespace-nowrap">{interested}</Pill> : null}
                 {r.check ? (
                   <Pill className="whitespace-nowrap">
                     <span className={VERDICT_TONE[r.check.verdict]}>{VERDICT_LABELS[r.check.verdict]}</span>

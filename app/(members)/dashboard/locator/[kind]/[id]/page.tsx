@@ -1,7 +1,7 @@
 /* Members' read-only listing (docs/LOCATOR.md, "Members view"): the facts
- * in OpportunityDetail, "View posting" as the main action, and the
- * eligibility card in the rail, then (event kinds) "Your interest" with
- * everyone who is going. Published rows only; an unpublished or unknown id
+ * in OpportunityDetail, "View posting" as the main action, and in the rail
+ * the At a glance card first (DESIGN-BRIEF §15), then the eligibility card,
+ * then (event kinds) "Your interest" with everyone who is going. Published rows only; an unpublished or unknown id
  * is a 404 for everyone, editors included. */
 
 import { ArrowUpRight } from "lucide-react";
@@ -11,6 +11,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { EditColumns } from "@/components/admin/edit-layout";
 import { buttonClasses } from "@/components/forms/button";
+import { AtAGlance } from "@/components/locator/at-a-glance";
 import { EligibilityCard } from "@/components/locator/eligibility-card";
 import { InterestToggle } from "@/components/locator/interest-toggle";
 import { OpportunityDetail } from "@/components/locator/opportunity-detail";
@@ -48,6 +49,7 @@ export default async function MemberOpportunityPage({ params }: Params) {
   void _count;
   const cfg = KIND_CONFIG[kind];
   const currentHash = profile ? inputsHash(opportunity, profile, LOCATOR_MODEL) : null;
+  const today = isoDateOnly(new Date());
 
   return (
     <>
@@ -92,6 +94,7 @@ export default async function MemberOpportunityPage({ params }: Params) {
       <EditColumns
         rail={
           <>
+            <AtAGlance opportunity={opportunity} today={today} />
             <EligibilityCard
               opportunityId={opportunity.id}
               initial={check}
@@ -111,7 +114,7 @@ export default async function MemberOpportunityPage({ params }: Params) {
           </>
         }
       >
-        <OpportunityDetail opportunity={opportunity} today={isoDateOnly(new Date())} />
+        <OpportunityDetail opportunity={opportunity} today={today} />
       </EditColumns>
     </>
   );

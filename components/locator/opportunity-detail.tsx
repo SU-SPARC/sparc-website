@@ -3,25 +3,28 @@
  * facts an editor types into OpportunityForm, laid out as text: Overview,
  * Who can apply, When and where, then a source line ("Source: Greenhouse",
  * the posting link, "Closed <date>" once a sync stops seeing it) and a
- * freshness line. Never Unreviewed, external ids or sync controls. Hackathons
- * show their signup window in place of the deadline and a "Hackathon
- * details" section (team size, prizes, what's provided; nulls omitted). The
- * eligibility and interest cards sit in the rail (the page passes them to
- * EditColumns). Server-safe. */
+ * freshness line. Every date carries its relative text ("Nov 15, 2026 ·
+ * closes in 28 days"; DESIGN-BRIEF §15). Never Unreviewed, external ids or
+ * sync controls. Hackathons show their signup window in place of the
+ * deadline and a "Hackathon details" section (team size, prizes, what's
+ * provided; nulls omitted). The At a glance, eligibility and interest cards
+ * sit in the rail (the page passes them to EditColumns). Server-safe. */
 
 import { ArrowUpRight } from "lucide-react";
 import * as React from "react";
 
 import { FormSection } from "@/components/admin/edit-layout";
 import { Pill } from "@/components/ui/pill";
-import { formatDateOnly } from "@/lib/data/dates";
+import { formatDateOnly, isoDateOnly } from "@/lib/data/dates";
 import {
   AREA_LABELS,
-  closedOnLabel,
-  deadlineStatus,
+  dateWithRelative,
+  deadlineTiming,
+  eventTiming,
   FORMAT_LABELS,
   formatDateRange,
   KIND_CONFIG,
+  signupWindowFact,
   sourceLabel,
   TERM_LABELS,
 } from "@/lib/data/locator";
@@ -36,37 +39,42 @@ function Fact({ label, children, wide }: { label: string; children: React.ReactN
   );
 }
 
-/** "Oct 1 – Nov 15, 2026", "Closes Nov 15, 2026", "Opens Oct 1, 2026", or null. */
-function signupWindow(o: Opportunity): string | null {
-  const opens = o.opens_on ?? null;
-  if (opens && o.deadline_on) return formatDateRange(opens, o.deadline_on);
-  if (o.deadline_on) return `Closes ${formatDateOnly(o.deadline_on)}`;
-  if (opens) return `Opens ${formatDateOnly(opens)}`;
-  return null;
+/** "Oct 24–25, 2026 · starts in 6 days", the dates note when undated, else "To be announced". */
+function eventDates(o: Opportunity, today: DateOnly): string {
+  const range = formatDateRange(o.starts_on, o.ends_on);
+  if (!range) return o.dates_note ?? "To be announced";
+  return `${range} · ${eventTiming(o, today) ?? "today"}`;
+}
+
+/** "Nov 15, 2026 · closes in 28 days"; internships fall back on the dates note ("Rolling"). */
+function deadlineText(o: Opportunity, today: DateOnly): string {
+  if (o.deadline_on) return `${formatDateOnly(o.deadline_on)} · ${deadlineTiming(o.deadline_on, today)}`;
+  if (o.kind === "internship" && o.dates_note) return o.dates_note;
+  return "None listed";
+}
+
+/** "Closed Oct 20, 2026 · 2 days ago", or null while the listing is open. */
+function closedText(o: Opportunity, today: DateOnly): string | null {
+  if (!o.closed_at) return null;
+  return `Closed ${dateWithRelative(isoDateOnly(new Date(o.closed_at)), today)}`;
 }
 
 export function OpportunityDetail({ opportunity: o, today }: { opportunity: Opportunity; today: DateOnly }) {
   const cfg = KIND_CONFIG[o.kind];
   const internship = o.kind === "internship";
-  const when = formatDateRange(o.starts_on, o.ends_on);
-  const deadline = deadlineStatus(o.deadline_on, today);
+  const hackathon = o.kind === "hackathon";
   const labels = internship ? o.internship_terms.map((t) => TERM_LABELS[t]) : [AREA_LABELS[o.area]];
   const chips = [...labels, ...(o.posting_site ? [o.posting_site] : []), ...o.tags];
-  const closedOn = closedOnLabel(o);
-  const hackathon = o.kind === "hackathon";
-  const signup = hackathon ? signupWindow(o) : null;
-  const deadlineMark =
-    deadline === "closing_soon" ? (
-      <span className="text-warning"> · Closing soon</span>
-    ) : deadline === "closed" ? (
-      <span className="text-ink-muted"> · Passed</span>
-    ) : null;
+  const closed = closedText(o, today);
+  const hasRange = formatDateRange(o.starts_on, o.ends_on) !== null;
   const details = hackathon
-    ? ([
-        ["Team size", o.team_size],
-        ["Prizes", o.prizes],
-        ["What's provided", o.provided],
-      ] as [string, string | null | undefined][]).filter((d): d is [string, string] => Boolean(d[1]))
+    ? (
+        [
+          ["Team size", o.team_size],
+          ["Prizes", o.prizes],
+          ["What's provided", o.provided],
+        ] as [string, string | null | undefined][]
+      ).filter((d): d is [string, string] => Boolean(d[1]))
     : [];
 
   return (
@@ -90,45 +98,25 @@ export function OpportunityDetail({ opportunity: o, today }: { opportunity: Oppo
         {o.eligibility ? (
           <p className="whitespace-pre-line text-sm text-ink">{o.eligibility}</p>
         ) : (
-          <p className="text-sm text-ink-muted">The listing doesn&apos;t say. The eligibility check will count this as unknown.</p>
+          <p className="text-sm text-ink-muted">
+            The listing doesn&apos;t say. The eligibility check will count this as unknown.
+          </p>
         )}
       </FormSection>
 
       <FormSection title="When and where">
         <dl className="grid gap-4 sm:grid-cols-2">
-          {cfg.dated ? <Fact label="Dates">{when ?? o.dates_note ?? "To be announced"}</Fact> : null}
-          {cfg.dated && when && o.dates_note ? <Fact label="Dates note">{o.dates_note}</Fact> : null}
+          {cfg.dated ? <Fact label="Dates">{eventDates(o, today)}</Fact> : null}
+          {cfg.dated && hasRange && o.dates_note ? <Fact label="Dates note">{o.dates_note}</Fact> : null}
           {hackathon ? (
-            <Fact label="Signup window">
-              {signup ? (
-                <>
-                  {signup}
-                  {deadlineMark}
-                </>
-              ) : (
-                "None listed"
-              )}
-            </Fact>
+            <Fact label="Signup window">{signupWindowFact(o, today) ?? "None listed"}</Fact>
           ) : (
-            <Fact label={internship ? "Application deadline" : "Registration deadline"}>
-              {o.deadline_on ? (
-                <>
-                  {formatDateOnly(o.deadline_on)}
-                  {deadlineMark}
-                </>
-              ) : !cfg.dated && o.dates_note ? (
-                o.dates_note
-              ) : (
-                "None listed"
-              )}
-            </Fact>
+            <Fact label={internship ? "Application deadline" : "Registration deadline"}>{deadlineText(o, today)}</Fact>
           )}
           <Fact label="Format">{FORMAT_LABELS[o.format]}</Fact>
           <Fact label="Location">{o.location ?? AREA_LABELS[o.area]}</Fact>
           {o.pay ? <Fact label={internship ? "Pay" : "Cost"}>{o.pay}</Fact> : null}
-          {internship ? (
-            <Fact label="Terms">{labels.length ? labels.join(", ") : "Not specified"}</Fact>
-          ) : null}
+          {internship ? <Fact label="Terms">{labels.length ? labels.join(", ") : "Not specified"}</Fact> : null}
         </dl>
       </FormSection>
 
@@ -156,11 +144,15 @@ export function OpportunityDetail({ opportunity: o, today }: { opportunity: Oppo
           <ArrowUpRight aria-hidden="true" className="size-4 text-ink-muted" />
           <span className="sr-only"> (opens in a new tab)</span>
         </a>
-        {closedOn ? <> · Closed {closedOn}</> : null}
+        {closed ? <> · {closed}</> : null}
       </p>
 
       <p className="text-xs text-ink-muted">
-        {o.verified_on ? <>The e-board last checked this listing on {formatDateOnly(o.verified_on)}.</> : <>The e-board hasn&apos;t re-checked this listing yet.</>}{" "}
+        {o.verified_on ? (
+          <>Last checked by the e-board: {dateWithRelative(o.verified_on, today)}.</>
+        ) : (
+          <>The e-board hasn&apos;t re-checked this listing yet.</>
+        )}{" "}
         Details change; the posting is the source of truth.
       </p>
     </>

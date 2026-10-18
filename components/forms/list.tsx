@@ -5,7 +5,9 @@
  * meta + state stacked, with order/actions in a column on the right.
  *
  * Row anatomy (64px, border-t, last row border-b):
- *   thumb · title (the edit link) + meta · ...extra cells · state · controls
+ *   thumb · title (the edit link) + meta · ...extra cells · aside · state · controls
+ * `titleAside` (pills) sits on the title's line; `aside` is a right column
+ * that stacks under the meta below 640px. Both are optional.
  * Pass the same column set to ListTable `columns` as the cells you give
  * ListRow, in that order. Server-safe.
  *
@@ -80,8 +82,12 @@ export interface ListRowProps {
   /** The title links here (the edit page). */
   href?: string;
   meta?: React.ReactNode;
+  /** Shown after the title on the same line (pills); wraps under it when long. */
+  titleAside?: React.ReactNode;
   /** Extra desktop columns between title and state. */
   extra?: Array<{ content: React.ReactNode; className?: string; end?: boolean }>;
+  /** A column after `extra` ≥640px; stacked under the meta below. */
+  aside?: React.ReactNode;
   /** State pill. Shown in its own column ≥640px and under the title below. */
   state?: React.ReactNode;
   /** Up/down + ⋯ menu. */
@@ -89,7 +95,30 @@ export interface ListRowProps {
   className?: string;
 }
 
-export function ListRow({ thumb, title, href, meta, extra, state, controls, className }: ListRowProps) {
+function RowTitle({ title, href }: { title: React.ReactNode; href?: string }) {
+  if (!href) return <span className="max-w-full truncate text-sm font-medium text-ink">{title}</span>;
+  return (
+    <Link
+      href={href}
+      className="max-w-full truncate rounded-control text-sm font-medium text-ink underline-offset-4 hover:underline"
+    >
+      {title}
+    </Link>
+  );
+}
+
+export function ListRow({
+  thumb,
+  title,
+  href,
+  meta,
+  titleAside,
+  extra,
+  aside,
+  state,
+  controls,
+  className,
+}: ListRowProps) {
   return (
     <tr
       className={cn(
@@ -101,17 +130,16 @@ export function ListRow({ thumb, title, href, meta, extra, state, controls, clas
       {thumb !== undefined ? <td className="w-14 py-3 max-sm:block max-sm:w-auto max-sm:py-0">{thumb}</td> : null}
       <td className={cn("min-w-0 py-3 max-sm:block max-sm:flex-1 max-sm:py-0", thumb !== undefined && "sm:pl-1")}>
         <div className="flex min-w-0 flex-col gap-0.5">
-          {href ? (
-            <Link
-              href={href}
-              className="max-w-full truncate rounded-control text-sm font-medium text-ink underline-offset-4 hover:underline"
-            >
-              {title}
-            </Link>
+          {titleAside ? (
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <RowTitle title={title} href={href} />
+              {titleAside}
+            </div>
           ) : (
-            <span className="max-w-full truncate text-sm font-medium text-ink">{title}</span>
+            <RowTitle title={title} href={href} />
           )}
           {meta ? <span className="truncate text-xs text-ink-muted">{meta}</span> : null}
+          {aside ? <div className="mt-1 sm:hidden">{aside}</div> : null}
           {state ? <span className="mt-1 sm:hidden">{state}</span> : null}
         </div>
       </td>
@@ -123,6 +151,7 @@ export function ListRow({ thumb, title, href, meta, extra, state, controls, clas
           {cell.content}
         </td>
       ))}
+      {aside !== undefined ? <td className="py-3 pl-4 max-sm:hidden">{aside}</td> : null}
       {state !== undefined ? <td className="py-3 pl-4 max-sm:hidden">{state}</td> : null}
       {controls !== undefined ? (
         <td className="py-3 pl-4 max-sm:block max-sm:py-0 max-sm:pl-0">

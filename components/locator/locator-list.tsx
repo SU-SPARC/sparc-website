@@ -1,80 +1,47 @@
 "use client";
 
 /* LocatorList — one list for all four Locator kinds (docs/LOCATOR.md,
- * "List screen"; brief §2). Header, search + FilterChips with counts,
- * "Search elsewhere", the ?notice= banner, then rows: internships in one
- * table (deadline order from the data layer), dated kinds grouped by month,
- * then Undated, then Past. The ⋯ menu runs the eligibility check, marks the
- * listing verified (and a sync row reviewed), opens the source, publishes,
- * and deletes through a ConfirmDialog. Meta names the source ("via
- * Greenhouse"); closed rows say when (docs/LOCATOR-SYNC.md, phase 2).
- * Hackathon meta adds the signup window before the event dates, and any
- * row with member interest gets a "3 interested" pill (0005).
+ * "List screen"; DESIGN-BRIEF §2, §13, §15). Header with the open count,
+ * search + FilterChips with counts, "Search elsewhere", the ?notice= banner,
+ * then the rows in sections: dated kinds This week, Later this month, one
+ * per later month, Undated, Past; internships Closing this week, Open, No
+ * deadline, Deadline passed. The past section starts collapsed. Each row is
+ * a LocatorRow; deleting goes through a ConfirmDialog.
  *
  * `mode="member"` is the read-only list under /dashboard/locator
- * (docs/LOCATOR.md, "Members view"): no New button, no Published / Hidden
- * chips or state pills, no Unreviewed / Closed, rows link to the member
- * detail page, and the ⋯ menu keeps only "View posting" and "Check my
- * eligibility".
+ * (docs/LOCATOR.md, "Members view"): no New button, no Published / Hidden /
+ * Closed / Unreviewed chips, no state pills, rows link to the member
+ * detail page.
  *
- * `today` comes from the server (America/New_York) so grouping and
- * "Closing soon" match the server render. */
+ * `today` comes from the server (America/New_York) so states and sections
+ * match the server render. */
 
-import { CalendarDays } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 
-import { ActionMenu, type ActionMenuItem } from "@/components/forms/action-menu";
 import { Button, ButtonLink } from "@/components/forms/button";
 import { ConfirmDialog } from "@/components/forms/confirm-dialog";
 import { EmptyState } from "@/components/forms/empty-state";
-import { Input } from "@/components/forms/input";
-import { ListRow, ListTable, ListThumb, StatePill } from "@/components/forms/list";
 import { StatusBanner } from "@/components/forms/status-banner";
-import { FilterChip } from "@/components/ui/filter-chip";
-import { MicroLabel } from "@/components/ui/micro-label";
-import { Pill } from "@/components/ui/pill";
 import { checkEligibility } from "@/lib/actions/locator-ai";
+import { deleteOpportunity } from "@/lib/actions/opportunities";
 import {
-  deleteOpportunity,
-  markOpportunityReviewed,
-  markOpportunityVerified,
-  setOpportunityPublished,
-} from "@/lib/actions/opportunities";
-import { formatDateOnly, parseDateOnly } from "@/lib/data/dates";
-import {
-  AREA_LABELS,
   CLOSED_CHIP,
-  closedOnLabel,
-  dateStatus,
-  deadlineStatus,
-  formatDateRange,
-  interestLabel,
-  isUnreviewed,
+  isPastListing,
   KIND_CONFIG,
   kindPath,
   type LocatorMode,
-  monthKey,
-  monthLabel,
-  profilePath,
   rowFilterKeys,
-  signupWindowLabel,
-  sourceLabel,
-  TERM_LABELS,
-  VERDICT_LABELS,
+  sectionsForEvents,
+  sectionsForInternships,
 } from "@/lib/data/locator";
 import type { OpportunityWithCheck } from "@/lib/data/opportunities";
-import type { DateOnly, EligibilityVerdict, OpportunityKind } from "@/lib/data/types";
+import type { DateOnly, OpportunityKind } from "@/lib/data/types";
 
+import { type CheckError, LocatorRow } from "./locator-row";
+import { LocatorSection } from "./locator-section";
+import { type Chip, LocatorToolbar } from "./locator-toolbar";
 import { SearchElsewhere } from "./search-elsewhere";
-
-export const VERDICT_TONE: Record<EligibilityVerdict, string> = {
-  eligible: "text-success",
-  likely: "text-ink",
-  unclear: "text-warning",
-  not_eligible: "text-danger",
-};
 
 export interface LocatorListProps {
   kind: OpportunityKind;
@@ -86,55 +53,65 @@ export interface LocatorListProps {
   mode?: LocatorMode;
 }
 
-type Section = { key: string; label: string; rows: OpportunityWithCheck[]; past?: boolean };
-type CheckError = { code: string; error: string };
-
-/** Upcoming/ongoing by month, then Undated (newest first), then Past (most recent first). */
-function groupByMonth(rows: OpportunityWithCheck[], today: DateOnly): Section[] {
-  const months = new Map<string, OpportunityWithCheck[]>();
-  const undated: OpportunityWithCheck[] = [];
-  const past: OpportunityWithCheck[] = [];
-  for (const r of rows) {
-    const s = dateStatus(r, today);
-    if (s === "undated") undated.push(r);
-    else if (s === "past") past.push(r);
-    else {
-      const key = monthKey(r.starts_on as DateOnly);
-      months.set(key, [...(months.get(key) ?? []), r]);
-    }
-  }
-  const sections: Section[] = [...months.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, list]) => ({ key, label: monthLabel(key), rows: list }));
-  if (undated.length) {
-    undated.sort((a, b) => b.created_at.localeCompare(a.created_at));
-    sections.push({ key: "undated", label: "Undated", rows: undated });
-  }
-  if (past.length) {
-    past.sort((a, b) => (b.starts_on ?? "").localeCompare(a.starts_on ?? ""));
-    sections.push({ key: "past", label: "Past", rows: past, past: true });
-  }
-  return sections;
-}
-
-function DateBlock({ date }: { date: DateOnly | null }) {
-  if (!date) return <ListThumb icon={<CalendarDays aria-hidden="true" className="size-4" />} />;
-  return (
-    <span className="flex size-10 flex-none flex-col items-center justify-center gap-0.5 rounded-control bg-surface-2 leading-none">
-      <span className="text-sm leading-none font-medium text-ink tabular-nums">{parseDateOnly(date).day}</span>
-      <span className="text-label leading-none uppercase text-ink-muted">{formatDateOnly(date, { month: "short" })}</span>
-    </span>
-  );
-}
-
 function omit<T>(map: Record<string, T>, id: string): Record<string, T> {
   const next = { ...map };
   delete next[id];
   return next;
 }
 
-function errorText({ code, error }: CheckError): string {
-  return code === "refused" ? "The AI declined to assess this listing." : error;
+/** "Show 12 past hackathons", "Show 9 whose deadline passed". */
+function showPastLabel(kind: OpportunityKind, count: number): string {
+  if (kind === "internship") return `Show ${count} whose deadline passed`;
+  const cfg = KIND_CONFIG[kind];
+  return `Show ${count} past ${count === 1 ? cfg.noun : cfg.plural}`;
+}
+
+/** "Hide past hackathons", "Hide passed deadlines". */
+function hidePastLabel(kind: OpportunityKind): string {
+  if (kind === "internship") return "Hide passed deadlines";
+  return `Hide past ${KIND_CONFIG[kind].plural}`;
+}
+
+function filterChips(kind: OpportunityKind, member: boolean): Chip[] {
+  const editorChips = [{ key: "published", label: "Published" }, { key: "hidden", label: "Hidden" }, CLOSED_CHIP];
+  const kindChips = KIND_CONFIG[kind].filters.filter((f) => !(member && f.editorOnly));
+  return [{ key: "all", label: "All" }, ...(member ? [] : editorChips), ...kindChips];
+}
+
+/** Nothing listed yet: what the kind is for (editors) or "check back" (members). */
+function NoListings({ kind, member, base }: { kind: OpportunityKind; member: boolean; base: string }) {
+  const cfg = KIND_CONFIG[kind];
+  return (
+    <EmptyState
+      title={`No ${cfg.plural} yet.`}
+      action={
+        member ? undefined : (
+          <ButtonLink href={`${base}/new`} variant="outline">
+            New {cfg.noun}
+          </ButtonLink>
+        )
+      }
+    >
+      <p>{member ? `The e-board hasn't listed any ${cfg.plural} yet. Check back soon.` : cfg.purpose}</p>
+      <div className="mt-3 flex justify-center">
+        <SearchElsewhere kind={kind} query="" />
+      </div>
+    </EmptyState>
+  );
+}
+
+/** "No past hackathons." for a chip alone, else "No hackathons match “…”." */
+function NoMatches({ title, onClear }: { title: string; onClear: () => void }) {
+  return (
+    <EmptyState
+      title={title}
+      action={
+        <Button variant="text" onClick={onClear}>
+          Clear filters
+        </Button>
+      }
+    />
+  );
 }
 
 export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "admin" }: LocatorListProps) {
@@ -150,28 +127,27 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
   const [, startTransition] = React.useTransition();
 
   const keysById = React.useMemo(() => new Map(rows.map((r) => [r.id, rowFilterKeys(r, today)])), [rows, today]);
-  const filters = [
-    { key: "all", label: "All" },
-    ...(member
-      ? []
-      : [
-          { key: "published", label: "Published" },
-          { key: "hidden", label: "Hidden" },
-          CLOSED_CHIP,
-        ]),
-    ...cfg.filters.filter((f) => !(member && f.editorOnly)),
-  ];
-  const matchesFilter = (r: OpportunityWithCheck, key: string) =>
-    key === "all" ||
-    (key === "published" ? r.published : key === "hidden" ? !r.published : (keysById.get(r.id) ?? []).includes(key));
+  const filters = filterChips(kind, member);
+  const matchesFilter = (r: OpportunityWithCheck, key: string) => {
+    if (key === "all") return true;
+    if (key === "published") return r.published;
+    if (key === "hidden") return !r.published;
+    return (keysById.get(r.id) ?? []).includes(key);
+  };
 
   const q = query.trim().toLowerCase();
   const matchesQuery = (r: OpportunityWithCheck) =>
-    !q ||
-    [r.title, r.organizer, r.location ?? "", r.posting_site ?? "", ...r.tags].join(" ").toLowerCase().includes(q);
+    !q || [r.title, r.organizer, r.location ?? "", r.posting_site ?? "", ...r.tags].join(" ").toLowerCase().includes(q);
   const visible = rows.filter((r) => matchesFilter(r, filter) && matchesQuery(r));
   const activeLabel = filters.find((f) => f.key === filter)?.label.toLowerCase();
-  const sections: Section[] = cfg.dated ? groupByMonth(visible, today) : [{ key: "all", label: cfg.label, rows: visible }];
+  const noMatchTitle =
+    filter !== "all" && !q ? `No ${activeLabel} ${cfg.plural}.` : `No ${cfg.plural} match “${query.trim()}”.`;
+  const clearFilters = () => {
+    setFilter("all");
+    setQuery("");
+  };
+  const sections = cfg.dated ? sectionsForEvents(visible, today) : sectionsForInternships(visible, today);
+  const openCount = rows.filter((r) => !isPastListing(r, today)).length;
 
   const runCheck = (id: string) => {
     setChecking((c) => ({ ...c, [id]: true }));
@@ -184,132 +160,13 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
     });
   };
 
-  const renderRow = (r: OpportunityWithCheck, past?: boolean) => {
-    const when = cfg.dated
-      ? (formatDateRange(r.starts_on, r.ends_on) ?? r.dates_note)
-      : r.deadline_on
-        ? `Due ${formatDateOnly(r.deadline_on)}`
-        : r.dates_note;
-    const signup = kind === "hackathon" ? signupWindowLabel(r) : null;
-    const metaText = [r.organizer, r.location, signup, when, member ? null : `via ${sourceLabel(r)}`]
-      .filter(Boolean)
-      .join(" · ");
-    const interested = interestLabel(r.interest_count);
-    const closedOn = member ? null : closedOnLabel(r);
-    const unreviewed = !member && isUnreviewed(r);
-    const closingSoon = deadlineStatus(r.deadline_on, today) === "closing_soon";
-    const busy = checking[r.id];
-    const err = checkErrors[r.id];
-    const labels = kind === "internship" ? r.internship_terms.map((t) => TERM_LABELS[t]) : [AREA_LABELS[r.area]];
-
-    const editorItems: ActionMenuItem[] = member
-      ? []
-      : [
-          ...(unreviewed
-            ? [
-                {
-                  label: "Mark reviewed",
-                  onSelect: () =>
-                    startTransition(async () => {
-                      await markOpportunityReviewed(r.id);
-                      router.refresh();
-                    }),
-                },
-              ]
-            : []),
-          { label: "Mark verified today", onSelect: () => startTransition(() => markOpportunityVerified(r.id)) },
-          ...(r.source_url ? [{ label: "Open source", href: r.source_url, external: true }] : []),
-          {
-            label: r.published ? "Unpublish" : "Publish",
-            onSelect: () => startTransition(() => setOpportunityPublished(r.id, !r.published)),
-          },
-          { type: "divider" },
-          { label: "Delete…", tone: "danger", onSelect: () => setDeleting(r) },
-        ];
-    const items: ActionMenuItem[] = [
-      { label: "View posting", href: r.url, external: true },
-      ...(aiConfigured
-        ? [{ label: busy ? "Checking…" : "Check my eligibility", disabled: busy, onSelect: () => runCheck(r.id) }]
-        : []),
-      ...editorItems,
-    ];
-
-    return (
-      <ListRow
-        key={r.id}
-        thumb={kind === "internship" ? <ListThumb name={r.organizer} /> : <DateBlock date={r.starts_on} />}
-        title={past ? <span className="text-ink-muted">{r.title}</span> : r.title}
-        href={`${base}/${r.id}`}
-        meta={
-          <>
-            {metaText}
-            {closedOn ? (
-              <>
-                {metaText ? " · " : null}
-                <span className="text-ink-muted">Closed {closedOn}</span>
-              </>
-            ) : closingSoon ? (
-              <>
-                {metaText ? " · " : null}
-                <span className="text-warning">Closing soon</span>
-              </>
-            ) : null}
-            {busy ? (
-              <span role="status" className="block">
-                Checking eligibility…
-              </span>
-            ) : err ? (
-              <span role="alert" className="block whitespace-normal text-danger">
-                {errorText(err)}
-                {err.code === "no_profile" ? (
-                  <>
-                    {" "}
-                    <Link href={profilePath(mode)} className="underline underline-offset-4 hover:text-ink">
-                      Locator profile
-                    </Link>
-                  </>
-                ) : null}
-              </span>
-            ) : null}
-          </>
-        }
-        extra={[
-          {
-            content: (
-              <span className="flex flex-wrap gap-1.5">
-                {unreviewed ? (
-                  <Pill className="whitespace-nowrap">
-                    <span className="text-warning">Unreviewed</span>
-                  </Pill>
-                ) : null}
-                {labels.map((l) => (
-                  <Pill key={l} className="whitespace-nowrap">
-                    {l}
-                  </Pill>
-                ))}
-                {r.posting_site ? <Pill className="whitespace-nowrap">{r.posting_site}</Pill> : null}
-                {interested ? <Pill className="whitespace-nowrap">{interested}</Pill> : null}
-                {r.check ? (
-                  <Pill className="whitespace-nowrap">
-                    <span className={VERDICT_TONE[r.check.verdict]}>{VERDICT_LABELS[r.check.verdict]}</span>
-                  </Pill>
-                ) : null}
-              </span>
-            ),
-          },
-        ]}
-        state={member ? undefined : <StatePill published={r.published} />}
-        controls={<ActionMenu label={`Actions for ${r.title}`} items={items} />}
-      />
-    );
-  };
-
+  // Widths for the fixed table layout; the title column takes the rest.
   const columns = [
-    { label: kind === "internship" ? "Company" : "Date", srOnly: true },
+    { label: kind === "internship" ? "Company" : "Date", srOnly: true, className: "w-14" },
     { label: cfg.noun.charAt(0).toUpperCase() + cfg.noun.slice(1) },
-    { label: "Details" },
-    ...(member ? [] : [{ label: "Status" }]),
-    { label: "Actions", srOnly: true, end: true },
+    { label: "Status", className: "w-52" },
+    ...(member ? [] : [{ label: "Visibility", className: "w-32" }]),
+    { label: "Actions", srOnly: true, end: true, className: "w-14" },
   ];
 
   return (
@@ -317,7 +174,7 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
       <header className="flex items-center justify-between gap-4">
         <h1 className="flex items-baseline gap-3 text-2xl font-medium text-ink">
           {cfg.label}
-          <span className="text-base font-normal text-ink-muted tabular-nums">{rows.length}</span>
+          <span className="text-base font-normal text-ink-muted tabular-nums">{openCount} open</span>
         </h1>
         {member ? null : (
           <ButtonLink href={`${base}/new`} variant="primary">
@@ -328,87 +185,52 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
       </header>
 
       {rows.length > 0 ? (
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="sm:w-72 sm:flex-none">
-              <label htmlFor="locator-search" className="sr-only">
-                Search {cfg.plural}
-              </label>
-              <Input
-                id="locator-search"
-                type="search"
-                placeholder="Search…"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
-            <div className="-mx-gutter flex gap-2 overflow-x-auto px-gutter pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
-              {filters.map((f) => (
-                <FilterChip
-                  key={f.key}
-                  pressed={filter === f.key}
-                  onPressedChange={() => setFilter(f.key)}
-                  count={rows.filter((r) => matchesFilter(r, f.key)).length}
-                  className="flex-none"
-                >
-                  {f.label}
-                </FilterChip>
-              ))}
-            </div>
-          </div>
-          <SearchElsewhere kind={kind} query={query} />
-        </div>
+        <LocatorToolbar
+          kind={kind}
+          query={query}
+          onQueryChange={setQuery}
+          chips={filters}
+          active={filter}
+          onActiveChange={setFilter}
+          countFor={(key) => rows.filter((r) => matchesFilter(r, key)).length}
+        />
       ) : null}
 
       {notice ? <StatusBanner clearParam="notice">{notice}</StatusBanner> : null}
 
-      {rows.length === 0 ? (
-        <EmptyState
-          title={`No ${cfg.plural} yet.`}
-          action={
-            member ? undefined : (
-              <ButtonLink href={`${base}/new`} variant="outline">
-                New {cfg.noun}
-              </ButtonLink>
-            )
-          }
-        >
-          <p>{member ? `The e-board hasn't listed any ${cfg.plural} yet. Check back soon.` : cfg.purpose}</p>
-          <div className="mt-3 flex justify-center">
-            <SearchElsewhere kind={kind} query="" />
-          </div>
-        </EmptyState>
-      ) : visible.length === 0 ? (
-        <EmptyState
-          title={filter !== "all" && !q ? `No ${activeLabel} ${cfg.plural}.` : `No ${cfg.plural} match “${query.trim()}”.`}
-          action={
-            <Button
-              variant="text"
-              onClick={() => {
-                setFilter("all");
-                setQuery("");
-              }}
-            >
-              Clear filters
-            </Button>
-          }
-        />
-      ) : (
+      {rows.length === 0 ? <NoListings kind={kind} member={member} base={base} /> : null}
+      {rows.length > 0 && visible.length === 0 ? <NoMatches title={noMatchTitle} onClear={clearFilters} /> : null}
+      {visible.length > 0 ? (
         <div className="flex flex-col gap-8">
-          {sections.map((s) => (
-            <section key={s.key} aria-labelledby={cfg.dated ? `sec-${s.key}` : undefined} className="flex flex-col gap-2">
-              {cfg.dated ? (
-                <MicroLabel as="h2" id={`sec-${s.key}`}>
-                  {s.label}
-                </MicroLabel>
-              ) : null}
-              <ListTable caption={cfg.dated ? `${cfg.label}: ${s.label}` : cfg.label} columns={columns}>
-                {s.rows.map((r) => renderRow(r, s.past))}
-              </ListTable>
-            </section>
+          {sections.map((section) => (
+            <LocatorSection
+              key={section.key}
+              id={`sec-${section.key}`}
+              label={section.label}
+              count={section.rows.length}
+              collapsed={section.collapsed}
+              showLabel={showPastLabel(kind, section.rows.length)}
+              hideLabel={hidePastLabel(kind)}
+              caption={`${cfg.label}: ${section.label}`}
+              columns={columns}
+            >
+              {section.rows.map((r) => (
+                <LocatorRow
+                  key={r.id}
+                  row={r}
+                  today={today}
+                  mode={mode}
+                  aiConfigured={aiConfigured}
+                  checking={Boolean(checking[r.id])}
+                  checkError={checkErrors[r.id] ?? null}
+                  onCheck={() => runCheck(r.id)}
+                  onDelete={() => setDeleting(r)}
+                />
+              ))}
+            </LocatorSection>
           ))}
         </div>
-      )}
+      ) : null}
 
       {member ? null : (
         <ConfirmDialog
@@ -423,7 +245,9 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
             if (deleting) await deleteOpportunity(deleting.id);
           }}
         >
-          <p>Removes this {cfg.noun} from Locator. Eligibility checks for it are removed too. This can&apos;t be undone.</p>
+          <p>
+            Removes this {cfg.noun} from Locator. Eligibility checks for it are removed too. This can&apos;t be undone.
+          </p>
         </ConfirmDialog>
       )}
     </div>

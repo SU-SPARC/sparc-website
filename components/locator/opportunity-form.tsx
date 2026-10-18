@@ -2,7 +2,8 @@
 
 /* OpportunityForm — the Locator edit form (docs/LOCATOR.md, "Edit and New
  * screens"; brief §3). EditForm → saveOpportunity, EditColumns with the
- * rail: Status, the eligibility card (passed in by the edit page),
+ * rail: the At a glance card (passed in), Status, the eligibility card
+ * (passed in by the edit page),
  * Verified, the interest card and the Source card (both passed in), Record.
  * Event kinds get a "Signup opens" date; hackathons a "Hackathon details"
  * section (team size, prizes, what's provided; 0005). Fields a kind does not
@@ -74,6 +75,8 @@ export interface OpportunityFormProps {
   opportunity: Opportunity | null;
   /** Imported draft (New screen). */
   draft?: OpportunityDraft | null;
+  /** Rail block above Status (the At a glance card). */
+  glance?: React.ReactNode;
   /** Rail block between Status and Verified (the eligibility card). */
   eligibility?: React.ReactNode;
   /** Rail block under Verified, above Source (the members-interested card). */
@@ -82,7 +85,15 @@ export interface OpportunityFormProps {
   source?: React.ReactNode;
 }
 
-export function OpportunityForm({ kind, opportunity: o, draft, eligibility, interest, source }: OpportunityFormProps) {
+export function OpportunityForm({
+  kind,
+  opportunity: o,
+  draft,
+  glance,
+  eligibility,
+  interest,
+  source,
+}: OpportunityFormProps) {
   const cfg = KIND_CONFIG[kind];
   const isNew = o === null;
   // Saved row first, then any field the imported draft found.
@@ -115,6 +126,7 @@ export function OpportunityForm({ kind, opportunity: o, draft, eligibility, inte
       <EditColumns
         rail={
           <>
+            {glance}
             <PublishCard defaultPublished={o?.published ?? true} helperOn="Listed in Locator" />
             {eligibility}
             <VerifiedCard id={o?.id ?? null} verifiedOn={o?.verified_on ?? null} />

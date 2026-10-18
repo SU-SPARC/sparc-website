@@ -1,8 +1,14 @@
 /* Locator: pure helpers shared by the server and client components.
  * No "server-only" here; client components import this module directly
- * (lib/data/index.ts is server-only). See docs/LOCATOR.md. */
+ * (lib/data/index.ts is server-only). See docs/LOCATOR.md.
+ *
+ * The date words, the §13 date states and the list sections live in their
+ * own files and are re-exported here, so callers import from this module
+ * only. */
 
-import { formatDateOnly, isoDateOnly, parseDateOnly } from "./dates";
+import { formatDateOnly, isoDateOnly } from "./dates";
+import { dateStatus, deadlineStatus } from "./locator-dates";
+import { isPastListing } from "./locator-state";
 import type {
   DateOnly,
   EligibilityVerdict,
@@ -14,6 +20,10 @@ import type {
   OpportunityKind,
   WorkAuth,
 } from "./types";
+
+export * from "./locator-dates";
+export * from "./locator-sections";
+export * from "./locator-state";
 
 export const KINDS: readonly OpportunityKind[] = ["internship", "conference", "networking", "hackathon"];
 
@@ -119,6 +129,7 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
       { key: "summer", label: TERM_LABELS.summer },
       { key: "winter", label: TERM_LABELS.winter },
       { key: "closing_soon", label: "Closing soon" },
+      { key: "deadline_passed", label: "Deadline passed" },
       UNREVIEWED_CHIP,
     ],
   },
@@ -149,6 +160,7 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     dated: true,
     filters: [
       { key: "upcoming", label: "Upcoming" },
+      { key: "past", label: "Past" },
       { key: "suffolk", label: AREA_LABELS.suffolk },
       { key: "boston", label: AREA_LABELS.boston },
       { key: "outside_boston", label: AREA_LABELS.outside_boston },
@@ -166,6 +178,7 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     dated: true,
     filters: [
       { key: "upcoming", label: "Upcoming" },
+      { key: "past", label: "Past" },
       { key: "boston", label: AREA_LABELS.boston },
       { key: "outside_boston", label: AREA_LABELS.outside_boston },
       { key: "online", label: AREA_LABELS.online },
@@ -224,92 +237,32 @@ export function postingSiteFromUrl(url: string): string | null {
   return host.replace(/^www\./, "");
 }
 
-/** Whole days from `a` to `b` (both date-only), with no zone arithmetic. */
-function daysBetween(a: DateOnly, b: DateOnly): number {
-  const pa = parseDateOnly(a);
-  const pb = parseDateOnly(b);
-  return Math.round(
-    (Date.UTC(pb.year, pb.month - 1, pb.day) - Date.UTC(pa.year, pa.month - 1, pa.day)) / 86_400_000,
-  );
-}
-
-const CLOSING_SOON_DAYS = 14;
-
-/** closing_soon = the deadline is today or within the next 14 days. */
-export function deadlineStatus(
-  deadline_on: DateOnly | null,
-  today: DateOnly,
-): "none" | "open" | "closing_soon" | "closed" {
-  if (!deadline_on) return "none";
-  const left = daysBetween(today, deadline_on);
-  if (left < 0) return "closed";
-  if (left <= CLOSING_SOON_DAYS) return "closing_soon";
-  return "open";
-}
-
-/** YYYY-MM-DD strings compare correctly as strings. */
-export function dateStatus(
-  o: { starts_on: DateOnly | null; ends_on: DateOnly | null },
-  today: DateOnly,
-): "undated" | "upcoming" | "ongoing" | "past" {
-  if (!o.starts_on) return "undated";
-  const end = o.ends_on ?? o.starts_on;
-  if (end < today) return "past";
-  if (o.starts_on > today) return "upcoming";
-  return "ongoing";
-}
-
-/** "Oct 3–4, 2026", "Oct 3, 2026", "Oct 30 – Nov 1, 2026", "Dec 30, 2026 – Jan 2, 2027". */
-export function formatDateRange(starts_on: DateOnly | null, ends_on: DateOnly | null): string | null {
-  const start = starts_on ?? ends_on;
-  if (!start) return null;
-  const end = starts_on && ends_on ? ends_on : null;
-  if (!end || end === start) return formatDateOnly(start);
-  const s = parseDateOnly(start);
-  const e = parseDateOnly(end);
-  if (s.year !== e.year) return `${formatDateOnly(start)} – ${formatDateOnly(end)}`;
-  const md = (v: DateOnly) => formatDateOnly(v, { month: "short", day: "numeric" });
-  if (s.month === e.month) return `${md(start)}–${e.day}, ${e.year}`;
-  return `${md(start)} – ${md(end)}, ${e.year}`;
-}
-
-/** "Signup Oct 1 – Nov 15, 2026", "Signup closes Nov 15, 2026",
- *  "Signup opens Oct 1, 2026", or null when neither date is set.
- *  opens_on (0005) is when signup opens; deadline_on is when it closes. */
-export function signupWindowLabel(o: Pick<Opportunity, "opens_on" | "deadline_on">): string | null {
-  const opens = o.opens_on ?? null;
-  const closes = o.deadline_on;
-  if (opens && closes) return `Signup ${formatDateRange(opens, closes)}`;
-  if (closes) return `Signup closes ${formatDateOnly(closes)}`;
-  if (opens) return `Signup opens ${formatDateOnly(opens)}`;
-  return null;
-}
-
 /** "3 interested"; null for none. Counts interested and enrolled alike. */
 export function interestLabel(n: number): string | null {
   return n > 0 ? `${n} interested` : null;
 }
 
-/** "2026-10" */
-export function monthKey(d: DateOnly): string {
-  return d.slice(0, 7);
+/** The timing chip a row matches. Event kinds: 'past' (Closed or Ended) or
+ *  'upcoming' (upcoming or under way). Internships: 'deadline_passed'
+ *  (Closed or past the deadline) or 'closing_soon'. A past row gets only
+ *  its past key, so the chip shows exactly the collapsed section. */
+function timingKeys(o: Opportunity, today: DateOnly): string[] {
+  const past = isPastListing(o, today);
+  if (o.kind === "internship") {
+    if (past) return ["deadline_passed"];
+    return deadlineStatus(o.deadline_on, today) === "closing_soon" ? ["closing_soon"] : [];
+  }
+  if (past) return ["past"];
+  return dateStatus(o, today) === "undated" ? [] : ["upcoming"];
 }
 
-/** "2026-10" → "October 2026" */
-export function monthLabel(key: string): string {
-  return formatDateOnly(`${key}-01`, { month: "long", year: "numeric" });
-}
-
-/** Every filter key the row matches: its terms, its area, 'upcoming' | 'past',
- *  'closing_soon', 'ieee' when tagged, 'unreviewed' (open sync rows nobody
- *  has reviewed) and 'closed'. ('ongoing' counts as upcoming.) */
+/** Every filter key the row matches: its terms, its area, its timing key
+ *  (above), 'ieee' when tagged, 'unreviewed' (open sync rows nobody has
+ *  reviewed) and 'closed'. */
 export function rowFilterKeys(o: Opportunity, today: DateOnly): string[] {
   const keys = new Set<string>(o.internship_terms);
   keys.add(o.area);
-  const ds = dateStatus(o, today);
-  if (ds === "upcoming" || ds === "ongoing") keys.add("upcoming");
-  if (ds === "past") keys.add("past");
-  if (deadlineStatus(o.deadline_on, today) === "closing_soon") keys.add("closing_soon");
+  for (const key of timingKeys(o, today)) keys.add(key);
   if (o.tags.includes("ieee")) keys.add("ieee");
   if (isUnreviewed(o)) keys.add("unreviewed");
   if (o.closed_at) keys.add("closed");

@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { DangerZone } from "@/components/admin/edit-client";
 import { StatusBanner } from "@/components/forms/status-banner";
+import { AtAGlance } from "@/components/locator/at-a-glance";
 import { EligibilityCard } from "@/components/locator/eligibility-card";
 import { InterestCard } from "@/components/locator/interest-card";
 import { OpportunityForm } from "@/components/locator/opportunity-form";
@@ -13,6 +14,7 @@ import { deleteOpportunity } from "@/lib/actions/opportunities";
 import { editorPage } from "@/lib/actions/queries";
 import { aiConfigured, LOCATOR_MODEL } from "@/lib/ai/client";
 import { inputsHash } from "@/lib/ai/locator";
+import { isoDateOnly } from "@/lib/data/dates";
 import { KIND_CONFIG, kindFromSlug, kindPath } from "@/lib/data/locator";
 import { getCareerProfile, getInterest, getOpportunity } from "@/lib/data/opportunities";
 
@@ -42,6 +44,7 @@ export default async function EditOpportunityPage({
   void _count;
   const cfg = KIND_CONFIG[kind];
   const currentHash = profile ? inputsHash(opportunity, profile, LOCATOR_MODEL) : null;
+  const today = isoDateOnly(new Date());
 
   return (
     <>
@@ -77,6 +80,7 @@ export default async function EditOpportunityPage({
       <OpportunityForm
         kind={kind}
         opportunity={opportunity}
+        glance={<AtAGlance opportunity={opportunity} today={today} />}
         eligibility={
           <EligibilityCard
             opportunityId={opportunity.id}

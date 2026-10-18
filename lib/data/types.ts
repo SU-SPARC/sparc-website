@@ -179,8 +179,11 @@ export type Link = {
 
 /** `create type opportunity_kind as enum ('internship', 'conference', 'networking', 'hackathon')` */
 export type OpportunityKind = "internship" | "conference" | "networking" | "hackathon";
-/** `create type internship_term as enum ('coop', 'semester_part_time', 'summer', 'winter')` */
-export type InternshipTerm = "coop" | "semester_part_time" | "summer" | "winter";
+/** `create type internship_term as enum ('coop', 'semester_part_time', 'summer', 'winter')`, plus
+ *  'spring' and 'fall' (0006). 'coop' is a legacy term: co-ops are a JobType now. */
+export type InternshipTerm = "coop" | "semester_part_time" | "summer" | "winter" | "spring" | "fall";
+/** `create type job_type as enum ('internship', 'coop', 'new_grad')` (0006) */
+export type JobType = "internship" | "coop" | "new_grad";
 /** `create type opportunity_area as enum ('suffolk', 'boston', 'outside_boston', 'online')` */
 export type OpportunityArea = "suffolk" | "boston" | "outside_boston" | "online";
 /** `create type opportunity_format as enum ('in_person', 'online', 'hybrid')` */
@@ -220,6 +223,8 @@ export type Opportunity = {
   deadline_on: DateOnly | null;
   dates_note: string | null;
   internship_terms: InternshipTerm[];
+  /** internships only: internship, co-op or new-grad role (0006); the other kinds keep 'internship' */
+  job_type: JobType;
   pay: string | null;
   eligibility: string | null;
   tags: string[];

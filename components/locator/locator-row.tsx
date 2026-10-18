@@ -25,12 +25,12 @@ import {
   interestLabel,
   isPastListing,
   isUnreviewed,
+  jobPillLabels,
   kindPath,
   listedAgo,
   type LocatorMode,
   profilePath,
   sourceLabel,
-  TERM_LABELS,
   VERDICT_LABELS,
   verifiedState,
 } from "@/lib/data/locator";
@@ -78,10 +78,11 @@ function LeftBlock({ row, past }: { row: OpportunityWithCheck; past: boolean }) 
   return <div className={past ? "opacity-60" : undefined}>{block}</div>;
 }
 
-/** Terms or area; "via Greenhouse" (editors) or the posting site (members);
- *  "3 interested"; the viewer's eligibility verdict. */
+/** Internships: the job type when not a plain internship, then the terms;
+ *  other kinds: the area. Then "via Greenhouse" (editors) or the posting site
+ *  (members); "3 interested"; the viewer's eligibility verdict. */
 function RowPills({ row, member }: { row: OpportunityWithCheck; member: boolean }) {
-  const labels = row.kind === "internship" ? row.internship_terms.map((t) => TERM_LABELS[t]) : [AREA_LABELS[row.area]];
+  const labels = row.kind === "internship" ? jobPillLabels(row) : [AREA_LABELS[row.area]];
   const origin = member ? row.posting_site : `via ${sourceLabel(row)}`;
   const interested = interestLabel(row.interest_count);
   return (

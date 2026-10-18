@@ -14,6 +14,7 @@ import type {
   EligibilityVerdict,
   InterestStatus,
   InternshipTerm,
+  JobType,
   Opportunity,
   OpportunityArea,
   OpportunityFormat,
@@ -28,6 +29,9 @@ export * from "./locator-state";
 export const KINDS: readonly OpportunityKind[] = ["internship", "conference", "networking", "hackathon"];
 
 export type KindSlug = "internships" | "conferences" | "networking" | "hackathons";
+
+/** One FilterChip: its filter key and label. */
+export type FilterOption = { key: string; label: string; editorOnly?: boolean };
 
 export type KindConfig = {
   kind: OpportunityKind;
@@ -44,7 +48,13 @@ export type KindConfig = {
   dated: boolean;
   /** the kind's own FilterChips, after All / Published / Hidden / Closed.
    *  `editorOnly` chips (Unreviewed) never reach the members' list. */
-  filters: { key: string; label: string; editorOnly?: boolean }[];
+  filters: FilterOption[];
+  /** internships only: the "Type" chip row under the search box (after its own All) */
+  typeFilters?: FilterOption[];
+  /** internships only: the "Term" chip row under the Type row (after its own All) */
+  termFilters?: FilterOption[];
+  /** internships only: a muted line under the list's h1 */
+  subtitle?: string;
 };
 
 export const AREA_LABELS: Record<OpportunityArea, string> = {
@@ -60,12 +70,42 @@ export const FORMAT_LABELS: Record<OpportunityFormat, string> = {
   hybrid: "Hybrid",
 };
 
-export const TERM_LABELS: Record<InternshipTerm, string> = {
+export const JOB_TYPES: readonly JobType[] = ["internship", "coop", "new_grad"];
+
+export const JOB_TYPE_LABELS: Record<JobType, string> = {
+  internship: "Internship",
   coop: "Co-op",
-  semester_part_time: "Semester part-time",
-  summer: "Summer",
-  winter: "Winter",
+  new_grad: "New grad",
 };
+
+/** The terms the Term chips, the form and the row pills show, in this order.
+ *  The old 'coop' term is not one of them: co-ops are a job type now
+ *  (docs/DESIGN-BRIEF.md §17). */
+export const TERM_ORDER: readonly InternshipTerm[] = ["summer", "fall", "spring", "winter", "semester_part_time"];
+
+export const TERM_LABELS: Record<InternshipTerm, string> = {
+  summer: "Summer",
+  fall: "Fall",
+  spring: "Spring",
+  winter: "Winter",
+  semester_part_time: "Part-time",
+  coop: "Co-op",
+};
+
+/** The filter key for a job type: "type:coop". Prefixed so it never clashes with the 'coop' term. */
+export function jobTypeKey(type: JobType): string {
+  return `type:${type}`;
+}
+
+/** An internship row's pills: the job type when it is not a plain internship
+ *  ("Co-op", "New grad"), then its terms in TERM_ORDER ("Summer", "Fall"). */
+export function jobPillLabels(o: Pick<Opportunity, "job_type" | "internship_terms">): string[] {
+  const labels = o.job_type === "internship" ? [] : [JOB_TYPE_LABELS[o.job_type]];
+  for (const term of TERM_ORDER) {
+    if (o.internship_terms.includes(term)) labels.push(TERM_LABELS[term]);
+  }
+  return labels;
+}
 
 export const VERDICT_LABELS: Record<EligibilityVerdict, string> = {
   eligible: "Eligible",
@@ -121,17 +161,16 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     label: "Internships",
     noun: "internship",
     plural: "internships",
-    purpose: "Internship and co-op postings for members, by term and deadline.",
+    purpose: "Internships, co-ops and new-grad roles for members, by type, term and deadline.",
     dated: false,
     filters: [
-      { key: "coop", label: TERM_LABELS.coop },
-      { key: "semester_part_time", label: TERM_LABELS.semester_part_time },
-      { key: "summer", label: TERM_LABELS.summer },
-      { key: "winter", label: TERM_LABELS.winter },
       { key: "closing_soon", label: "Closing soon" },
       { key: "deadline_passed", label: "Deadline passed" },
       UNREVIEWED_CHIP,
     ],
+    typeFilters: JOB_TYPES.map((type) => ({ key: jobTypeKey(type), label: JOB_TYPE_LABELS[type] })),
+    termFilters: TERM_ORDER.map((term) => ({ key: term, label: TERM_LABELS[term] })),
+    subtitle: "Internships, co-ops and new-grad roles",
   },
   conference: {
     kind: "conference",
@@ -256,11 +295,12 @@ function timingKeys(o: Opportunity, today: DateOnly): string[] {
   return dateStatus(o, today) === "undated" ? [] : ["upcoming"];
 }
 
-/** Every filter key the row matches: its terms, its area, its timing key
- *  (above), 'ieee' when tagged, 'unreviewed' (open sync rows nobody has
- *  reviewed) and 'closed'. */
+/** Every filter key the row matches: its terms, its job type ('type:coop',
+ *  internships only), its area, its timing key (above), 'ieee' when tagged,
+ *  'unreviewed' (open sync rows nobody has reviewed) and 'closed'. */
 export function rowFilterKeys(o: Opportunity, today: DateOnly): string[] {
   const keys = new Set<string>(o.internship_terms);
+  if (o.kind === "internship") keys.add(jobTypeKey(o.job_type));
   keys.add(o.area);
   for (const key of timingKeys(o, today)) keys.add(key);
   if (o.tags.includes("ieee")) keys.add("ieee");
@@ -316,4 +356,10 @@ export function searchElsewhere(kind: OpportunityKind, query: string): { label: 
     case "hackathon":
       return [ELSEWHERE.devpost(q), ELSEWHERE.mlh(), ELSEWHERE.luma()];
   }
+}
+
+/** True for hackathons and networking events held in person somewhere other than
+ *  Greater Boston (docs/DESIGN-BRIEF.md §18): they get the red "Outside Boston" word. */
+export function isOutsideBoston(o: Pick<Opportunity, "kind" | "area">): boolean {
+  return (o.kind === "hackathon" || o.kind === "networking") && o.area === "outside_boston";
 }

@@ -1,7 +1,16 @@
 /* Shared builder for internship items: applies the design's job rules
- * (student title, location, terms, summary/description) in one place. */
+ * (student title, location, job type, terms, summary/description) in one place. */
 
-import { cutDescription, inferTerms, isStudentRole, placeJob, summarize, TERM_NOT_STATED, titleTermsAllPast } from "../normalize";
+import {
+  cutDescription,
+  inferJobType,
+  inferTerms,
+  isStudentRole,
+  placeJob,
+  summarize,
+  TERM_NOT_STATED,
+  titleTermsAllPast,
+} from "../normalize";
 import type { SyncItem } from "../types";
 
 export type JobInput = {
@@ -38,6 +47,7 @@ export function buildJob(j: JobInput, now: Date): SyncItem | null {
   const place = placeJob(j.locations, { office: j.office, text: j.text ?? "" });
   if (!place) return null;
   const terms = inferTerms(`${title} ${j.termHints ?? ""}`, j.text ?? "");
+  const jobType = inferJobType(title);
   const description = cutDescription(j.text);
   return {
     external_id: j.external_id,
@@ -57,8 +67,10 @@ export function buildJob(j: JobInput, now: Date): SyncItem | null {
     starts_on: null,
     ends_on: null,
     deadline_on: j.deadline_on ?? null,
-    dates_note: terms.length ? null : TERM_NOT_STATED,
+    // new-grad roles have no term, so a missing one is not worth a note
+    dates_note: terms.length || jobType === "new_grad" ? null : TERM_NOT_STATED,
     internship_terms: terms,
+    job_type: jobType,
     pay: j.pay ?? null,
     eligibility: j.eligibility ?? null,
     tags: j.tags ?? [],

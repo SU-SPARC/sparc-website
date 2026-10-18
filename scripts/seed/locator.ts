@@ -9,7 +9,9 @@
  * the same values. Uses the secret key (bypasses RLS), so the editor-edit
  * trigger from 0004 leaves editor_edited_at alone. The hackathon keys from
  * 0005 (opens_on, team_size, prizes, provided) are optional and written only
- * when an item has them.
+ * when an item has them. job_type (0006) is always written: the item's own
+ * `job_type` key when it has one, else 'coop' when its terms include 'coop',
+ * else 'internship'.
  * Deletes nothing. See docs/LOCATOR.md. */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -64,7 +66,9 @@ const Item = z
     ends_on: date.nullable(),
     deadline_on: date.nullable(),
     dates_note: optText,
-    internship_terms: z.array(z.enum(["coop", "semester_part_time", "summer", "winter"])),
+    internship_terms: z.array(z.enum(["summer", "fall", "spring", "winter", "semester_part_time", "coop"])),
+    // Job type (0006). Optional: without it, jobTypeOf() decides from the terms.
+    job_type: z.enum(["internship", "coop", "new_grad"]).optional(),
     pay: optText,
     eligibility: optText,
     tags: z.array(z.string().regex(/^[a-z0-9][a-z0-9 .+#-]*$/, { error: "tags must be lowercase" })),
@@ -85,10 +89,22 @@ const Item = z
     error: "internship_terms on a non-internship",
     path: ["internship_terms"],
   })
+  .refine((o) => o.kind === "internship" || !o.job_type || o.job_type === "internship", {
+    error: "job_type on a non-internship",
+    path: ["job_type"],
+  })
   .refine((o) => !o.opens_on || !o.deadline_on || o.opens_on <= o.deadline_on, {
     error: "opens_on is after deadline_on",
     path: ["opens_on"],
   });
+
+type Item = z.infer<typeof Item>;
+
+/** The item's own job_type; else 'coop' when its terms say co-op; else 'internship'. */
+function jobTypeOf(item: Item): NonNullable<Item["job_type"]> {
+  if (item.job_type) return item.job_type;
+  return item.internship_terms.includes("coop") ? "coop" : "internship";
+}
 
 function fail(msg: string): never {
   console.error(`seed:locator: ${msg}`);
@@ -126,7 +142,14 @@ async function main() {
       const dup = seen.get(item.slug);
       if (dup) fail(`${where}: slug also used in ${dup}`);
       seen.set(item.slug, `${name}.json`);
-      rows.push({ ...item, tags: [...new Set(item.tags)], source: "seed", source_name: SOURCE_NAME, created_by: null });
+      rows.push({
+        ...item,
+        job_type: jobTypeOf(item),
+        tags: [...new Set(item.tags)],
+        source: "seed",
+        source_name: SOURCE_NAME,
+        created_by: null,
+      });
     });
   }
 

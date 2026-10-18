@@ -91,6 +91,8 @@ const ids = {
   svc: "",
   /** editor edits its prizes (0005): editor_edited_at must be stamped */
   prizes: "",
+  /** editor changes its job_type (0006): editor_edited_at must be stamped */
+  jobType: "",
 };
 
 const opp = (suffix: string, extra: Partial<TablesInsert<"opportunities">> = {}): TablesInsert<"opportunities"> => ({
@@ -158,6 +160,7 @@ async function setup() {
     opp("book"),
     opp("svc"),
     opp("prizes"),
+    opp("jobtype", { kind: "internship" }),
   ], { defaultToNull: false }).select("id, slug"));
   const idOf = (k: string) => rows.find((r) => r.slug.startsWith(`${PREFIX}${k}-`))!.id;
   ids.pub = idOf("pub");
@@ -166,6 +169,7 @@ async function setup() {
   ids.book = idOf("book");
   ids.svc = idOf("svc");
   ids.prizes = idOf("prizes");
+  ids.jobType = idOf("jobtype");
   await must("sync_run", admin.from("sync_runs").insert({ source_id: SYNC_SOURCE(), adapter: "rls", ok: true }).select());
 
   // The second user's own profile and check, written as the service role.
@@ -410,6 +414,12 @@ async function editorChecks() {
     const a = allowed(r);
     if (a !== true) return a;
     return (await editedAt(ids.prizes)) ? true : "editor_edited_at still null";
+  });
+  await check(who, "changing job_type stamps editor_edited_at", async () => {
+    const r = await c.from("opportunities").update({ job_type: "coop" }).eq("id", ids.jobType).select("id");
+    const a = allowed(r);
+    if (a !== true) return a;
+    return (await editedAt(ids.jobType)) ? true : "editor_edited_at still null";
   });
   await check(who, "reads every member's opportunity_interest", async () => {
     const r = await c.from("opportunity_interest").select("profile_id").eq("opportunity_id", ids.pub);

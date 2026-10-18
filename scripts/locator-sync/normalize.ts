@@ -4,11 +4,13 @@
 import { createHash } from "node:crypto";
 
 import { CLUB_TZ, isoDateOnly } from "../../lib/data/dates";
-import type { DateOnly, InternshipTerm, OpportunityArea, OpportunityFormat } from "../../lib/data/types";
+import type { DateOnly, InternshipTerm, JobType, OpportunityArea, OpportunityFormat } from "../../lib/data/types";
 
 // ── job filters ──────────────────────────────────────────────────────────
 
 const INTERN_TITLE = /\b(intern|interns|internship|co-?op|apprentice|apprenticeship)\b/i;
+const COOP_TITLE = /\bco-?op\b/i;
+const NEW_GRAD_TITLE = /\b(new grad(uate)?|university graduate|early career|campus hire)\b/i;
 const NOT_STUDENT = /\b(senior|staff|principal|manager|director|lead)\b/i;
 
 /* The club is Programming, AI & Research, so a posting also has to be in a
@@ -24,12 +26,24 @@ export function isTechnicalField(title: string): boolean {
   return !NON_TECH.test(title) || TECH_HINT.test(title);
 }
 
-/** Title says intern/co-op/apprentice (or the source's structured type does), is not a senior
- *  role, and is in a technical field. */
+/** Not a senior role (senior, staff, principal, manager, director, lead) and in a technical field. */
+export function isEntryLevelTech(title: string): boolean {
+  return !NOT_STUDENT.test(title) && isTechnicalField(title);
+}
+
+/** Title says intern/co-op/apprentice or new grad (or the source's structured type says intern),
+ *  is not a senior role, and is in a technical field. */
 export function isStudentRole(title: string, structuredIntern = false): boolean {
-  if (NOT_STUDENT.test(title)) return false;
-  if (!isTechnicalField(title)) return false;
-  return structuredIntern || INTERN_TITLE.test(title);
+  if (!isEntryLevelTech(title)) return false;
+  return structuredIntern || INTERN_TITLE.test(title) || NEW_GRAD_TITLE.test(title);
+}
+
+/** "co-op" in the title → coop; "new grad", "university graduate", "early career",
+ *  "campus hire" → new_grad; anything else → internship (docs/DESIGN-BRIEF.md §17). */
+export function inferJobType(title: string): JobType {
+  if (COOP_TITLE.test(title)) return "coop";
+  if (NEW_GRAD_TITLE.test(title)) return "new_grad";
+  return "internship";
 }
 
 /** Workday location strings are often facility codes: "US-MA-MARLBOROUGH-MA1 ~ 1001 Boston Post Rd ~ BLDG 1",
@@ -139,13 +153,19 @@ export function inferTerms(title: string, text = ""): InternshipTerm[] {
   return termsIn(text.slice(0, 3000));
 }
 
-function termsIn(s: string): InternshipTerm[] {
-  const out = new Set<InternshipTerm>();
-  if (/\bsummer\b/i.test(s)) out.add("summer");
-  if (/\bco-?op\b/i.test(s)) out.add("coop");
-  if (/\b(winter|january|winternship)\b/i.test(s)) out.add("winter");
-  if (/\b(fall|autumn|spring|part[- ]time|year[- ]round)\b/i.test(s)) out.add("semester_part_time");
-  return [...out].sort();
+/** The words that name each term, in the order the Locator shows terms. "Co-op" is
+ *  not a term any more: inferJobType() reads it as the job type. */
+const TERM_WORDS: [InternshipTerm, RegExp][] = [
+  ["summer", /\bsummer\b/i],
+  ["fall", /\b(fall|autumn)\b/i],
+  ["spring", /\bspring\b/i],
+  ["winter", /\b(winter|january|winternship)\b/i],
+  ["semester_part_time", /\b(part[- ]time|year[- ]round)\b/i],
+];
+
+/** Every term the text names: "Co-op (Spring 2027)" → ['spring']. */
+export function termsIn(s: string): InternshipTerm[] {
+  return TERM_WORDS.filter(([, words]) => words.test(s)).map(([term]) => term);
 }
 
 const SEASON_END_MONTH: Record<string, number> = { spring: 5, summer: 8, fall: 12, autumn: 12, winter: 3 };

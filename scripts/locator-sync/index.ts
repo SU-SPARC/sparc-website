@@ -93,9 +93,19 @@ function pick(all: SourceConfig[]): SourceConfig[] {
 type Outcome = { id: string; ok: boolean; line: string; kind: SyncItem["kind"]; inserted: number };
 
 function sample(i: SyncItem): string {
+  const type = i.kind === "internship" ? ` · ${i.job_type ?? "internship"}` : "";
   const terms = i.internship_terms.length ? i.internship_terms.join("+") : "-";
   const when = i.starts_on ? ` · ${i.starts_on}${i.ends_on && i.ends_on !== i.starts_on ? `..${i.ends_on}` : ""}` : "";
-  return `    ${i.title} · ${i.organizer} · ${i.location ?? "-"} · ${terms} · ${i.area}${when}`;
+  return `    ${i.title} · ${i.organizer} · ${i.location ?? "-"}${type} · ${terms} · ${i.area}${when}`;
+}
+
+/** "    types: internship 12, coop 3" for a jobs source's dry run; nothing for events. */
+function typeTally(items: SyncItem[]): string[] {
+  const jobs = items.filter((i) => i.kind === "internship");
+  if (!jobs.length) return [];
+  const counts = new Map<string, number>();
+  for (const i of jobs) counts.set(i.job_type ?? "internship", (counts.get(i.job_type ?? "internship") ?? 0) + 1);
+  return [`    types: ${[...counts].map(([type, n]) => `${type} ${n}`).join(", ")}`];
 }
 
 async function runOne(s: SourceConfig, db: SupabaseClient<Database> | null): Promise<Outcome> {
@@ -115,7 +125,7 @@ async function runOne(s: SourceConfig, db: SupabaseClient<Database> | null): Pro
 
     if (!db) {
       const lines = [`${label}: fetched ${fetched}, kept ${res.items.length}${limit !== null ? ` (limit ${limit})` : ""}`];
-      lines.push(...items.slice(0, 3).map(sample));
+      lines.push(...typeTally(items), ...items.slice(0, 3).map(sample));
       return { id: s.id, ok: true, kind: adapter.kind, inserted: 0, line: [...lines, ...notes.map((n) => `    ${n}`)].join("\n") };
     }
 

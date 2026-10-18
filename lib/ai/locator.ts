@@ -146,7 +146,12 @@ export async function extractOpportunity(kind: OpportunityKind, url: string, pag
   if (typeof draft.starts_on === "string" && typeof draft.ends_on === "string" && draft.ends_on < draft.starts_on) {
     delete draft.ends_on;
   }
-  if (kind === "internship" && out.internship_terms.length) draft.internship_terms = [...new Set(out.internship_terms)];
+  if (kind === "internship") {
+    // A co-op is a job type now (0006), not a term.
+    const terms = new Set(out.internship_terms);
+    if (terms.delete("coop")) draft.job_type = "coop";
+    if (terms.size) draft.internship_terms = [...terms];
+  }
   const tags = [...new Set(out.tags.map((t) => clean(t).toLowerCase()).filter(Boolean))].slice(0, 8);
   if (tags.length) draft.tags = tags;
 

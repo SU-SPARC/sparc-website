@@ -654,8 +654,7 @@
       "repo": "SimplifyJobs/New-Grad-Positions",
       "priority": "national",
       "tags": [],
-      "enabled": false,
-      "note": "New-grad roles, not internships; enable when the Locator lists full-time roles."
+      "job_type": "new_grad"
     },
     {
       "id": "simplisafe",

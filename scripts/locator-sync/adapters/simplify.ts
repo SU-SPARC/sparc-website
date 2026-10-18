@@ -1,11 +1,24 @@
-/* SimplifyJobs internship list: the raw listings.json behind the GitHub README
- * (https://raw.githubusercontent.com/<repo>/<branch>/.github/scripts/listings.json, ~13 MB).
- * The repo has no licence file, so rows only link out to the employer's posting.
- * Kept: active && is_visible, a Massachusetts or US-remote location, and at least one
- * term that has not already ended. */
+/* SimplifyJobs lists: the raw listings.json behind the GitHub README
+ * (https://raw.githubusercontent.com/<repo>/<branch>/.github/scripts/listings.json, ~13 MB),
+ * for the internship list and the New-Grad list. The repo has no licence file, so rows only
+ * link out to the employer's posting. Kept: active && is_visible, a Massachusetts or US-remote
+ * location, and at least one term that has not already ended. The job type is the source's
+ * `job_type` when set (new_grad for the New-Grad list), else read from the title. New-grad
+ * rows also have to pass the not-senior and technical-field rules, since that list carries
+ * some "Senior Software Engineer" and non-technical roles. */
 
-import type { InternshipTerm } from "../../../lib/data/types";
-import { inferTerms, isoOrNull, placeJob, postingSiteOf, seasonEnd, titleTermsAllPast } from "../normalize";
+import type { InternshipTerm, JobType } from "../../../lib/data/types";
+import {
+  inferJobType,
+  inferTerms,
+  isEntryLevelTech,
+  isoOrNull,
+  placeJob,
+  postingSiteOf,
+  seasonEnd,
+  TERM_NOT_STATED,
+  titleTermsAllPast,
+} from "../normalize";
 import type { Adapter } from "../types";
 
 type Listing = {
@@ -24,17 +37,26 @@ type Listing = {
   degrees?: string[];
 };
 
+const SEASON_TERMS: Record<string, InternshipTerm> = { spring: "spring", summer: "summer", fall: "fall", winter: "winter" };
+
+/** "Fall 2026" → fall, ending 2027-01-01; "Spring 2027" → spring, ending 2027-06-01. */
 function parseTerm(t: string): { term: InternshipTerm; endsBy: Date } | null {
   const m = t.match(/^(spring|summer|fall|winter)\s+(\d{4})$/i);
   if (!m) return null;
   const season = m[1].toLowerCase();
   const year = Number(m[2]);
-  const term: InternshipTerm = season === "summer" ? "summer" : season === "winter" ? "winter" : "semester_part_time";
   // first day of the month after the season ends
-  return { term, endsBy: seasonEnd(season, year) };
+  return { term: SEASON_TERMS[season], endsBy: seasonEnd(season, year) };
 }
 
 const repoKey = (repo: string) => repo.split("/")[1].toLowerCase();
+
+/** The list's own term words ("Summer 2027, Fall 2027"). A missing term is noted,
+ *  except on new-grad roles, which have none. */
+function datesNote(stated: string[], jobType: JobType): string | null {
+  if (stated.length) return stated.join(", ");
+  return jobType === "new_grad" ? null : TERM_NOT_STATED;
+}
 
 function eligibility(l: Listing): string | null {
   const parts: string[] = [];
@@ -60,10 +82,12 @@ export const simplify: Adapter<"simplify"> = {
       const known = parsed.filter((p): p is NonNullable<typeof p> => p !== null);
       const current = known.filter((p) => p.endsBy > now);
       if (known.length && !current.length) return []; // every stated term is over
-      // the title can add what the term list leaves out ("Intern/Co-op")
-      const fromTitle = inferTerms(l.title).filter((t) => t === "coop" || !known.length);
+      // with no term list, the title may still name one ("Spring 2027 Co-op")
+      const fromTitle = known.length ? [] : inferTerms(l.title);
       const terms = [...new Set([...current.map((p) => p.term), ...fromTitle])].sort();
       const stated = (l.terms ?? []).filter((t) => t !== "N/A");
+      const jobType = s.job_type ?? inferJobType(l.title);
+      if (jobType === "new_grad" && !isEntryLevelTech(l.title)) return [];
       const category = l.category ? [l.category] : [];
       return [
         {
@@ -84,8 +108,9 @@ export const simplify: Adapter<"simplify"> = {
           starts_on: null,
           ends_on: null,
           deadline_on: null,
-          dates_note: stated.length ? stated.join(", ") : "Term not stated in the posting.",
+          dates_note: datesNote(stated, jobType),
           internship_terms: terms,
+          job_type: jobType,
           pay: null,
           eligibility: eligibility(l),
           tags: [...new Set([...s.tags, ...category.map((c) => c.toLowerCase().replace(/[^a-z0-9 .+#-]/g, " ").replace(/\s+/g, " ").trim())])].filter(Boolean).slice(0, 6),

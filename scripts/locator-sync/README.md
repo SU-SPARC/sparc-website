@@ -35,7 +35,8 @@ if they would.
 
 ## What is kept
 
-Jobs: the title says intern / internship / co-op / apprentice (or the source's
+Jobs: the title says intern / internship / co-op / apprentice or new grad / new
+graduate / university graduate / early career / campus hire (or the source's
 structured employment type says intern) and not senior / staff / principal /
 manager / director / lead; a location in Massachusetts (or the source's office) or
 US remote (non-US places such as "Cambridge, UK" or "Remote in Canada" are
@@ -43,13 +44,20 @@ dropped); and not only for terms that have already ended ("Winter 2026"). Events
 not yet over and inside the source's day window. Each source's run is one row in
 `sync_runs`.
 
+Each job gets a `job_type` from its title: co-op → `coop`; new grad, new graduate,
+university graduate, early career, campus hire → `new_grad`; else `internship`.
+Terms come from the title (else the text): summer, fall/autumn → fall, spring,
+winter/january, part-time/year-round → `semester_part_time`. A co-op can have a
+season ("Co-op (Spring 2027)" → `coop`, `spring`). A dry run prints the count per
+job type under each jobs source.
+
 ## Who owns which column
 
 The source always wins on title, url, location, pay, posting_site, posted_at and
-the dates. Summary, description, eligibility, tags, area, format, terms,
+the dates. Summary, description, eligibility, tags, area, format, terms, job_type,
 dates_note and organizer_url follow the source until an editor changes one of the
 editor-owned columns, which stamps `editor_edited_at` (trigger in
-`0004_locator_sync.sql`); from then on they are the editor's. `published` is never
+`0004_locator_sync.sql`, extended in 0005 and 0006); from then on they are the editor's. `published` is never
 touched except that a closed listing that comes back is re-published. A
 successful run without `--limit` closes (`closed_at = now()`, `published = false`)
 that source's rows it no longer returned; a failed run closes nothing.
@@ -76,11 +84,13 @@ with `{"appliedFacets":{},"limit":20,"offset":n,"searchText":…}`, paged to `to
 URL. Find a tenant's values in its careers URL `https://<tenant>.<host>.myworkdayjobs.com/<site>`.
 Id `workday:<tenant>:<externalPath>`.
 
-**simplify** (`repo`, `branch` default `dev`): the raw `.github/scripts/listings.json`
+**simplify** (`repo`, `branch` default `dev`, `job_type` optional): the raw `.github/scripts/listings.json`
 (about 13 MB) behind the SimplifyJobs README. Keeps `active && is_visible` rows in
 Massachusetts or US remote whose terms have not all ended; terms map Summer → summer,
-Fall/Spring → semester_part_time, Winter → winter, plus co-op from the title. The repo has no
-licence, so rows only link to the employer's posting. Id `simplify:<repo>:<id>`.
+Fall → fall, Spring → spring, Winter → winter; the job type is the source's `job_type`, else
+read from the title. `simplify-new-grad` (`SimplifyJobs/New-Grad-Positions`, `"job_type":
+"new_grad"`) has no terms, and its rows must also pass the not-senior and technical-field
+rules. The repo has no licence, so rows only link to the employer's posting. Id `simplify:<repo>:<id>`.
 
 **devpost** (`pages` default 3): `GET devpost.com/api/hackathons?status[]=upcoming&status[]=open&page=n`
 (9 per page) plus one `search=boston` page. The submission-period text ("Oct 05 - 27, 2026")

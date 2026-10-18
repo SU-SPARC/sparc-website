@@ -6,7 +6,8 @@
  * (passed in by the edit page),
  * Verified, the interest card and the Source card (both passed in), Record.
  * Event kinds get a "Signup opens" date; hackathons a "Hackathon details"
- * section (team size, prizes, what's provided; 0005). Fields a kind does not
+ * section (team size, prizes, what's provided; 0005); internships a "Job
+ * type" choice in Basics and the Terms section (0006, DESIGN-BRIEF §17). Fields a kind does not
  * show travel as hidden inputs so a save keeps them. Sync rows carry a
  * note under Basics on which fields the sync keeps refreshing
  * (docs/LOCATOR-SYNC.md).
@@ -30,8 +31,24 @@ import { RadioCards } from "@/components/forms/radio-cards";
 import { markOpportunityVerified, saveOpportunity } from "@/lib/actions/opportunities";
 import type { OpportunityDraft } from "@/lib/ai/locator-schemas";
 import { formatDateOnly } from "@/lib/data/dates";
-import { AREA_LABELS, FORMAT_LABELS, KIND_CONFIG, postingSiteFromUrl, TERM_LABELS } from "@/lib/data/locator";
-import type { InternshipTerm, Opportunity, OpportunityArea, OpportunityFormat, OpportunityKind } from "@/lib/data/types";
+import {
+  AREA_LABELS,
+  FORMAT_LABELS,
+  JOB_TYPE_LABELS,
+  JOB_TYPES,
+  KIND_CONFIG,
+  postingSiteFromUrl,
+  TERM_LABELS,
+  TERM_ORDER,
+} from "@/lib/data/locator";
+import type {
+  InternshipTerm,
+  JobType,
+  Opportunity,
+  OpportunityArea,
+  OpportunityFormat,
+  OpportunityKind,
+} from "@/lib/data/types";
 
 const AREAS: OpportunityArea[] = ["suffolk", "boston", "outside_boston", "online"];
 const AREA_HINTS: Record<OpportunityArea, string> = {
@@ -41,7 +58,11 @@ const AREA_HINTS: Record<OpportunityArea, string> = {
   online: "Fully online.",
 };
 const FORMATS: OpportunityFormat[] = ["in_person", "online", "hybrid"];
-const TERMS: InternshipTerm[] = ["coop", "semester_part_time", "summer", "winter"];
+const JOB_TYPE_HINTS: Record<JobType, string> = {
+  internship: "A summer or term internship.",
+  coop: "Full-time work for a semester or more.",
+  new_grad: "A full-time role after graduation.",
+};
 const SUMMARY_MAX = 200;
 
 const DEADLINE_LABEL: Record<OpportunityKind, string> = {
@@ -115,6 +136,7 @@ export function OpportunityForm({
   const area = d.area ?? "boston";
   const format = d.format ?? (area === "online" ? "online" : "in_person");
   const terms = d.internship_terms ?? [];
+  const jobType = d.job_type ?? "internship";
   const tags = d.tags ?? [];
 
   const hidden: Record<string, string> = { kind };
@@ -143,6 +165,11 @@ export function OpportunityForm({
             isNew={isNew}
             slugHelper="Lowercase words joined by dashes. Proposed from the title."
           />
+          {kind === "internship" ? (
+            <JobTypeField defaultValue={jobType} />
+          ) : (
+            <input type="hidden" name="job_type" value={jobType} />
+          )}
           <Field label={ORGANIZER_LABEL[kind]} name="organizer">
             <Input name="organizer" defaultValue={text("organizer")} />
           </Field>
@@ -311,13 +338,29 @@ function AreaField({ defaultValue }: { defaultValue: OpportunityArea }) {
   );
 }
 
+function JobTypeField({ defaultValue }: { defaultValue: JobType }) {
+  const error = useFieldError("job_type");
+  return (
+    <RadioCards
+      legend="Job type"
+      name="job_type"
+      defaultValue={defaultValue}
+      error={error}
+      layout="row"
+      options={JOB_TYPES.map((t) => ({ value: t, label: JOB_TYPE_LABELS[t], description: JOB_TYPE_HINTS[t] }))}
+    />
+  );
+}
+
+/** Summer, Fall, Spring, Winter, Part-time. The old Co-op term is not offered
+ *  (co-ops are a job type now), so saving a row drops it. */
 function TermsField({ defaultValue }: { defaultValue: InternshipTerm[] }) {
   const error = useFieldError("internship_terms");
   return (
     <fieldset className="flex flex-col" aria-describedby={error ? "terms-error" : undefined}>
       <legend className="sr-only">Internship terms</legend>
       <div className="grid sm:grid-cols-2">
-        {TERMS.map((t) => (
+        {TERM_ORDER.map((t) => (
           <Checkbox key={t} name="internship_terms" value={t} label={TERM_LABELS[t]} defaultChecked={defaultValue.includes(t)} />
         ))}
       </div>

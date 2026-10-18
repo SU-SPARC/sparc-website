@@ -446,6 +446,7 @@ export type Database = {
           format: Database["public"]["Enums"]["opportunity_format"];
           id: string;
           internship_terms: Database["public"]["Enums"]["internship_term"][];
+          job_type: Database["public"]["Enums"]["job_type"];
           kind: Database["public"]["Enums"]["opportunity_kind"];
           last_seen_at: string | null;
           location: string | null;
@@ -490,6 +491,7 @@ export type Database = {
           format?: Database["public"]["Enums"]["opportunity_format"];
           id?: string;
           internship_terms?: Database["public"]["Enums"]["internship_term"][];
+          job_type?: Database["public"]["Enums"]["job_type"];
           kind: Database["public"]["Enums"]["opportunity_kind"];
           last_seen_at?: string | null;
           location?: string | null;
@@ -533,6 +535,7 @@ export type Database = {
           format?: Database["public"]["Enums"]["opportunity_format"];
           id?: string;
           internship_terms?: Database["public"]["Enums"]["internship_term"][];
+          job_type?: Database["public"]["Enums"]["job_type"];
           kind?: Database["public"]["Enums"]["opportunity_kind"];
           last_seen_at?: string | null;
           location?: string | null;
@@ -1341,7 +1344,9 @@ export type Database = {
     };
     Enums: {
       eligibility_verdict: "eligible" | "likely" | "unclear" | "not_eligible";
-      internship_term: "coop" | "semester_part_time" | "summer" | "winter";
+      internship_term:
+        "coop" | "semester_part_time" | "summer" | "winter" | "spring" | "fall";
+      job_type: "internship" | "coop" | "new_grad";
       member_status: "current" | "alumni";
       methodology: "kanban" | "scrumban" | "scrum" | "safe";
       opportunity_area: "suffolk" | "boston" | "outside_boston" | "online";
@@ -1484,7 +1489,15 @@ export const Constants = {
   public: {
     Enums: {
       eligibility_verdict: ["eligible", "likely", "unclear", "not_eligible"],
-      internship_term: ["coop", "semester_part_time", "summer", "winter"],
+      internship_term: [
+        "coop",
+        "semester_part_time",
+        "summer",
+        "winter",
+        "spring",
+        "fall",
+      ],
+      job_type: ["internship", "coop", "new_grad"],
       member_status: ["current", "alumni"],
       methodology: ["kanban", "scrumban", "scrum", "safe"],
       opportunity_area: ["suffolk", "boston", "outside_boston", "online"],

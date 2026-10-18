@@ -5,7 +5,7 @@
  *   always from the source   title, url, location, pay, posting_site, posted_at,
  *                            starts_on, ends_on, deadline_on, last_seen_at
  *   until an editor edits    summary, description, eligibility, tags, area, format,
- *                            internship_terms, dates_note, organizer_url,
+ *                            internship_terms, job_type (0006), dates_note, organizer_url,
  *                            opens_on, team_size, prizes, provided (0005)
  *   set once on insert       kind, slug, organizer, source = 'sync', source_name,
  *                            source_url, external_id, first_seen_at, published = true
@@ -74,6 +74,7 @@ function editorialColumns(i: SyncItem) {
     area: i.area,
     format: i.format,
     internship_terms: i.internship_terms,
+    job_type: i.job_type ?? "internship",
     dates_note: i.dates_note,
     organizer_url: i.organizer_url,
     opens_on: i.opens_on ?? null,

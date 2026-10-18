@@ -1,8 +1,9 @@
 "use client";
 
 /* LocatorList — one list for all four Locator kinds (docs/LOCATOR.md,
- * "List screen"; DESIGN-BRIEF §2, §13, §15). Header with the open count,
- * search + FilterChips with counts, "Search elsewhere", the ?notice= banner,
+ * "List screen"; DESIGN-BRIEF §2, §13, §15, §17). Header with the open count,
+ * search + FilterChips with counts (internships add a "Type" and a "Term"
+ * row; one chip per row, combined with AND), "Search elsewhere", the ?notice= banner,
  * then the rows in sections: dated kinds This week, Later this month, one
  * per later month, Undated, Past; internships Closing this week, Open, No
  * deadline, Deadline passed. The past section starts collapsed. Each row is
@@ -40,7 +41,7 @@ import type { DateOnly, OpportunityKind } from "@/lib/data/types";
 
 import { type CheckError, LocatorRow } from "./locator-row";
 import { LocatorSection } from "./locator-section";
-import { type Chip, LocatorToolbar } from "./locator-toolbar";
+import { type Chip, type LabelledChipRow, LocatorToolbar } from "./locator-toolbar";
 import { SearchElsewhere } from "./search-elsewhere";
 
 export interface LocatorListProps {
@@ -72,10 +73,37 @@ function hidePastLabel(kind: OpportunityKind): string {
   return `Hide past ${KIND_CONFIG[kind].plural}`;
 }
 
+const ALL_CHIP: Chip = { key: "all", label: "All" };
+
 function filterChips(kind: OpportunityKind, member: boolean): Chip[] {
   const editorChips = [{ key: "published", label: "Published" }, { key: "hidden", label: "Hidden" }, CLOSED_CHIP];
   const kindChips = KIND_CONFIG[kind].filters.filter((f) => !(member && f.editorOnly));
-  return [{ key: "all", label: "All" }, ...(member ? [] : editorChips), ...kindChips];
+  return [ALL_CHIP, ...(member ? [] : editorChips), ...kindChips];
+}
+
+/** The active chip of each row: status (beside the search box), type and term (internships). */
+type ActiveChips = { status: string; type: string; term: string };
+type ChipRowId = keyof ActiveChips;
+
+const NO_FILTERS: ActiveChips = { status: "all", type: "all", term: "all" };
+
+/** The internships' "Type" and "Term" rows (docs/DESIGN-BRIEF.md §17); none for the other kinds. */
+function namedRows(kind: OpportunityKind): { id: ChipRowId; label: string; chips: Chip[] }[] {
+  const cfg = KIND_CONFIG[kind];
+  const rows: { id: ChipRowId; label: string; chips: Chip[] }[] = [];
+  if (cfg.typeFilters) rows.push({ id: "type", label: "Type", chips: [ALL_CHIP, ...cfg.typeFilters] });
+  if (cfg.termFilters) rows.push({ id: "term", label: "Term", chips: [ALL_CHIP, ...cfg.termFilters] });
+  return rows;
+}
+
+/** The query when there is one ("No internships match “ml”."); one status or
+ *  term chip ("No past hackathons.", "No summer internships."); otherwise
+ *  "No internships match these filters." */
+function noMatchTitle(plural: string, query: string, active: ActiveChips, labelOf: (key: string) => string): string {
+  if (query.trim()) return `No ${plural} match “${query.trim()}”.`;
+  const chosen = Object.values(active).filter((key) => key !== "all");
+  if (chosen.length === 1 && active.type === "all") return `No ${labelOf(chosen[0]).toLowerCase()} ${plural}.`;
+  return `No ${plural} match these filters.`;
 }
 
 /** Nothing listed yet: what the kind is for (editors) or "check back" (members). */
@@ -120,7 +148,7 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
   const base = kindPath(kind, mode);
   const router = useRouter();
   const [query, setQuery] = React.useState("");
-  const [filter, setFilter] = React.useState("all");
+  const [active, setActive] = React.useState<ActiveChips>(NO_FILTERS);
   const [deleting, setDeleting] = React.useState<OpportunityWithCheck | null>(null);
   const [checking, setChecking] = React.useState<Record<string, boolean>>({});
   const [checkErrors, setCheckErrors] = React.useState<Record<string, CheckError>>({});
@@ -128,22 +156,28 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
 
   const keysById = React.useMemo(() => new Map(rows.map((r) => [r.id, rowFilterKeys(r, today)])), [rows, today]);
   const filters = filterChips(kind, member);
+  const extraRows = namedRows(kind);
   const matchesFilter = (r: OpportunityWithCheck, key: string) => {
     if (key === "all") return true;
     if (key === "published") return r.published;
     if (key === "hidden") return !r.published;
     return (keysById.get(r.id) ?? []).includes(key);
   };
+  const matchesAll = (r: OpportunityWithCheck, chips: ActiveChips) =>
+    matchesFilter(r, chips.status) && matchesFilter(r, chips.type) && matchesFilter(r, chips.term);
+  // A chip's count: the rows it would show, keeping the other rows' active chips.
+  const countFor = (row: ChipRowId) => (key: string) =>
+    rows.filter((r) => matchesAll(r, { ...active, [row]: key })).length;
+  const choose = (row: ChipRowId) => (key: string) => setActive((a) => ({ ...a, [row]: key }));
 
   const q = query.trim().toLowerCase();
   const matchesQuery = (r: OpportunityWithCheck) =>
     !q || [r.title, r.organizer, r.location ?? "", r.posting_site ?? "", ...r.tags].join(" ").toLowerCase().includes(q);
-  const visible = rows.filter((r) => matchesFilter(r, filter) && matchesQuery(r));
-  const activeLabel = filters.find((f) => f.key === filter)?.label.toLowerCase();
-  const noMatchTitle =
-    filter !== "all" && !q ? `No ${activeLabel} ${cfg.plural}.` : `No ${cfg.plural} match “${query.trim()}”.`;
+  const visible = rows.filter((r) => matchesAll(r, active) && matchesQuery(r));
+  const allChips = [...filters, ...extraRows.flatMap((row) => row.chips)];
+  const labelOf = (key: string) => allChips.find((c) => c.key === key)?.label ?? key;
   const clearFilters = () => {
-    setFilter("all");
+    setActive(NO_FILTERS);
     setQuery("");
   };
   const sections = cfg.dated ? sectionsForEvents(visible, today) : sectionsForInternships(visible, today);
@@ -172,10 +206,13 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
   return (
     <div className="flex flex-col gap-6">
       <header className="flex items-center justify-between gap-4">
-        <h1 className="flex items-baseline gap-3 text-2xl font-medium text-ink">
-          {cfg.label}
-          <span className="text-base font-normal text-ink-muted tabular-nums">{openCount} open</span>
-        </h1>
+        <div className="flex flex-col gap-1">
+          <h1 className="flex items-baseline gap-3 text-2xl font-medium text-ink">
+            {cfg.label}
+            <span className="text-base font-normal text-ink-muted tabular-nums">{openCount} open</span>
+          </h1>
+          {cfg.subtitle ? <p className="text-sm text-ink-muted">{cfg.subtitle}</p> : null}
+        </div>
         {member ? null : (
           <ButtonLink href={`${base}/new`} variant="primary">
             <span className="sm:hidden">New</span>
@@ -189,17 +226,22 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
           kind={kind}
           query={query}
           onQueryChange={setQuery}
-          chips={filters}
-          active={filter}
-          onActiveChange={setFilter}
-          countFor={(key) => rows.filter((r) => matchesFilter(r, key)).length}
+          status={{ chips: filters, active: active.status, onActiveChange: choose("status"), countFor: countFor("status") }}
+          rows={extraRows.map(
+            (row): LabelledChipRow => ({
+              ...row,
+              active: active[row.id],
+              onActiveChange: choose(row.id),
+              countFor: countFor(row.id),
+            }),
+          )}
         />
       ) : null}
 
       {notice ? <StatusBanner clearParam="notice">{notice}</StatusBanner> : null}
 
       {rows.length === 0 ? <NoListings kind={kind} member={member} base={base} /> : null}
-      {rows.length > 0 && visible.length === 0 ? <NoMatches title={noMatchTitle} onClear={clearFilters} /> : null}
+      {rows.length > 0 && visible.length === 0 ? <NoMatches title={noMatchTitle(cfg.plural, query, active, labelOf)} onClear={clearFilters} /> : null}
       {visible.length > 0 ? (
         <div className="flex flex-col gap-8">
           {sections.map((section) => (

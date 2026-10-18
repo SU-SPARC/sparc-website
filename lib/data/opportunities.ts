@@ -51,6 +51,7 @@ export function toOpportunity(row: OpportunityRow): Opportunity {
     deadline_on: row.deadline_on,
     dates_note: row.dates_note,
     internship_terms: row.internship_terms ?? [],
+    job_type: row.job_type,
     pay: row.pay,
     eligibility: row.eligibility,
     tags: row.tags ?? [],

@@ -5,6 +5,7 @@ import { z } from "zod";
 import type {
   DateOnly,
   InternshipTerm,
+  JobType,
   OpportunityArea,
   OpportunityFormat,
   OpportunityKind,
@@ -36,6 +37,8 @@ export type SyncItem = {
   deadline_on: DateOnly | null;
   dates_note: string | null;
   internship_terms: InternshipTerm[];
+  /** internships: internship, co-op or new grad (0006). Event adapters leave it out (the column default). */
+  job_type?: JobType;
   pay: string | null;
   eligibility: string | null;
   tags: string[];
@@ -98,6 +101,8 @@ export const SimplifySource = z
     repo: z.string().regex(/^[\w.-]+\/[\w.-]+$/),
     branch: z.string().default("dev"),
     path: z.string().default(".github/scripts/listings.json"),
+    /** every listing in this list is this job type (the New-Grad list); otherwise read from each title */
+    job_type: z.enum(["internship", "coop", "new_grad"]).optional(),
   })
   .strict();
 export const DevpostSource = z

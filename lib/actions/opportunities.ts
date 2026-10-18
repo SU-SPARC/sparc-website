@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { isoDateOnly } from "@/lib/data/dates";
 import { KINDS, kindPath } from "@/lib/data/locator";
-import type { InternshipTerm, OpportunityKind } from "@/lib/data/types";
+import type { InternshipTerm, JobType, OpportunityKind } from "@/lib/data/types";
 
 import { editorSession, revalidateSite } from "./content-helpers";
 import {
@@ -23,7 +23,15 @@ import {
 } from "./form-data";
 import type { FieldErrors, FormState } from "./form-state";
 
-const TERMS = ["coop", "semester_part_time", "summer", "winter"] as const satisfies readonly InternshipTerm[];
+const TERMS = [
+  "summer",
+  "fall",
+  "spring",
+  "winter",
+  "semester_part_time",
+  "coop",
+] as const satisfies readonly InternshipTerm[];
+const JOB_TYPES = ["internship", "coop", "new_grad"] as const satisfies readonly JobType[];
 
 /** Comma-separated tags → lowercase, trimmed, unique. */
 const zTags = z
@@ -69,6 +77,8 @@ const OpportunityShape = z.object({
   deadline_on: zOptDateOnly,
   dates_note: zMax(300),
   internship_terms: z.array(z.enum(TERMS, { error: "Pick a listed term." })),
+  // Internships only (0006); the other kinds' forms send the stored value, and a missing one is the default.
+  job_type: z.enum(JOB_TYPES, { error: "Pick a job type." }).default("internship"),
   pay: zMax(120),
   eligibility: zMax(2000),
   tags: zTags,
@@ -116,6 +126,9 @@ export async function saveOpportunity(_prev: FormState, fd: FormData): Promise<F
   if (values.kind !== "internship" && values.internship_terms.length > 0) {
     extra.internship_terms = ["Terms apply to internships only."];
   }
+  if (values.kind !== "internship" && values.job_type !== "internship") {
+    extra.job_type = ["Job types apply to internships only."];
+  }
   const taken = await slugTakenBy(supabase, values.slug, id);
   if (taken) extra.slug = [taken];
   if (Object.keys(extra).length) return { fieldErrors: extra };
@@ -145,9 +158,9 @@ export async function setOpportunityPublished(id: string, published: boolean): P
   revalidateSite();
 }
 
-/* Bookkeeping updates. The mark_editor_edit trigger (0004, extended in 0005)
+/* Bookkeeping updates. The mark_editor_edit trigger (0004, extended in 0005 and 0006)
  * stamps editor_edited_at only when an editor changes a descriptive column
- * (summary, description, eligibility, tags, area, format, terms, dates note,
+ * (summary, description, eligibility, tags, area, format, terms, job type, dates note,
  * organizer fields, signup opens, team size, prizes, provided), so these
  * plain updates leave the sync's ownership rules untouched. */
 

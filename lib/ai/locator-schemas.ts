@@ -12,6 +12,7 @@ import type {
   Confidence,
   EligibilityVerdict,
   InternshipTerm,
+  JobType,
   Opportunity,
   OpportunityArea,
   OpportunityFormat,
@@ -21,7 +22,9 @@ import type {
 const VERDICTS = ["eligible", "likely", "unclear", "not_eligible"] as const satisfies readonly EligibilityVerdict[];
 const CONFIDENCES = ["low", "medium", "high"] as const satisfies readonly Confidence[];
 const KIND_VALUES = ["internship", "conference", "networking", "hackathon"] as const satisfies readonly OpportunityKind[];
-const TERMS = ["coop", "semester_part_time", "summer", "winter"] as const satisfies readonly InternshipTerm[];
+// 'coop' stays so the model can say "co-op"; the import turns it into job_type 'coop' (lib/ai/locator.ts).
+const TERMS = ["summer", "fall", "spring", "winter", "semester_part_time", "coop"] as const satisfies readonly InternshipTerm[];
+const JOB_TYPES = ["internship", "coop", "new_grad"] as const satisfies readonly JobType[];
 const AREAS = ["suffolk", "boston", "outside_boston", "online"] as const satisfies readonly OpportunityArea[];
 const FORMATS = ["in_person", "online", "hybrid"] as const satisfies readonly OpportunityFormat[];
 
@@ -93,6 +96,7 @@ export const OpportunityDraftSchema = z.object({
   deadline_on: isoDate.nullable().optional(),
   dates_note: z.string().nullable().optional(),
   internship_terms: z.array(z.enum(TERMS)).optional(),
+  job_type: z.enum(JOB_TYPES).optional(),
   pay: z.string().nullable().optional(),
   eligibility: z.string().nullable().optional(),
   tags: z.array(z.string()).optional(),
@@ -116,6 +120,7 @@ export type OpportunityDraft = Partial<
     | "deadline_on"
     | "dates_note"
     | "internship_terms"
+    | "job_type"
     | "pay"
     | "eligibility"
     | "tags"

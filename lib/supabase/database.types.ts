@@ -34,6 +34,135 @@ export type Database = {
   };
   public: {
     Tables: {
+      career_profiles: {
+        Row: {
+          constraints: string | null;
+          degree_level: string;
+          expected_grad_year: number | null;
+          goals: string | null;
+          interests: string[];
+          major: string | null;
+          minor: string | null;
+          profile_id: string;
+          skills: string[];
+          updated_at: string;
+          work_auth: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          constraints?: string | null;
+          degree_level?: string;
+          expected_grad_year?: number | null;
+          goals?: string | null;
+          interests?: string[];
+          major?: string | null;
+          minor?: string | null;
+          profile_id: string;
+          skills?: string[];
+          updated_at?: string;
+          work_auth?: string;
+        };
+        Update: {
+          constraints?: string | null;
+          degree_level?: string;
+          expected_grad_year?: number | null;
+          goals?: string | null;
+          interests?: string[];
+          major?: string | null;
+          minor?: string | null;
+          profile_id?: string;
+          skills?: string[];
+          updated_at?: string;
+          work_auth?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "career_profiles_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "career_profiles_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      eligibility_checks: {
+        Row: {
+          blockers: string[];
+          checked_at: string;
+          confidence: string;
+          fit_note: string | null;
+          fit_score: number | null;
+          inputs_hash: string;
+          model: string;
+          next_steps: string[];
+          opportunity_id: string;
+          profile_id: string;
+          reasons: string[];
+          unknowns: string[];
+          verdict: Database["public"]["Enums"]["eligibility_verdict"];
+        };
+        ComputedFields: never;
+        Insert: {
+          blockers?: string[];
+          checked_at?: string;
+          confidence: string;
+          fit_note?: string | null;
+          fit_score?: number | null;
+          inputs_hash: string;
+          model: string;
+          next_steps?: string[];
+          opportunity_id: string;
+          profile_id: string;
+          reasons?: string[];
+          unknowns?: string[];
+          verdict: Database["public"]["Enums"]["eligibility_verdict"];
+        };
+        Update: {
+          blockers?: string[];
+          checked_at?: string;
+          confidence?: string;
+          fit_note?: string | null;
+          fit_score?: number | null;
+          inputs_hash?: string;
+          model?: string;
+          next_steps?: string[];
+          opportunity_id?: string;
+          profile_id?: string;
+          reasons?: string[];
+          unknowns?: string[];
+          verdict?: Database["public"]["Enums"]["eligibility_verdict"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "eligibility_checks_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "eligibility_checks_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "eligibility_checks_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       events: {
         Row: {
           cover_media_id: string | null;
@@ -296,6 +425,207 @@ export type Database = {
             columns: ["media_id"];
             isOneToOne: false;
             referencedRelation: "media";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      opportunities: {
+        Row: {
+          area: Database["public"]["Enums"]["opportunity_area"];
+          closed_at: string | null;
+          created_at: string;
+          created_by: string | null;
+          dates_note: string | null;
+          deadline_on: string | null;
+          description: string | null;
+          editor_edited_at: string | null;
+          eligibility: string | null;
+          ends_on: string | null;
+          external_id: string | null;
+          first_seen_at: string | null;
+          format: Database["public"]["Enums"]["opportunity_format"];
+          id: string;
+          internship_terms: Database["public"]["Enums"]["internship_term"][];
+          job_type: Database["public"]["Enums"]["job_type"];
+          kind: Database["public"]["Enums"]["opportunity_kind"];
+          last_seen_at: string | null;
+          location: string | null;
+          opens_on: string | null;
+          organizer: string;
+          organizer_blurb: string | null;
+          organizer_url: string | null;
+          pay: string | null;
+          posted_at: string | null;
+          posting_site: string | null;
+          prizes: string | null;
+          provided: string | null;
+          published: boolean;
+          reviewed_at: string | null;
+          slug: string;
+          source: string;
+          source_name: string | null;
+          source_url: string | null;
+          starts_on: string | null;
+          summary: string | null;
+          tags: string[];
+          team_size: string | null;
+          title: string;
+          updated_at: string;
+          url: string;
+          verified_on: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          area?: Database["public"]["Enums"]["opportunity_area"];
+          closed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          dates_note?: string | null;
+          deadline_on?: string | null;
+          description?: string | null;
+          editor_edited_at?: string | null;
+          eligibility?: string | null;
+          ends_on?: string | null;
+          external_id?: string | null;
+          first_seen_at?: string | null;
+          format?: Database["public"]["Enums"]["opportunity_format"];
+          id?: string;
+          internship_terms?: Database["public"]["Enums"]["internship_term"][];
+          job_type?: Database["public"]["Enums"]["job_type"];
+          kind: Database["public"]["Enums"]["opportunity_kind"];
+          last_seen_at?: string | null;
+          location?: string | null;
+          opens_on?: string | null;
+          organizer: string;
+          organizer_blurb?: string | null;
+          organizer_url?: string | null;
+          pay?: string | null;
+          posted_at?: string | null;
+          posting_site?: string | null;
+          prizes?: string | null;
+          provided?: string | null;
+          published?: boolean;
+          reviewed_at?: string | null;
+          slug: string;
+          source?: string;
+          source_name?: string | null;
+          source_url?: string | null;
+          starts_on?: string | null;
+          summary?: string | null;
+          tags?: string[];
+          team_size?: string | null;
+          title: string;
+          updated_at?: string;
+          url: string;
+          verified_on?: string | null;
+        };
+        Update: {
+          area?: Database["public"]["Enums"]["opportunity_area"];
+          closed_at?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          dates_note?: string | null;
+          deadline_on?: string | null;
+          description?: string | null;
+          editor_edited_at?: string | null;
+          eligibility?: string | null;
+          ends_on?: string | null;
+          external_id?: string | null;
+          first_seen_at?: string | null;
+          format?: Database["public"]["Enums"]["opportunity_format"];
+          id?: string;
+          internship_terms?: Database["public"]["Enums"]["internship_term"][];
+          job_type?: Database["public"]["Enums"]["job_type"];
+          kind?: Database["public"]["Enums"]["opportunity_kind"];
+          last_seen_at?: string | null;
+          location?: string | null;
+          opens_on?: string | null;
+          organizer?: string;
+          organizer_blurb?: string | null;
+          organizer_url?: string | null;
+          pay?: string | null;
+          posted_at?: string | null;
+          posting_site?: string | null;
+          prizes?: string | null;
+          provided?: string | null;
+          published?: boolean;
+          reviewed_at?: string | null;
+          slug?: string;
+          source?: string;
+          source_name?: string | null;
+          source_url?: string | null;
+          starts_on?: string | null;
+          summary?: string | null;
+          tags?: string[];
+          team_size?: string | null;
+          title?: string;
+          updated_at?: string;
+          url?: string;
+          verified_on?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunities_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      opportunity_interest: {
+        Row: {
+          created_at: string;
+          note: string | null;
+          opportunity_id: string;
+          profile_id: string;
+          status: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          note?: string | null;
+          opportunity_id: string;
+          profile_id: string;
+          status: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          note?: string | null;
+          opportunity_id?: string;
+          profile_id?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_interest_opportunity_id_fkey";
+            columns: ["opportunity_id"];
+            isOneToOne: false;
+            referencedRelation: "opportunities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunity_interest_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "people";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "opportunity_interest_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -905,6 +1235,55 @@ export type Database = {
           },
         ];
       };
+      sync_runs: {
+        Row: {
+          adapter: string;
+          closed: number;
+          created_at: string;
+          error: string | null;
+          fetched: number;
+          finished_at: string | null;
+          id: string;
+          inserted: number;
+          kept: number;
+          ok: boolean;
+          source_id: string;
+          started_at: string;
+          updated: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          adapter: string;
+          closed?: number;
+          created_at?: string;
+          error?: string | null;
+          fetched?: number;
+          finished_at?: string | null;
+          id?: string;
+          inserted?: number;
+          kept?: number;
+          ok?: boolean;
+          source_id: string;
+          started_at?: string;
+          updated?: number;
+        };
+        Update: {
+          adapter?: string;
+          closed?: number;
+          created_at?: string;
+          error?: string | null;
+          fetched?: number;
+          finished_at?: string | null;
+          id?: string;
+          inserted?: number;
+          kept?: number;
+          ok?: boolean;
+          source_id?: string;
+          started_at?: string;
+          updated?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       people: {
@@ -964,8 +1343,16 @@ export type Database = {
       };
     };
     Enums: {
+      eligibility_verdict: "eligible" | "likely" | "unclear" | "not_eligible";
+      internship_term:
+        "coop" | "semester_part_time" | "summer" | "winter" | "spring" | "fall";
+      job_type: "internship" | "coop" | "new_grad";
       member_status: "current" | "alumni";
       methodology: "kanban" | "scrumban" | "scrum" | "safe";
+      opportunity_area: "suffolk" | "boston" | "outside_boston" | "online";
+      opportunity_format: "in_person" | "online" | "hybrid";
+      opportunity_kind:
+        "internship" | "conference" | "networking" | "hackathon";
       project_kind: "team" | "personal";
       project_status: "proposed" | "in_progress" | "completed" | "archived";
       supervisor_kind: "faculty" | "student";
@@ -1101,8 +1488,21 @@ export const Constants = {
   },
   public: {
     Enums: {
+      eligibility_verdict: ["eligible", "likely", "unclear", "not_eligible"],
+      internship_term: [
+        "coop",
+        "semester_part_time",
+        "summer",
+        "winter",
+        "spring",
+        "fall",
+      ],
+      job_type: ["internship", "coop", "new_grad"],
       member_status: ["current", "alumni"],
       methodology: ["kanban", "scrumban", "scrum", "safe"],
+      opportunity_area: ["suffolk", "boston", "outside_boston", "online"],
+      opportunity_format: ["in_person", "online", "hybrid"],
+      opportunity_kind: ["internship", "conference", "networking", "hackathon"],
       project_kind: ["team", "personal"],
       project_status: ["proposed", "in_progress", "completed", "archived"],
       supervisor_kind: ["faculty", "student"],

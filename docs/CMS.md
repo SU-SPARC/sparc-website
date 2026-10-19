@@ -1,7 +1,7 @@
 # Running the SPARC website CMS
 
 This guide is for e-board members who look after the website. You don't need
-to have read the code. The design is explained in `docs/ARCHITECTURE.md`.
+to have read the code.
 
 ## 1. What lives where
 
@@ -23,6 +23,7 @@ refreshes them straight away.
 | Photo gallery (one "featured" photo) | `/admin/photos` | `/` strip, `/about` group photo |
 | Links (link-in-bio) | `/admin/links` | `/links` |
 | Accounts and roles (admin only) | `/admin/accounts` | none |
+| Locator: internships, conferences, networking events, hackathons (editors curate; members browse) | `/admin/locator/<kind>` | `/dashboard/locator` (signed-in members) |
 
 These files stay in the repo because they aren't content: `public/advisor.webp`,
 `public/og.webp`, `public/wordmark/*` (footer masks), `public/logo/sparc-mark.svg`,
@@ -36,7 +37,7 @@ These files stay in the repo because they aren't content: `public/advisor.webp`,
    ```
    npx supabase login
    npx supabase link --project-ref <ref>
-   npx supabase db push        # applies supabase/migrations/0001_cms.sql and 0002_project_management.sql
+   npx supabase db push        # applies supabase/migrations/0001_cms.sql, 0002_project_management.sql and 0003_locator.sql
    ```
 3. In **Storage**, check that a public bucket named `media` exists. The
    migration creates it.
@@ -109,6 +110,8 @@ Production, Preview and Development (names as in `.env.example`):
 | `NEXT_PUBLIC_SITE_URL` | the production URL, no trailing slash | public |
 | `SUPABASE_SECRET_KEY` | the legacy **`service_role`** key (Project Settings → API Keys → Legacy API keys); see note below | **server only** |
 | `AUTH_SMTP_CONFIGURED` | `false`, then `true` after step 2.7 | server only |
+| `ANTHROPIC_API_KEY` | the club's Anthropic API key (console.anthropic.com → API keys). Powers the Locator eligibility checks and "Import from a link". Leave unset to run without AI. | **server only** |
+| `LOCATOR_AI_MODEL` | optional; default `claude-opus-5-5` | server only |
 
 `SUPABASE_SECRET_KEY` bypasses every security rule. The site uses it in one
 place only: the admin's account actions (create an account, reset a password)
@@ -118,6 +121,12 @@ any other app file mentions it.
 
 `NEXT_PUBLIC_*` values are baked into the build, so **redeploy** after you
 change one.
+
+The Locator sync runs on GitHub, not Vercel, so the repository needs two
+**Actions secrets** (GitHub → Settings → Secrets and variables → Actions):
+`NEXT_PUBLIC_SUPABASE_URL` (the hosted project URL) and `SUPABASE_SECRET_KEY`
+(the same `service_role` key as Vercel). Nothing else; the sync does not use
+the AI key.
 
 **Why the legacy `service_role` key.** On the first deployment (16 October
 2026) the project's new-format `sb_secret_…` key was rejected by the Auth
@@ -212,6 +221,53 @@ Every member can view every board. Project members, the project's supervisor
 and editors can edit it. The lead and editors add or remove members on the
 board's Members tab.
 
+**Locator** (`/admin/locator`, editors). Four lists the e-board keeps for
+members: Internships (filter by Co-op, Semester part-time, Summer, Winter),
+Conferences, Networking and Hackathons. Each row links to the posting or event
+page. Add an item with **New**, or paste the posting URL into **Import from a
+link** and let the club's AI fill the form; check every field before saving.
+**Check my eligibility** on an item uses your own Locator profile
+(`/admin/locator/profile`: major, year, skills, goals, availability) and
+answers Eligible / Likely eligible / Unclear / Not eligible with reasons and a
+1–5 career-fit score; the result is cached and shown on the list. Your Locator
+profile is readable only by you. Use **Mark verified today** after you
+re-check a listing; the seed data was verified on 16 October 2026 and events
+with unannounced dates say so in their dates note. Load or refresh the
+researched starter set with `npm run seed:locator` (it upserts by slug, so
+edits to other fields survive).
+
+**Hackathon details and who's going.** On a hackathon's edit page, fill in
+**Signup opens** and **Signup closes** (the registration window; the event's
+own dates stay in Starts / Ends), then **Hackathon details**: Team size
+("1–4"), Prizes and What's provided (meals, travel, credits, mentors, swag),
+as plain text from the event page. Members see these on the listing and can
+press **I'm interested** or **I'm enrolling** with a short note ("looking for a
+frontend teammate"); everyone signed in sees who is going, so teams form on
+their own. The edit page's **Members interested** card lists those names (no
+emails), and the list shows "3 interested" on the row. Members change only
+their own interest; editors can't change it for them.
+
+**Locator sync** (twice a day, automatic). A GitHub Actions workflow
+(`.github/workflows/locator-sync.yml`) runs `npm run locator:sync` at 07:00 and
+19:00 Boston time. It reads public job and event feeds listed in
+`scripts/locator-sync/sources.json` (Greenhouse, Lever and Ashby job boards of
+Boston employers, several Workday career sites, the SimplifyJobs internship
+list, Devpost and MLH hackathons, Boston Meetup and Luma calendars, and the
+Suffolk events calendars) and adds what it finds to Locator with the source
+named on every row ("via Greenhouse", "via SimplifyJobs", …). New rows arrive
+published and marked **Unreviewed** until an editor opens them and presses
+**Mark reviewed**. Postings that disappear from their feed are marked
+**Closed** and hidden, never deleted. The sync always refreshes a listing's
+title, link, location, pay and dates; once an editor has saved a listing, its
+summary, description, eligibility, tags and hackathon details are the
+editor's and are left alone.
+To add a company, add a line to `sources.json` (its README says how) and open a
+pull request; to run the sync by hand, use the workflow's **Run workflow**
+button on GitHub, or locally `npm run locator:sync -- --dry-run` first. The
+overview page shows the last run and any failing source. LinkedIn, Indeed,
+Handshake and Built In cannot be read automatically (terms or login), so they
+stay as the "Search elsewhere" links on each list.
+
 **Yearly handover.**
 1. Sign in as the shared login and change its password on `/dashboard/profile`.
 2. Review `/admin/accounts`. Demote graduates to *Member* (or unlink their
@@ -229,13 +285,17 @@ npm run db:start          # supabase start; first run downloads images
 cp .env.example .env.local  # then fill keys from: npx supabase status -o env
 npm run db:reset          # recreate the local DB from supabase/migrations
 npm run seed              # local content, photos and the admin login
+npm run seed:locator      # the researched Locator starter set (scripts/seed/locator/*.json)
+npm run locator:sync -- --dry-run   # fetch the live feeds and print what would change; drop --dry-run to write
 npm run dev               # http://localhost:3000
 ```
 
 - `npm run rls:check` proves the content rules (anon, member, editor, admin,
   storage, sign-up). `npm run rls:check-pm` proves the project-board rules
   (requests, approve/decline, board edits by members versus non-members,
-  template columns). Both create throwaway users against the local database.
+  template columns). `npm run rls:check-locator` proves the Locator rules
+  (editors write opportunities; Locator profiles and eligibility checks are
+  own-row only). All three create throwaway users against the local database.
   Run them after you change a migration. Sign-in is rate-limited to 30 per
   5 minutes, so wait a few minutes if a run fails at sign-in.
 - `npm run db:types` regenerates `lib/supabase/database.types.ts`.
@@ -262,3 +322,7 @@ Before git commands, run `find . -name '._*' -not -path './node_modules/*' -dele
 | The admin is locked out (forgot the password, no email) | From the repo, run `npm run admin:magic-link -- sparc@studentorgs.suffolk.edu` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SITE_URL` and `SUPABASE_SECRET_KEY` (the `service_role` key) set in the shell. It prints a one-time sign-in link; open it, then set a new password on `/dashboard/profile`. Works for any account. Too many failed sign-ins also trips a 30-per-5-minutes limit per IP; waiting five minutes clears that. |
 | "Token has expired or is invalid" from an email link | The link was already used, or an email scanner opened it first. Send a new one, or use a temporary password. |
 | The site is up but empty | The Free Supabase project paused. Restore it from the dashboard (section 2.8). |
+| Locator says "AI checks need `ANTHROPIC_API_KEY`" | Set `ANTHROPIC_API_KEY` (and optionally `LOCATOR_AI_MODEL`) in Vercel for Production and Preview, then redeploy. The lists work without it; only the two AI features wait for the key. |
+| The overview says a Locator sync source is failing, or a source returns nothing for days | The feed changed or is down (Workday, Devpost, MLH and Luma are undocumented endpoints). Open the failed run under GitHub → Actions → Locator sync for the error, try `npm run locator:sync -- --source <id> --dry-run` locally, and fix or disable that entry in `scripts/locator-sync/sources.json`. A failing source never closes listings. |
+| A synced listing shows stale text after an editor fixed it | Expected: title, link, location, pay and dates always follow the feed. Everything else stays as the editor saved it. If the feed's title is wrong, unpublish the row or fix the source. |
+| "The AI declined to assess this listing" or "Couldn't read that page" | The model refused (rare; try again or fill the form by hand), or the posting page blocks automated readers (LinkedIn and some job boards do). Paste the company's own careers page instead, or enter the fields manually. |

@@ -1,0 +1,553 @@
+[
+  {
+    "kind": "internship",
+    "slug": "vestmark-software-engineer-coop-spring-2027",
+    "title": "Software Engineer Co-op (Spring 2027)",
+    "organizer": "Vestmark",
+    "organizer_url": "https://www.vestmark.com",
+    "organizer_blurb": "Massachusetts wealth-management software company headquartered in Wakefield, with a Boston Seaport office that houses its AI and innovation hub.",
+    "url": "https://job-boards.greenhouse.io/vestmark/jobs/8204509",
+    "posting_site": "Greenhouse",
+    "summary": "Spring-semester software engineering co-op building features for Vestmark's VestmarkONE wealth-management platform.",
+    "description": "Co-op on an agile Scrum team doing hands-on development for VestmarkONE products such as portfolio trading, proposal generation and the investor portal. Work centers on building and maintaining features that hold up as the platform scales. Expected background: Java, C#, Python or similar; SQL and relational databases (e.g. SQL Server); MVC-style patterns; algorithms and object-oriented design. Based at the Boston (Seaport) office; Built In Boston lists the role as hybrid. Term is the 2027 spring semester; exact dates, hours and pay are not posted.",
+    "area": "boston",
+    "format": "hybrid",
+    "location": "Boston, MA (Seaport)",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "Spring 2027 semester co-op; exact start/end dates and deadline not posted. Listed about 3 days before verification.",
+    "internship_terms": [
+      "coop"
+    ],
+    "pay": null,
+    "eligibility": "Computer Science or Computer Engineering majors who are incoming juniors or seniors. Local Boston candidates only. The posting does not state a sponsorship policy (the application asks about work authorization and sponsorship).",
+    "tags": [
+      "software",
+      "fintech"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://job-boards.greenhouse.io/vestmark/jobs/8204509"
+  },
+  {
+    "kind": "internship",
+    "slug": "klaviyo-software-engineer-coop-spring-2027",
+    "title": "Software Engineer Co-op (Spring 2027)",
+    "organizer": "Klaviyo",
+    "organizer_url": "https://www.klaviyo.com",
+    "organizer_blurb": "Boston-headquartered marketing automation and customer-data platform company, publicly traded, with a large engineering office downtown.",
+    "url": "https://job-boards.greenhouse.io/klaviyocampus/jobs/7989365003",
+    "posting_site": "Greenhouse",
+    "summary": "Six-month, full-time spring co-op on a Klaviyo engineering team, shipping full-stack features end to end.",
+    "description": "Co-ops own features from code and tests through shipping and iteration, debug issues locally and in production, help during incidents and write documentation. Work spans front end and back end, and AI tools are part of the daily workflow. Stack named in the posting: Python/Django, TypeScript/React, Go; MySQL, Cassandra, ClickHouse, Kafka, Redis; AWS and Terraform. Full-time (40 hrs/week) for the whole program, in the 125 Summer St. office five days a week. Program runs January 4 to June 25.",
+    "area": "boston",
+    "format": "in_person",
+    "location": "Boston, MA (125 Summer St.)",
+    "starts_on": "2027-01-04",
+    "ends_on": "2027-06-25",
+    "deadline_on": null,
+    "dates_note": "Posting asked candidates to apply before Oct 7, 2026; interviews and hiring are rolling, so it may still accept applications.",
+    "internship_terms": [
+      "coop"
+    ],
+    "pay": "$49.50–$60.50 USD (posting does not state the pay unit)",
+    "eligibility": "Pursuing a degree in CS, engineering, data science, math/statistics or related; graduating Dec 2027 or May/June 2028; at least one prior software internship or co-op; available full-time on site for the full program. Must have current US work authorization; the role is not eligible for immigration sponsorship.",
+    "tags": [
+      "software",
+      "ecommerce"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://job-boards.greenhouse.io/klaviyocampus/jobs/7989365003"
+  },
+  {
+    "kind": "internship",
+    "slug": "hometap-full-stack-engineering-coop-spring-2027",
+    "title": "Full Stack Engineering Co-op (Spring 2027)",
+    "organizer": "Hometap",
+    "organizer_url": "https://www.hometap.com",
+    "organizer_blurb": "Boston-based fintech startup that offers home equity investments so homeowners can tap equity without a loan or monthly payments.",
+    "url": "https://job-boards.greenhouse.io/hometapjobs/jobs/4927882007",
+    "posting_site": "Greenhouse",
+    "summary": "Spring 2027 co-op on Hometap's engineering team building and testing full-stack software in Python and TypeScript.",
+    "description": "Co-op designs, builds and tests software mainly in Python (Django) and JavaScript/TypeScript (React), working with engineers, PMs and QA in an agile process. Projects involve integrations with outside systems such as Salesforce, credit bureaus, valuation-model providers, Segment and Camunda. Also expected: code reviews, tests and documentation, plus feedback on team process. Helpful: relational databases, Git, API design, AWS. The team works remotely day to day, with an optional Back Bay office for in-person work.",
+    "area": "boston",
+    "format": "hybrid",
+    "location": "Boston, MA (Back Bay office optional; mostly remote)",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "Spring 2027 term; exact dates, hours and deadline not posted.",
+    "internship_terms": [
+      "coop"
+    ],
+    "pay": "$30–$35/hr",
+    "eligibility": "Previous software engineering internship or co-op experience; solid relational database, Git and API fundamentals. Co-ops must be located in the United States for the whole co-op. Class year and major are not specified; the posting does not state a sponsorship policy.",
+    "tags": [
+      "software",
+      "fintech",
+      "startup"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://job-boards.greenhouse.io/hometapjobs/jobs/4927882007"
+  },
+  {
+    "kind": "internship",
+    "slug": "audax-group-ai-engineer-coop-spring-2027",
+    "title": "AI Engineer Co-op (January–June 2027)",
+    "organizer": "Audax Group",
+    "organizer_url": "https://www.audaxgroup.com",
+    "organizer_blurb": "Boston-based alternative investment manager (roughly $42B in assets) focused on middle-market private equity and credit.",
+    "url": "https://job-boards.greenhouse.io/audaxgroup/jobs/4722801005",
+    "posting_site": "Greenhouse",
+    "summary": "Spring co-op helping Audax's IT team build, deploy and govern internal AI applications.",
+    "description": "Co-op supports the firm's internal AI ecosystem: scaling AI infrastructure in the cloud with IT, building proof-of-concept tools for business teams, helping with AI governance (security, documentation, privacy), validating data with data engineers, and deploying AI apps on cloud services. Required tools: Python, SQL, Git, VS Code, Microsoft Azure/GitHub, Office, and OpenAI SDKs/custom GPTs; Snowflake, agent frameworks, evals and chatbot integrations are a plus. On site 3–4 days a week in Boston; anticipated dates January 4 to June 25, 2027, flexible to school calendars. No travel.",
+    "area": "boston",
+    "format": "hybrid",
+    "location": "Boston, MA",
+    "starts_on": "2027-01-04",
+    "ends_on": "2027-06-25",
+    "deadline_on": null,
+    "dates_note": "Dates are anticipated and flexible based on school co-op schedules; no deadline posted.",
+    "internship_terms": [
+      "coop"
+    ],
+    "pay": "$30–$34/hr (Massachusetts range)",
+    "eligibility": "Current bachelor's or master's students in data science, data engineering, analytics, computer science or a related field, with experience in at least two areas such as classic ML, NLP, fine-tuning, predictive analytics, agent frameworks, AI evaluation or data engineering. Class year not specified; the posting does not state a sponsorship policy (the application asks about work authorization and CPT).",
+    "tags": [
+      "ai",
+      "data",
+      "cloud",
+      "fintech"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://job-boards.greenhouse.io/audaxgroup/jobs/4722801005"
+  },
+  {
+    "kind": "internship",
+    "slug": "liberty-mutual-solaria-labs-data-science-coop-spring-2027",
+    "title": "Solaria Labs Data Science Co-op (January–June 2027)",
+    "organizer": "Liberty Mutual Insurance",
+    "organizer_url": "https://www.libertymutual.com",
+    "organizer_blurb": "Large global property and casualty insurer headquartered in Boston's Back Bay.",
+    "url": "https://campus-libertymutual.icims.com/jobs/261811/job",
+    "posting_site": "iCIMS (company campus site)",
+    "summary": "Six-month data science co-op in Liberty Mutual's Solaria Labs R&D group, prototyping AI solutions for insurance problems.",
+    "description": "Co-op works in an internal R&D lab building prototypes, custom algorithms and data-driven insights for insurance challenges, then presents results to the team and stakeholders. Focus areas include Python-based work in large language models, NLP, retrieval-augmented generation, agentic AI, information retrieval and computer vision. The role also includes hackathons, meetups and other learning events. Full-time from January to June 2027 in Boston.",
+    "area": "boston",
+    "format": "in_person",
+    "location": "Boston, MA",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "January–June 2027 full-time co-op; exact dates and deadline not posted. Format not stated in the posting.",
+    "internship_terms": [
+      "coop"
+    ],
+    "pay": "$33–$41/hr",
+    "eligibility": "Pursuing a bachelor's, master's or PhD in data science, AI, engineering, computer science, math, statistics or a related field; 3.0 GPA preferred; prior internship experience strongly preferred; available full-time January–June 2027. Must be fully authorized to work in the US without restrictions.",
+    "tags": [
+      "ai",
+      "data",
+      "research"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://campus-libertymutual.icims.com/jobs/261811/job?mobile=true&needsRedirect=false"
+  },
+  {
+    "kind": "internship",
+    "slug": "liberty-mutual-cybersecurity-coop-spring-2027",
+    "title": "Cybersecurity Co-op (January–June 2027)",
+    "organizer": "Liberty Mutual Insurance",
+    "organizer_url": "https://www.libertymutual.com",
+    "organizer_blurb": "Large global property and casualty insurer headquartered in Boston's Back Bay.",
+    "url": "https://campus-libertymutual.icims.com/jobs/226276/job",
+    "posting_site": "iCIMS (company campus site)",
+    "summary": "Full-time spring co-op on the team that audits Liberty Mutual's cybersecurity and internal controls.",
+    "description": "Co-op joins the internal audit group that reviews Liberty Mutual's control systems with a cyber focus: interviewing staff, performing test work, analyzing results and communicating audit findings, while learning how cybersecurity is applied in insurance. Useful background: security principles, network security, CI/CD and testing frameworks, cloud networking and security controls (AWS/Azure), and Python scripting for automation and analytics. Full-time in Boston; the title says January–June 2027 while the requirements say January–July 2027.",
+    "area": "boston",
+    "format": "in_person",
+    "location": "Boston, MA",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "Title says January–June 2027; eligibility text says full-time January–July 2027. No deadline posted. Format not stated.",
+    "internship_terms": [
+      "coop"
+    ],
+    "pay": "$29–$31/hr",
+    "eligibility": "Pursuing a bachelor's in cybersecurity, MIS, computer science or equivalent; minimum 3.0 GPA; 0–2 years of experience. Must be authorized to work in the US without sponsorship now or in the future; the company does not sponsor visas, and CPT/OPT/STEM OPT candidates are not eligible.",
+    "tags": [
+      "cyber",
+      "it"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://campus-libertymutual.icims.com/jobs/226276/cybersecurity-co-op-%28january---june-2027%29/job?in_iframe=1"
+  },
+  {
+    "kind": "internship",
+    "slug": "codepath-tech-fellow-spring-2027",
+    "title": "Tech Fellow (Spring 2027)",
+    "organizer": "CodePath",
+    "organizer_url": "https://www.codepath.org",
+    "organizer_blurb": "National nonprofit that runs free, remote computer science and career-prep courses for college students.",
+    "url": "https://www.codepath.org/tech-fellow-program",
+    "posting_site": "Company careers site",
+    "summary": "Paid, part-time remote role supporting CodePath's live online CS courses as a student teaching fellow during the spring semester.",
+    "description": "Tech Fellows are paid student leaders who help run CodePath's remote courses: building community among students at their campus, leading breakout rooms and helping learners during each class session. CodePath provides 10–20 hours of training before courses begin, and no prior teaching experience is needed. Fully remote and fits around a normal class schedule. Spring 2027 applications are open; hours per week and the exact pay rate are not listed on the program page.",
+    "area": "online",
+    "format": "online",
+    "location": "Remote (US)",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "Spring 2027 application cycle is open; deadline and exact term dates not posted on the program page.",
+    "internship_terms": [
+      "semester_part_time"
+    ],
+    "pay": "Hourly (amount not posted)",
+    "eligibility": "Full-time university students (sophomore or above) or recent grads who recently completed a CodePath course, are CS majors or focused on CS, and have taken intro OOP and data structures/algorithms or know the material. Must be authorized to work in the US; the role does not qualify for CPT/OPT. Must attend the pre-course training.",
+    "tags": [
+      "software",
+      "nonprofit"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://www.codepath.org/tech-fellow-program"
+  },
+  {
+    "kind": "internship",
+    "slug": "occ-year-round-ai-research-engineering-intern-2027",
+    "title": "Year-Round Intern – AI Research & Engineering (2027)",
+    "organizer": "The Options Clearing Corporation (OCC)",
+    "organizer_url": "https://www.theocc.com",
+    "organizer_blurb": "Chicago-based clearinghouse for US-listed options and futures, regulated as systemically important financial market infrastructure.",
+    "url": "https://theocc.wd5.myworkdayjobs.com/careers/job/Chicago---125-S-Franklin/Year-Round-Intern---AI-Research---Engineering_REQ-4833",
+    "posting_site": "Workday",
+    "summary": "Twelve-month intern role building and evaluating AI agent workflows, part-time during the school year and full-time in summer.",
+    "description": "Intern builds and iterates on AI agent workflows for a business area, connects agents to internal data sources and APIs, designs tests and evaluation frameworks for accuracy, reliability and safety, works with AI governance and risk teams, and documents agent designs and prompts. Tools mentioned: Python plus SQL/Java/C++/R; PyTorch, TensorFlow, scikit-learn; LLMs, prompt engineering and agentic systems; AWS/Azure/GCP; Spark or Databricks. Up to 20 hrs/week during the school year and up to 40 hrs/week in summer, capped at 1,000 hours. Hybrid in Chicago with Tuesday and Wednesday required in office (at least 3 days a week).",
+    "area": "outside_boston",
+    "format": "hybrid",
+    "location": "Chicago, IL",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "Description says a January 2027–December 2027 program; the listing's start-date field shows Sept 2026. No deadline posted.",
+    "internship_terms": [
+      "semester_part_time",
+      "summer"
+    ],
+    "pay": "$25.00 (pay unit not stated)",
+    "eligibility": "Enrolled undergrad or grad students who are rising seniors or second-year grad students, graduating Dec 2027, May 2028 or Aug 2028. Preferred majors include CS, data science, statistics, math, engineering, physics, ML, financial engineering or economics; 3.5+ GPA preferred. Must work in person in Chicago at least 3 days a week. Work authorization and sponsorship are not addressed.",
+    "tags": [
+      "ai",
+      "fintech",
+      "research"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://theocc.wd5.myworkdayjobs.com/wday/cxs/theocc/careers/job/Chicago---125-S-Franklin/Year-Round-Intern---AI-Research---Engineering_REQ-4833"
+  },
+  {
+    "kind": "internship",
+    "slug": "getintro-software-engineering-intern-part-time",
+    "title": "Software Engineering Intern (Part-Time, 20+ hrs/week)",
+    "organizer": "getIntro",
+    "organizer_url": null,
+    "organizer_blurb": "Early-stage Boston startup building AI-driven sales tools for healthcare.",
+    "url": "https://www.builtinboston.com/job/software-engineering-intern/11201311",
+    "posting_site": "Built In Boston",
+    "summary": "Part-time software engineering internship at an early-stage startup, working across the stack on AI search and agent features.",
+    "description": "Intern works across the stack on semantic search, agent-framework features and large graph datasets, with the expectation of shipping production-quality code. The listing names no specific languages or tools. It is aimed at people who want an early-stage startup and can work independently. Requires at least 20 hours a week and can be done in office or remotely. Term dates and pay are not listed.",
+    "area": "boston",
+    "format": "hybrid",
+    "location": "Boston, MA or remote",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "No term, start date or deadline posted; listing was reposted the day before verification. Confirm hours and timing with the employer.",
+    "internship_terms": [
+      "semester_part_time"
+    ],
+    "pay": null,
+    "eligibility": "The listing does not state student status, class year or work-authorization requirements.",
+    "tags": [
+      "software",
+      "ai",
+      "healthtech",
+      "startup"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://www.builtinboston.com/job/software-engineering-intern/11201311"
+  },
+  {
+    "kind": "internship",
+    "slug": "klaviyo-software-engineer-intern-summer-2027",
+    "title": "Software Engineer Intern (Summer 2027)",
+    "organizer": "Klaviyo",
+    "organizer_url": "https://www.klaviyo.com",
+    "organizer_blurb": "Boston-headquartered marketing automation and customer-data platform company, publicly traded, with a large engineering office downtown.",
+    "url": "https://job-boards.greenhouse.io/klaviyocampus/jobs/7989364003",
+    "posting_site": "Greenhouse",
+    "summary": "Eleven-week, full-time, in-office summer software engineering internship at Klaviyo's Boston headquarters.",
+    "description": "Interns own customer-facing features from code and tests through shipping, debug real issues locally and in production, write documentation and help during incidents. Work spans back end and front end, with AI tools used day to day. Stack named in the posting: Python/Django, TypeScript/React, Go; MySQL, Cassandra, ClickHouse, Kafka, Redis; AWS and Terraform. Full-time (40 hrs/week) in the 125 Summer St. office five days a week, June 1 to August 13; lunch is provided.",
+    "area": "boston",
+    "format": "in_person",
+    "location": "Boston, MA (125 Summer St.)",
+    "starts_on": "2027-06-01",
+    "ends_on": "2027-08-13",
+    "deadline_on": null,
+    "dates_note": "Posting asked candidates to apply before Oct 7, 2026; interviews and hiring are rolling.",
+    "internship_terms": [
+      "summer"
+    ],
+    "pay": "$49.50–$60.50 USD (posting does not state the pay unit)",
+    "eligibility": "Pursuing a degree in CS, engineering, data science, math/statistics or related; graduating Dec 2027 or May/June 2028; at least one prior software internship or co-op; full-time on site for the whole program. Not eligible for immigration sponsorship.",
+    "tags": [
+      "software",
+      "ecommerce"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://job-boards.greenhouse.io/klaviyocampus/jobs/7989364003"
+  },
+  {
+    "kind": "internship",
+    "slug": "draftkings-software-engineer-intern-summer-2027",
+    "title": "Software Engineer Intern (Summer 2027)",
+    "organizer": "DraftKings",
+    "organizer_url": "https://www.draftkings.com",
+    "organizer_blurb": "Boston-headquartered sports betting, fantasy sports and iGaming company with a large technology organization.",
+    "url": "https://draftkings.wd1.myworkdayjobs.com/Campus_Career_Portal/job/Boston-MA/Software-Engineer-Intern--Summer-2027-_JR14928",
+    "posting_site": "Workday",
+    "summary": "Ten-week summer software engineering internship on DraftKings' backend or web development teams in Boston.",
+    "description": "Interns join backend or web teams working on the core sports-technology platform, shipping code to real users, improving product performance and writing testable, production-ready code in an agile process, with mentors and cross-functional partners. Expected exposure: an object-oriented language such as TypeScript, C# or Java, Git, and basic unit or end-to-end testing. Some roles may require a state-issued gaming license as a condition of employment. The description refers to a 10-week program.",
+    "area": "boston",
+    "format": "in_person",
+    "location": "Boston, MA",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "No deadline or exact program dates posted (posting body still references a 10-week 'Summer 2026' program despite the 2027 title). Listed since about Aug 31, 2026.",
+    "internship_terms": [
+      "summer"
+    ],
+    "pay": null,
+    "eligibility": "Currently enrolled in a bachelor's program in computer science, computer engineering or a related technical field. Class year and work-authorization rules are not stated. A gaming license may be required depending on the role.",
+    "tags": [
+      "software"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://draftkings.wd1.myworkdayjobs.com/wday/cxs/draftkings/Campus_Career_Portal/job/Boston-MA/Software-Engineer-Intern--Summer-2027-_JR14928"
+  },
+  {
+    "kind": "internship",
+    "slug": "datadog-software-engineering-intern-summer-2027",
+    "title": "Software Engineering Intern (Summer 2027)",
+    "organizer": "Datadog",
+    "organizer_url": "https://www.datadoghq.com",
+    "organizer_blurb": "New York-headquartered cloud monitoring and security platform company with a large Boston engineering office.",
+    "url": "https://careers.datadoghq.com/detail/8052118/",
+    "posting_site": "Company careers site",
+    "summary": "Summer software engineering internship working on Datadog's large-scale observability and distributed systems, in Boston or New York.",
+    "description": "Interns contribute to production systems that process large volumes of observability and application data in real time, build and improve distributed systems across backend, developer platforms and cloud-native services, and chase performance, reliability and scalability problems. Each intern owns a project from design to deployment with a mentor. Topics mentioned include Kubernetes, data engineering, developer tooling and AI coding tools. Full-time from the Boston or New York office under a hybrid policy, with three date options between May 24 and Sept 3, 2027.",
+    "area": "boston",
+    "format": "hybrid",
+    "location": "Boston, MA or New York, NY",
+    "starts_on": "2027-05-24",
+    "ends_on": "2027-08-20",
+    "deadline_on": null,
+    "dates_note": "Three program windows: May 24–Aug 20, May 24–Aug 27, or June 7–Sept 3, 2027 (start/end fields show the first). No deadline posted.",
+    "internship_terms": [
+      "summer"
+    ],
+    "pay": "$100,000–$110,000/yr (annualized estimate)",
+    "eligibility": "Pursuing a CS, software engineering or related degree (or equivalent experience), aiming for a 2028 full-time start, and able to work full-time from the Boston or New York office. Some roles may require eligibility for US export-control authorizations.",
+    "tags": [
+      "software",
+      "cloud",
+      "big-tech"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://careers.datadoghq.com/detail/8052118/"
+  },
+  {
+    "kind": "internship",
+    "slug": "kensho-software-engineer-intern-summer-2027",
+    "title": "Software Engineer – Summer Intern 2027",
+    "organizer": "Kensho (S&P Global)",
+    "organizer_url": "https://kensho.com",
+    "organizer_blurb": "Cambridge, MA-based AI and machine learning hub of S&P Global, building generative AI, data-retrieval and extraction tools for finance.",
+    "url": "https://spgi.wd5.myworkdayjobs.com/en-US/SPGI_Careers/job/Cambridge-MA/Software-Engineer---Summer-Intern-2027_331717-2",
+    "posting_site": "Workday",
+    "summary": "Summer software engineering internship at Kensho, S&P Global's AI unit, based in Cambridge (or New York).",
+    "description": "Interns ship real features through code review to production. Depending on team, work can include ML-backed server and user-facing apps, APIs and services, observability and deployment tooling, or data ingestion pipelines. The team emphasizes static typing, readable code, review, infrastructure as code and production readiness, and holds regular 'Knowledge Days' for learning. Stack listed: Python, Django, TypeScript, Airflow, Postgres, Elasticsearch, Kafka, Redis, AWS, Docker, Kubernetes, Terraform, Jenkins, Prometheus, Grafana. Interns work from the Cambridge HQ or the NYC office.",
+    "area": "boston",
+    "format": "in_person",
+    "location": "Cambridge, MA or New York, NY",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "Summer 2027; exact program dates, pay and deadline not posted. Listed for 30+ days at verification.",
+    "internship_terms": [
+      "summer"
+    ],
+    "pay": null,
+    "eligibility": "Class year, major and work-authorization rules are not stated. The posting looks for strength in a core area (e.g. distributed computing), algorithms and data structures, and personal or open-source projects.",
+    "tags": [
+      "software",
+      "ai",
+      "fintech"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://spgi.wd5.myworkdayjobs.com/wday/cxs/spgi/SPGI_Careers/job/Cambridge-MA/Software-Engineer---Summer-Intern-2027_331717-2"
+  },
+  {
+    "kind": "internship",
+    "slug": "liberty-mutual-techstart-summer-internship-2027",
+    "title": "TechStart Summer Internship Program (2027)",
+    "organizer": "Liberty Mutual Insurance",
+    "organizer_url": "https://www.libertymutual.com",
+    "organizer_blurb": "Large global property and casualty insurer headquartered in Boston's Back Bay.",
+    "url": "https://campus-libertymutual.icims.com/jobs/77035/2027-techstart-summer-internship-program/job",
+    "posting_site": "iCIMS (company campus site)",
+    "summary": "Liberty Mutual's 11-week summer technology internship, embedding interns on software teams in Boston and other hubs.",
+    "description": "TechStart interns are placed on technology teams doing real project work, from customer-facing apps to back-end systems, and take part in agile planning, building, testing and delivery. The posting asks for general software development skills: a programming language, version control, data structures, the SDLC and AI-assisted development tools. Hybrid, in the office two days a week. Two 11-week windows: May 17–July 30 or June 1–Aug 13, 2027. Offered in Boston, Portsmouth NH, Indianapolis and Plano.",
+    "area": "boston",
+    "format": "hybrid",
+    "location": "Boston, MA (also Portsmouth, NH; Indianapolis, IN; Plano, TX)",
+    "starts_on": "2027-05-17",
+    "ends_on": "2027-07-30",
+    "deadline_on": null,
+    "dates_note": "Two windows: May 17–Jul 30 or Jun 1–Aug 13, 2027 (fields show the first). No deadline; interviews and offers are rolling and the posting may close once enough candidates apply.",
+    "internship_terms": [
+      "summer"
+    ],
+    "pay": "$31–$37/hr",
+    "eligibility": "Working toward a bachelor's in computer science, software engineering, IT or a related technical field. Must be fully authorized to work in the US without restrictions. No class-year or GPA requirement stated.",
+    "tags": [
+      "software",
+      "it"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://campus-libertymutual.icims.com/jobs/77035/2027-techstart-summer-internship-program/job?in_iframe=1"
+  },
+  {
+    "kind": "internship",
+    "slug": "mit-lincoln-lab-srp-secure-resilient-systems-intern-summer-2027",
+    "title": "Summer Research Program Intern 2027 – Secure Resilient Systems and Technology (Group 05-53)",
+    "organizer": "MIT Lincoln Laboratory",
+    "organizer_url": "https://www.ll.mit.edu",
+    "organizer_blurb": "Federally funded R&D center operated by MIT in Lexington, MA, doing national-security research for the Department of Defense.",
+    "url": "https://careers.ll.mit.edu/job/Lexington-Summer-Research-Program-Intern-2027%2C-Secure-Resilient-Systems-and-Technology-%28Group-05-53%29-MA-02420/1437449200/",
+    "posting_site": "Company careers site",
+    "summary": "Paid summer research internship in Lincoln Lab's cybersecurity group, working on secure and resilient software and systems.",
+    "description": "Depending on the project, interns design, prototype or evaluate security technologies and tools; analyze software and systems for threats, vulnerabilities and resilience; apply software analysis, security testing, formal methods, cryptography or AI-based techniques; run experiments; and present results along with code or data. Skills mentioned: Rust (preferred), C/C++, Python; secure software, operating systems, embedded systems, network protocols; adversarial testing; applied cryptography; AI tools for vulnerability discovery and cyber defense. On site at the Lexington lab; the program typically runs about 10–12 weeks in summer.",
+    "area": "boston",
+    "format": "in_person",
+    "location": "Lexington, MA",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "Summer 2027; exact dates and deadline not posted. Posted Oct 6, 2026. Pay rates shown are 2026 rates to be reviewed for summer 2027.",
+    "internship_terms": [
+      "summer"
+    ],
+    "pay": "$25.00–$43.50/hr depending on completed education (2026 rates)",
+    "eligibility": "Current BS, MS or PhD students in CS, computer engineering, cybersecurity, software engineering or a close field; BS students must have finished at least sophomore year (rising seniors preferred). Hands-on experience beyond coursework (research, internships, projects, competitions or open source). US citizenship required.",
+    "tags": [
+      "cyber",
+      "research",
+      "gov"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://careers.ll.mit.edu/job/Lexington-Summer-Research-Program-Intern-2027%2C-Secure-Resilient-Systems-and-Technology-%28Group-05-53%29-MA-02420/1437449200/"
+  },
+  {
+    "kind": "internship",
+    "slug": "caci-software-development-engineer-intern-summer-2027",
+    "title": "Software Development/Engineer Intern (Summer 2027)",
+    "organizer": "CACI International",
+    "organizer_url": "https://www.caci.com",
+    "organizer_blurb": "Large Virginia-based defense and intelligence technology contractor.",
+    "url": "https://caci.wd1.myworkdayjobs.com/external/job/Remote-Any-State/Software-Development-Engineer-Intern---Summer-2027_332894-1",
+    "posting_site": "Workday",
+    "summary": "Remote summer software engineering internship with CACI's DarkBlue Intelligence Group, building data-collection and analyst tools.",
+    "description": "Intern works across the application lifecycle (requirements, design, integration, implementation, deployment) on an agile team, using established design patterns and open-source tools. The team builds software that gathers information from the dark web and end-to-end encrypted messaging apps, plus query tools for analysts. Required skills: Python, JavaScript, Go or similar, Node.js, Angular or React, GitHub and debugging; Linux, Elasticsearch, AWS, web scraping and Tor routing are a plus. Remote from any US state with 9–5 Eastern core hours; Northern Virginia and Charlottesville offices are optional.",
+    "area": "online",
+    "format": "online",
+    "location": "Remote (US)",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": null,
+    "dates_note": "Summer 2027 per the title; the posting body still references summer 2026 and lists an Oct 1, 2026 start-date field. No deadline posted.",
+    "internship_terms": [
+      "summer"
+    ],
+    "pay": "$39,900–$79,900 (annualized national range)",
+    "eligibility": "Currently enrolled full-time undergrad, grad or doctoral students in CS, software engineering, data science or related. Must be authorized to work in the US without sponsorship now or in the future. No clearance required to start. Class year not specified.",
+    "tags": [
+      "software",
+      "gov",
+      "cyber"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://caci.wd1.myworkdayjobs.com/wday/cxs/caci/external/job/Remote-Any-State/Software-Development-Engineer-Intern---Summer-2027_332894-1"
+  },
+  {
+    "kind": "internship",
+    "slug": "hudson-river-trading-witti-winter-2027",
+    "title": "Women in Trading and Technology Internship (WiTTI) – Winter 2027",
+    "organizer": "Hudson River Trading",
+    "organizer_url": "https://www.hudsonrivertrading.com",
+    "organizer_blurb": "New York-based quantitative trading firm that trades across asset classes using automated strategies.",
+    "url": "https://www.hudsonrivertrading.com/careers/job/?gh_jid=8188637",
+    "posting_site": "Greenhouse",
+    "summary": "Paid two-to-four-week winter-break program in New York introducing early undergrads to software engineering and quant research in trading.",
+    "description": "A short winter-break program at HRT's New York office starting January 4, 2027 and lasting two, three or four weeks to match the student's school break. Participants get an introduction to the technical side of quantitative trading, do independent programming projects in Python and C++, see both software engineering and algorithm development, and attend tech talks plus social and networking events. Housing and meals are covered.",
+    "area": "outside_boston",
+    "format": "in_person",
+    "location": "New York, NY",
+    "starts_on": "2027-01-04",
+    "ends_on": null,
+    "deadline_on": "2026-10-16",
+    "dates_note": "Starts Jan 4, 2027; length of 2–4 weeks depends on the student's winter break. Posting text gives an Oct 16, 2026 deadline (the day of verification); recurring annual program, so watch for the next cycle in early fall.",
+    "internship_terms": [
+      "winter"
+    ],
+    "pay": "$5,800/week base, plus company-paid housing and meals",
+    "eligibility": "Full-time undergrads graduating between fall 2028 and summer 2030 in a technical or quantitative major (math, physics, CS, statistics or related) with programming experience; C, C++, Python or Rust preferred. Aimed at students without much quant-trading experience; women+ and non-binary students are encouraged to apply and all identities are welcome. Work authorization not mentioned.",
+    "tags": [
+      "software",
+      "fintech"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://boards-api.greenhouse.io/v1/boards/wehrtyou/jobs/8188637"
+  },
+  {
+    "kind": "internship",
+    "slug": "deloitte-audit-assurance-ai-data-science-intern-winter-2027",
+    "title": "Audit & Assurance Intern – AI and Data Science (Winter 2027)",
+    "organizer": "Deloitte",
+    "organizer_url": "https://www.deloitte.com/us",
+    "organizer_blurb": "One of the Big Four professional services firms, with US offices nationwide including Boston.",
+    "url": "https://apply.deloitte.com/en_US/careers/JobDetail/Audit-Assurance-Intern-AI-and-Data-Science-Winter-2027/361857",
+    "posting_site": "Company careers site",
+    "summary": "Winter-season internship on Deloitte's Audit & Assurance AI and Data Science engineering team, building ML and generative AI models.",
+    "description": "Intern develops, tests and deploys ML and AI models and works through the data science lifecycle: exploratory analysis, feature engineering, modeling and tuning. Collaborates daily with the AI and Data Science Engineering team, helps plan project tasks and joins discussions on new ML methods. Project areas include generative AI, agentic systems, anomaly detection, clustering and knowledge graphs. Required: Python, NumPy, pandas, scikit-learn, LLM/prompt-engineering familiarity and one of TensorFlow, PyTorch, OpenAI or LangChain; Azure/Azure DevOps and Git preferred. Work may be in office, at a client site or virtual, with up to 10% travel.",
+    "area": "outside_boston",
+    "format": "hybrid",
+    "location": "New York, NY; McLean, VA; Los Angeles, CA; Seattle, WA",
+    "starts_on": null,
+    "ends_on": null,
+    "deadline_on": "2026-10-25",
+    "dates_note": "Winter 2027 term; exact dates not posted. Recruiting for this posting ends Oct 25, 2026. Boston is not an offered location; New York is the closest.",
+    "internship_terms": [
+      "winter"
+    ],
+    "pay": "$36.83–$75.58/hr (estimate, not adjusted for location)",
+    "eligibility": "Pursuing a bachelor's or master's in a quantitative field (CS, engineering, math, physics, ML, statistics) or related coursework; 3.0 GPA required (3.2 preferred); at least 18; must be able to commute daily to the assigned office. Limited immigration sponsorship may be available.",
+    "tags": [
+      "ai",
+      "data"
+    ],
+    "verified_on": "2026-10-16",
+    "source_url": "https://apply.deloitte.com/en_US/careers/JobDetail/Audit-Assurance-Intern-AI-and-Data-Science-Winter-2027/361857"
+  }
+]

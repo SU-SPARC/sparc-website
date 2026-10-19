@@ -1,0 +1,52 @@
+# Locator sync: pulls internships, hackathons and networking events into the
+# hosted Supabase project twice a day (07:00 / 19:00 Boston in daylight time)
+# and on demand. See docs/LOCATOR-SYNC.md and scripts/locator-sync/README.md.
+#
+# Repository secrets:
+#   NEXT_PUBLIC_SUPABASE_URL  the hosted project URL
+#   SUPABASE_SECRET_KEY       the service_role key (same value Vercel uses)
+
+name: Locator sync
+
+on:
+  schedule:
+    - cron: "0 11,23 * * *"
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Only this source id from scripts/locator-sync/sources.json (comma-separate several; empty = all)"
+        required: false
+        default: ""
+
+concurrency:
+  group: locator-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Sync
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SOURCE: ${{ inputs.source }}
+        run: |
+          if [ -n "$SOURCE" ]; then
+            npm run locator:sync -- --source "$SOURCE"
+          else
+            npm run locator:sync
+          fi

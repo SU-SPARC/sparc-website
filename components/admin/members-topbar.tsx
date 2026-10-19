@@ -1,9 +1,11 @@
 "use client";
 
 /* Signed-in members shell top bar (docs/DESIGN-BRIEF.md §6): 56px, sticky.
- * Mark + "SPARC" → /dashboard; Dashboard · Projects · Profile (+ Admin for
- * editors) with the public navbar's active style; right: "View site" and
- * the account menu. ≤1023px the nav collapses into the shared <Expand>.
+ * Mark + "SPARC" → /dashboard; Dashboard · Projects · Locator · Profile
+ * (+ Admin for editors) with the public navbar's active style; right:
+ * "View site", the icon-only theme switch (§16) and the account menu.
+ * ≤1023px the nav collapses into the shared <Expand>, with the labelled
+ * theme switch at the bottom.
  *
  * Active matching: /dashboard is exact; the others match by prefix, so
  * /dashboard/projects/<id> highlights Projects. */
@@ -12,7 +14,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 
+import { ThemeSwitch } from "@/components/theme-switch";
 import { Expand } from "@/components/ui/expand";
+import { MicroLabel } from "@/components/ui/micro-label";
 import { SparcMark } from "@/components/ui/sparc-mark";
 import { signOut } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
@@ -36,6 +40,8 @@ export function MembersTopbar({ email, role, isEditor }: { email: string; role: 
     // /dashboard/projects is built by agent G (project boards); it 404s
     // until that lands.
     { href: "/dashboard/projects", label: "Projects" },
+    // Read-only Locator for every member (docs/LOCATOR.md, "Members view").
+    { href: "/dashboard/locator", label: "Locator" },
     { href: "/dashboard/profile", label: "Profile" },
     ...(isEditor ? [{ href: "/admin", label: "Admin" }] : []),
   ];
@@ -68,7 +74,8 @@ export function MembersTopbar({ email, role, isEditor }: { email: string; role: 
             >
               View site
             </Link>
-            <div className="hidden lg:block">
+            <div className="hidden items-center gap-1 lg:flex">
+              <ThemeSwitch compact />
               <AccountMenu email={email} role={role} />
             </div>
             <button
@@ -100,6 +107,12 @@ export function MembersTopbar({ email, role, isEditor }: { email: string; role: 
                 {email}
               </span>
               <SignOutButton />
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3 border-t border-line pt-3">
+              <MicroLabel as="p" aria-hidden="true">
+                Theme
+              </MicroLabel>
+              <ThemeSwitch />
             </div>
           </nav>
         </Expand>

@@ -1,4 +1,4 @@
-/* /links — the link-in-bio page (docs/DESIGN-BRIEF.md §9).
+/* /links — the link-in-bio page.
  *
  * Phone first: most visits are a tap from the Instagram or Discord bio. One
  * 30rem column at every breakpoint; desktop only centres it. Every link gets

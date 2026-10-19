@@ -1,4 +1,4 @@
-/* Members' dashboard (docs/DESIGN-BRIEF.md §14 and its amendment).
+/* Members' dashboard.
  * ≥1024px: two columns. Left: "Coming up for you", then My tasks,
  * My projects and My requests. Right (20rem): My card, "Your Locator",
  * then the compact Locator calendar card. Below 1024px: one column, the

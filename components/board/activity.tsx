@@ -1,6 +1,5 @@
-/* Activity timeline (docs/DESIGN-BRIEF.md §8, Activity tab): newest first,
- * grouped by day ("Today", "Yesterday", "Oct 12") in America/New_York; each
- * line a 20px avatar, a sentence and the time on the right. Task names link
+/* Activity timeline: newest first, grouped by day ("Today", "Yesterday",
+ * "Oct 12") in America/New_York; each line a 20px avatar, a sentence and the time on the right. Task names link
  * to the task (?task=<id>) when it still exists. Server-safe; the task
  * sheet renders the same lines for one task. */
 

@@ -1,6 +1,6 @@
 "use client";
 
-/* Filters + card grid for /dashboard/projects (docs/DESIGN-BRIEF.md §7).
+/* Filters + card grid for /dashboard/projects.
  * Mine / All (default Mine when I have any), then status chips with counts
  * (single select; pressing the active one clears it). Sorted by last
  * activity upstream. */

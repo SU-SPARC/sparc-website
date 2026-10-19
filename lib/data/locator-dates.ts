@@ -1,7 +1,7 @@
 /* Locator dates: calendar-date arithmetic and the words for it ("in 7 days",
  * "Oct 13", "Oct 3–4, 2026"). Every value is a date-only 'YYYY-MM-DD', so
  * nothing here touches a time zone. Pure; re-exported from
- * lib/data/locator.ts, so import from there. See docs/DESIGN-BRIEF.md §13. */
+ * lib/data/locator.ts, so import from there. */
 
 import { formatDateOnly, parseDateOnly } from "./dates";
 import type { DateOnly, Opportunity } from "./types";

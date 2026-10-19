@@ -1,4 +1,4 @@
-/* Request a project (docs/DESIGN-BRIEF.md §7). `?edit=<id>` edits one of my
+/* Request a project. `?edit=<id>` edits one of my
  * own requests while it is still proposed. */
 
 import type { Metadata } from "next";

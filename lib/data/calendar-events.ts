@@ -1,5 +1,5 @@
 /* The CalendarEvent type and where events land on the members' dashboard
- * calendar (docs/DESIGN-BRIEF.md §14): which days an event marks, one day's
+ * calendar: which days an event marks, one day's
  * list, the "Next up" link and "Coming up for you". Client-safe: no
  * "server-only". Date arithmetic lives in ./calendar-helpers.ts.
  *

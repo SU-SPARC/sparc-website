@@ -1,7 +1,7 @@
 "use client";
 
 /* LocatorMemberNav — the four kinds + "My Locator profile" as a tab row
- * under the "Dashboard / Locator" line (docs/LOCATOR.md, "Members view").
+ * under the "Dashboard / Locator" line.
  * Kinds match by prefix so a listing highlights its kind; the profile
  * matches exactly. Same active style as the members top bar. */
 

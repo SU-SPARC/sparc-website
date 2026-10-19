@@ -1,6 +1,6 @@
 "use client";
 
-/* ActionMenu — the row "⋯" menu (brief §2): a button with
+/* ActionMenu — the row "⋯" menu: a button with
  * aria-haspopup="menu" opening a small list of menuitems. Arrow keys move,
  * Esc closes and returns focus to the button, clicking outside closes.
  * Items: links (internal or external ↗), callbacks, dividers. A "Delete…"

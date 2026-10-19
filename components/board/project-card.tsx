@@ -1,4 +1,4 @@
-/* Project card for /dashboard/projects (docs/DESIGN-BRIEF.md §7). The whole
+/* Project card for /dashboard/projects. The whole
  * card is clickable through a stretched title link; the GitHub link sits
  * above it (relative z-10). Server-safe. */
 

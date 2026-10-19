@@ -1,5 +1,5 @@
-/* Avatar — initials on bg-surface-2 (no generated colour palettes, brief
- * §12), or a photo when one is given. 13px text minimum. Server-safe. */
+/* Avatar — initials on bg-surface-2 (no generated colour palettes), or a
+ * photo when one is given. 13px text minimum. Server-safe. */
 
 import Image from "next/image";
 

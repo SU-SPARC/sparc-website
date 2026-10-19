@@ -9,7 +9,7 @@
  * Reads NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY from the environment or .env.local
  * (not needed for --dry-run). Three sources run at a time; one sync_runs row per source; a
  * failing source is logged and the others carry on; exit code 1 only when every source failed.
- * See docs/LOCATOR-SYNC.md and scripts/locator-sync/README.md. */
+ * See scripts/locator-sync/README.md. */
 
 import { readFileSync } from "node:fs";
 import path from "node:path";

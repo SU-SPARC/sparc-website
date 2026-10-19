@@ -1,4 +1,4 @@
-/* Locator list sections (docs/DESIGN-BRIEF.md §15). Dated kinds: This week,
+/* Locator list sections. Dated kinds: This week,
  * Running now (under way and longer than 14 days, like a month-long online
  * hackathon), Later this month, one per later month, Undated, then Past. Internships:
  * Closing this week, Open, No deadline, then Deadline passed. The last

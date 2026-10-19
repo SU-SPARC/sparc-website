@@ -1,5 +1,5 @@
-/* "Search elsewhere:" — outbound links that carry the list's current query
- * (docs/LOCATOR.md, List screen §3). Server-safe; the list renders it. */
+/* "Search elsewhere:" — outbound links that carry the list's current query.
+ * Server-safe; the list renders it. */
 
 import { ArrowUpRight } from "lucide-react";
 

@@ -1,7 +1,7 @@
-/* Minimal chrome for sign-in, forgot password and set password
- * (docs/DESIGN-BRIEF.md §10): no navbar, a "← SPARC" link top-left, the
- * mark above a centred card. Under 640px the card loses its border and
- * background so fields run edge to edge within the gutter. */
+/* Minimal chrome for sign-in, forgot password and set password: no navbar,
+ * a "← SPARC" link top-left, the mark above a centred card. Under 640px the
+ * card loses its border and background so fields run edge to edge within
+ * the gutter. */
 
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";

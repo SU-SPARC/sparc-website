@@ -1,4 +1,4 @@
-/* Locator sync: shared types and the sources.json schema. See docs/LOCATOR-SYNC.md. */
+/* Locator sync: shared types and the sources.json schema. See scripts/locator-sync/README.md. */
 
 import { z } from "zod";
 

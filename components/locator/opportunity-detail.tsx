@@ -1,17 +1,17 @@
 /* OpportunityDetail — the read-only listing members open from the list at
- * /dashboard/locator/<kind>/<id> (docs/LOCATOR.md, "Members view"). The
- * facts an editor types into OpportunityForm, laid out as text: Overview,
+ * /dashboard/locator/<kind>/<id>. The facts an editor types into
+ * OpportunityForm, laid out as text: Overview,
  * Who can apply, When and where, then a source line ("Source: Greenhouse",
  * the posting link, "Closed <date>" once a sync stops seeing it) and a
  * freshness line. Every date carries its relative text ("Nov 15, 2026 ·
- * closes in 28 days"; DESIGN-BRIEF §15). Never Unreviewed, external ids or
+ * closes in 28 days"). Never Unreviewed, external ids or
  * sync controls. Hackathons show their signup window in place of the
  * deadline and a "Hackathon details" section (team size, prizes, what's
  * provided; nulls omitted). The At a glance, eligibility and interest cards
  * sit in the rail (the page passes them to EditColumns). Server-safe.
  *
  * OutsideBostonNote is the header line under the title for a hackathon or
- * networking event outside Greater Boston (§18); the members' listing page
+ * networking event outside Greater Boston; the members' listing page
  * renders it in its header. */
 
 import { ArrowUpRight } from "lucide-react";

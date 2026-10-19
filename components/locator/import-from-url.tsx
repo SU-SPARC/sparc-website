@@ -1,8 +1,7 @@
 "use client";
 
-/* Import from a link (docs/LOCATOR.md, "Edit and New screens"; R-L16,
- * R-L17). NewOpportunity owns the import action state and lifts a
- * successful draft into OpportunityForm, remounting it (key = draft
+/* Import from a link. NewOpportunity owns the import action state and lifts
+ * a successful draft into OpportunityForm, remounting it (key = draft
  * version) so every defaultValue re-applies. Nothing is saved until the
  * editor presses Save. */
 
@@ -84,7 +83,7 @@ export function ImportFromUrl({ kind, aiConfigured, state, pending, onSubmit }: 
         </form>
       ) : (
         <p className="text-sm text-ink-muted">
-          AI import needs the club&apos;s Anthropic API key on the server. See docs/LOCATOR.md.
+          AI import needs the club&apos;s Anthropic API key on the server. See docs/CMS.md.
         </p>
       )}
     </SurfaceCard>

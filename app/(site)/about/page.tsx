@@ -1,12 +1,11 @@
 /* /about — the merged about + team page. Server component; the two client
  * islands it mounts live in ./sections.tsx.
  *
- * /team is deleted; next.config.ts redirects it here (owned by the
- * orchestrator, not touched from this file).
+ * /team is deleted; next.config.ts redirects it here.
  *
  * CONTENT RULE. Every visible string on this page is lifted from the two pages
  * this one replaces — app/about/page.tsx and app/team/page.tsx as they stood
- * before this rewrite — from the data layer (lib/data), or from SPEC's approved provenance
+ * before this rewrite — from the data layer (lib/data), or from the approved provenance
  * list. Copy is TRIMMED in one place (the statement); nothing is reworded and
  * nothing is written. The `about:NN` references below are to the pre-rewrite
  * about page.

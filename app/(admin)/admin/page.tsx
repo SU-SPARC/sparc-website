@@ -1,5 +1,5 @@
 /* Admin overview: pending requests first, then plain counts in a short
- * table, then one or two sentences on the Locator sync (brief §12: no stat
+ * table, then one or two sentences on the Locator sync (no stat
  * tiles, sparklines or trend arrows). */
 
 import type { Metadata } from "next";

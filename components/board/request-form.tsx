@@ -1,6 +1,6 @@
 "use client";
 
-/* Request a project (docs/DESIGN-BRIEF.md §7), also used to edit one's own
+/* Request a project, also used to edit one's own
  * pending request. Single column, max-w-text. Submits with onSubmit +
  * startTransition (a <form action> would reset the fields when the server
  * returns validation errors). Success redirects to /dashboard with a banner. */

@@ -1,4 +1,4 @@
-/* Members' Locator profile (docs/LOCATOR.md, "Members view"): the same
+/* Members' Locator profile: the same
  * CareerProfileForm as /admin/locator/profile; saveCareerProfile is own-row
  * for every role. */
 

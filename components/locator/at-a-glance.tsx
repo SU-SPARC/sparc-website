@@ -1,10 +1,9 @@
-/* AtAGlance — the first card on a listing's detail (docs/DESIGN-BRIEF.md
- * §15): the state word large, then a two-column fact grid: Deadline /
- * Registration / Signup, Event, Where, Team size, Prizes, Pay or Cost,
+/* AtAGlance — the first card on a listing's detail: the state word large,
+ * then a two-column fact grid: Deadline / Registration / Signup, Event, Where, Team size, Prizes, Pay or Cost,
  * Listed, Verified. Facts that are null are left out. Every date carries
  * its relative text ("Oct 25, 2026 · closes in 7 days"). A hackathon or
  * networking event outside Greater Boston prefixes "Where" with "Outside
- * Boston · " in the danger tone (§18). First in the rail
+ * Boston · " in the danger tone. First in the rail
  * of the members' listing page and of the admin edit page. Server-safe. */
 
 import * as React from "react";
@@ -64,7 +63,7 @@ function placeWithFormat(place: string, format: string): string {
   return place.toLowerCase().includes(format.toLowerCase()) ? place : `${place} · ${format}`;
 }
 
-/** The place and format. Outside Boston (§18): "Outside Boston · Austin, TX · In person",
+/** The place and format. Outside Boston: "Outside Boston · Austin, TX · In person",
  *  the marker in the danger tone; with no location the area label is the place, so only
  *  the format follows the marker. */
 function whereFact(o: Opportunity): Fact {

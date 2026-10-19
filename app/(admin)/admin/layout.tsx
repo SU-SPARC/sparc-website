@@ -1,4 +1,4 @@
-/* Admin shell (docs/DESIGN-BRIEF.md §1): sidebar + main column ≥1024px,
+/* Admin shell: sidebar + main column ≥1024px,
  * sticky top bar + Expand menu below. Editors and admins only; a signed-in
  * member gets the 403 page in the public chrome (no shell). Signed-out
  * visitors are sent to /login by the proxy and by requireUser here.

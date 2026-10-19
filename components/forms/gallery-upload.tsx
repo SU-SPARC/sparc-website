@@ -1,10 +1,9 @@
 "use client";
 
-/* GalleryUpload — ordered multi-image field (docs/DESIGN-BRIEF.md §4,
- * project gallery). A grid of 16:9 tiles, 4 columns ≥1024px, 2 below. Each
- * tile: position number, "No alt" chip when alt is missing, ← Earlier /
- * Later → buttons, Remove, and its alt text. The last tile is an "Add
- * image" drop box (several files at once). Order changes are kept in the
+/* GalleryUpload — ordered multi-image field (project gallery). A grid of
+ * 16:9 tiles, 4 columns ≥1024px, 2 below. Each tile: position number, "No
+ * alt" chip when alt is missing, ← Earlier / Later → buttons, Remove, and
+ * its alt text. The last tile is an "Add image" drop box (several files at once). Order changes are kept in the
  * form and saved with it; no drag.
  *
  * Posts a hidden input `name` with a JSON array of { id, alt } |

@@ -1,7 +1,7 @@
 "use client";
 
 /* UpDownButtons — reorder one item by swapping with its neighbour
- * (brief §2: up/down, not drag, not a number field). Two 32px icon buttons
+ * (up/down, not drag, not a number field). Two 32px icon buttons
  * (44px on touch), disabled at the ends. After a move the focus stays on the
  * same button in the moved row; if that button is now disabled (the row
  * reached an end), focus moves to its sibling.

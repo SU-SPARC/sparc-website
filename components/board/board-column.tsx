@@ -1,6 +1,6 @@
 "use client";
 
-/* One board column (docs/DESIGN-BRIEF.md §8). 18rem wide (85vw snap
+/* One board column. 18rem wide (85vw snap
  * columns ≤640px), bg-surface-1, header with a done check, name, count
  * ("2/3" with a WIP limit; over the limit: text-warning, a 2px warning top
  * border and the words "Over WIP limit"), a ⋯ menu for editors (rename,

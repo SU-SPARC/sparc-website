@@ -1,10 +1,10 @@
 "use client";
 
-/* Admin shell navigation (docs/DESIGN-BRIEF.md §1).
+/* Admin shell navigation.
  *
  * ≥1024px: 15rem sticky sidebar — head (mark, SPARC, ADMIN), groups
  * Overview / Content / Locator / Review / People, foot with "View site ↗",
- * "Dashboard", the theme switch (§16) and the account block (email, role
+ * "Dashboard", the theme switch and the account block (email, role
  * pill, Sign out POST).
  * <1024px: a 56px sticky top bar (mark, "Admin", current section, Menu)
  * opening the same nav in the shared <Expand>; it closes on navigation.
@@ -161,7 +161,7 @@ function AccountBlock({ email, role, block }: { email: string; role: string; blo
   );
 }
 
-/* "Theme" label + Light / Dim / Dark switch, above the account block (§16). */
+/* "Theme" label + Light / Dim / Dark switch, above the account block. */
 function ThemeBlock() {
   return (
     <div className="flex flex-col gap-2">

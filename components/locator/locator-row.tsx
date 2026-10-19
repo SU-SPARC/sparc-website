@@ -1,8 +1,7 @@
 "use client";
 
-/* LocatorRow — one listing in the Locator list (docs/DESIGN-BRIEF.md §15;
- * docs/LOCATOR.md, "List screen"). Left block (date block or organizer
- * initials, faded when the listing is past), the title with its pills, meta
+/* LocatorRow — one listing in the Locator list. Left block (date block or
+ * organizer initials, faded when the listing is past), the title with its pills, meta
  * `organizer · location · dates`, a right column with the state word and
  * "Listed 3d ago", then for editors the Published / Hidden pill and the ⋯
  * menu. Members (`mode="member"`) get no editor pills, no state pill, and a

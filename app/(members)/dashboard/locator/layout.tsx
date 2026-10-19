@@ -1,4 +1,4 @@
-/* Members' Locator shell (docs/LOCATOR.md, "Members view"): the
+/* Members' Locator shell: the
  * "Dashboard / Locator" line, then the kind tabs; each page renders its own
  * h1 below. The members layout above already requires a session. */
 

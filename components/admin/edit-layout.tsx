@@ -1,4 +1,4 @@
-/* Building blocks of the admin edit page (docs/DESIGN-BRIEF.md §3).
+/* Building blocks of the admin edit page.
  *
  *   <EditHeader section="Events" sectionHref="/admin/events" title="Fall kickoff" siteHref="/events" />
  *   <EditForm …>

@@ -1,6 +1,6 @@
 "use client";
 
-/* Sprints / Iterations tab (docs/DESIGN-BRIEF.md §8). Scrum and Scrumban list
+/* Sprints / Iterations tab. Scrum and Scrumban list
  * sprints under Current / Upcoming / Past; SAFe lists PIs as sections, each
  * with its iterations as rows (name, dates, goal, done/total). Project
  * members create, edit (inline) and delete them. */

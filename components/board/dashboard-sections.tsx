@@ -1,4 +1,4 @@
-/* The project sections of /dashboard (docs/DESIGN-BRIEF.md §6): My tasks,
+/* The project sections of /dashboard: My tasks,
  * My projects, My requests. Server component; data from getMyDashboard().
  * Declined requests appear once, with the reason (MarkDeclinedSeen). */
 

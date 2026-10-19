@@ -1,7 +1,7 @@
 /* The pieces every dashboard calendar row carries: the listing's kind
  * ("Hackathon"), "Enrolling" or "Interested" in accent text when the member
- * is attending, and the place with the "Outside Boston" marker
- * (docs/DESIGN-BRIEF.md §18). Server-safe.
+ * is attending, and the place with the "Outside Boston" marker.
+ * Server-safe.
  *
  * Used by: components/locator/calendar-day-events.tsx (the selected day's
  * list) and components/locator/coming-up.tsx. */

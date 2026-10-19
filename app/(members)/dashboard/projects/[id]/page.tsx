@@ -1,4 +1,4 @@
-/* Project board (docs/DESIGN-BRIEF.md §8). Tabs are links:
+/* Project board. Tabs are links:
  * ?view=board (default) | activity | members | sprints ("Iterations" for
  * SAFe; only when the methodology uses them). Board filters live in
  * ?sprint=<id|all>&assignee=me, an open task in ?task=<id>. The Board tab

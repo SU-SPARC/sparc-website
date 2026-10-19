@@ -1,7 +1,7 @@
 "use client";
 
 /* StatusBanner — one-line result message where the action happened
- * (brief §0: no toasts). role="status" (polite) for results; pass
+ * (no toasts). role="status" (polite) for results; pass
  * tone="danger" with `alert` for blocking errors. Dismissible.
  *
  * `clearParam` removes that query parameter from the URL on dismiss (and on

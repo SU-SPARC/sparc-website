@@ -1,6 +1,6 @@
 "use client";
 
-/* Your Locator profile (docs/LOCATOR.md, "Locator profile"). One section,
+/* Your Locator profile. One section,
  * EditForm → saveCareerProfile (own row only), with a Privacy rail card. */
 
 import { EditColumns, FormSection, RailCard } from "@/components/admin/edit-layout";

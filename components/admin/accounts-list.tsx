@@ -1,6 +1,6 @@
 "use client";
 
-/* Accounts list (docs/DESIGN-BRIEF.md §5): person, role pill (+ "You"),
+/* Accounts list: person, role pill (+ "You"),
  * member card link or "No card · Link…", created date, ⋯ menu with
  * Change role…, Reset password…, Link member card…. Reset swaps the whole
  * page for the one-time password screen. */

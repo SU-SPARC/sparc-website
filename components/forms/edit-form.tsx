@@ -1,6 +1,6 @@
 "use client";
 
-/* EditForm — the admin / profile edit form shell (brief §3).
+/* EditForm — the admin / profile edit form shell.
  *
  * Wraps a server action used through useActionState and adds:
  *   - SaveBar states (clean, dirty, saving, saved, error) at the bottom;

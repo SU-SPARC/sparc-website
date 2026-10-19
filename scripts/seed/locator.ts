@@ -12,7 +12,7 @@
  * when an item has them. job_type (0006) is always written: the item's own
  * `job_type` key when it has one, else 'coop' when its terms include 'coop',
  * else 'internship'.
- * Deletes nothing. See docs/LOCATOR.md. */
+ * Deletes nothing. */
 
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";

@@ -1,6 +1,6 @@
 "use client";
 
-/* The event's Recordings sub-list (brief §3): §2 row pattern with up/down
+/* The event's Recordings sub-list: the admin list row pattern with up/down
  * order, ⋯ menu (Edit, Publish/Unpublish, Delete…), and an inline form for
  * adding or editing one recording at a time. Separate from the event's
  * EditForm (no nested forms); each save is its own action. */

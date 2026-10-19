@@ -1,4 +1,4 @@
-/* Members' read-only list (docs/LOCATOR.md, "Members view"): published rows
+/* Members' read-only list: published rows
  * only, the same LocatorList as /admin/locator in mode="member". */
 
 import type { Metadata } from "next";

@@ -1,5 +1,5 @@
 /* EmptyState — inside the list area: title, one line of purpose, one
- * action. No illustration, no icon in a tinted circle (brief §12).
+ * action. No illustration, no icon in a tinted circle.
  * Server-safe. */
 
 import * as React from "react";

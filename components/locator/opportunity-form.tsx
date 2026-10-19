@@ -1,16 +1,13 @@
 "use client";
 
-/* OpportunityForm — the Locator edit form (docs/LOCATOR.md, "Edit and New
- * screens"; brief §3). EditForm → saveOpportunity, EditColumns with the
- * rail: the At a glance card (passed in), Status, the eligibility card
- * (passed in by the edit page),
- * Verified, the interest card and the Source card (both passed in), Record.
+/* OpportunityForm — the Locator edit form. EditForm → saveOpportunity,
+ * EditColumns with the rail: the At a glance card (passed in), Status, the eligibility card
+ * (passed in by the edit page), Verified, the interest card and the Source card (both passed in), Record.
  * Event kinds get a "Signup opens" date; hackathons a "Hackathon details"
  * section (team size, prizes, what's provided; 0005); internships a "Job
- * type" choice in Basics and the Terms section (0006, DESIGN-BRIEF §17). Fields a kind does not
+ * type" choice in Basics and the Terms section (0006). Fields a kind does not
  * show travel as hidden inputs so a save keeps them. Sync rows carry a
- * note under Basics on which fields the sync keeps refreshing
- * (docs/LOCATOR-SYNC.md).
+ * note under Basics on which fields the sync keeps refreshing.
  *
  * Defaults come from the saved row, or from an imported draft on the New
  * screen. The parent remounts the form (key) when a new draft arrives, so

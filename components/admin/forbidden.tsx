@@ -1,4 +1,4 @@
-/* 403 for a signed-in member who opens /admin (brief §1): a page inside the
+/* 403 for a signed-in member who opens /admin: a page inside the
  * public site chrome, no admin shell. */
 
 import { ButtonLink } from "@/components/forms/button";

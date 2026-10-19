@@ -173,7 +173,7 @@ export type Link = {
   sort_order: number;
 };
 
-// ── Locator (supabase/migrations/0003_locator.sql, docs/LOCATOR.md) ──────
+// ── Locator (supabase/migrations/0003_locator.sql) ──────
 // Unlike the public types above, these keep their bookkeeping columns: the
 // Locator screens are editor-only and show published state and record dates.
 
@@ -233,7 +233,7 @@ export type Opportunity = {
   published: boolean;
   created_at: string;
   updated_at: string;
-  // Source attribution and sync bookkeeping (0004_locator_sync.sql, docs/LOCATOR-SYNC.md).
+  // Source attribution and sync bookkeeping (0004_locator_sync.sql).
   // Optional so mappers written before 0004 still produce an Opportunity.
   /** "Greenhouse", "SimplifyJobs", "Research (16 Oct 2026)", "Import", "Manual", … */
   source_name?: string | null;

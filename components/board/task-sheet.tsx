@@ -1,6 +1,6 @@
 "use client";
 
-/* Task detail (docs/DESIGN-BRIEF.md §8): a right-side <dialog> sheet, 30rem,
+/* Task detail: a right-side <dialog> sheet, 30rem,
  * full screen ≤640px. Every field saves on its own (selects on change, text
  * on blur / Enter) with an inline "Saved" next to its label. The task's own
  * activity sits at the bottom. Delete asks inline (no dialog on a dialog).

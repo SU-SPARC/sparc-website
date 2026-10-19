@@ -1,6 +1,6 @@
 "use client";
 
-/* SaveBar — sticky bottom bar of an edit form (brief §3).
+/* SaveBar — sticky bottom bar of an edit form.
  *
  *   clean   "No changes" (faint), Save disabled, Discard hidden
  *   dirty   "Unsaved changes", Discard + Save

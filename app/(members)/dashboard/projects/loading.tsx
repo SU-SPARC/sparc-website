@@ -1,4 +1,4 @@
-/* Static skeleton: header, then 6 card blocks. No shimmer (brief §0). */
+/* Static skeleton: header, then 6 card blocks. No shimmer. */
 
 export default function Loading() {
   return (

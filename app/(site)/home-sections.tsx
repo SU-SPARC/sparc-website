@@ -45,8 +45,7 @@ const quietLink =
  * The band is bg-surface-1 between two border-line hairlines, NOT a forced
  * .dark ramp. The mockup is a dark-theme screenshot, and a band pinned dark
  * in every theme would be a new theming mechanism nobody asked for; on the
- * dark and dim ramps surface-1 IS the dark band the client drew. Flagged to
- * the orchestrator rather than decided silently.
+ * dark and dim ramps surface-1 IS the dark band the client drew.
  *
  * SCREEN READERS. The value/label pair is a <dl>: MicroLabel as="dt" first
  * in the DOM, the value in a <dd> after it, and flex-col-reverse puts the

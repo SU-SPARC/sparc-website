@@ -1,8 +1,7 @@
 "use client";
 
-/* SourceCard — the edit page's Source rail card (docs/LOCATOR-SYNC.md,
- * "Attribution in the admin"): where the listing came from, its links, the
- * sync's dates, and "Mark reviewed" for sync rows. Sits under Verified. */
+/* SourceCard — the edit page's Source rail card: where the listing came
+ * from, its links, the sync's dates, and "Mark reviewed" for sync rows. Sits under Verified. */
 
 import { ArrowUpRight } from "lucide-react";
 import { useRouter } from "next/navigation";

@@ -1,9 +1,9 @@
 "use client";
 
 /* The selected day's events, under the month grid inside the compact
- * dashboard calendar card (docs/DESIGN-BRIEF.md §14 and its amendment): a
+ * dashboard calendar card: a
  * "Sat, Oct 24" heading, then at most three rows, each with the title link,
- * the place (with the "Outside Boston" marker, §18) and the dates, then the
+ * the place (with the "Outside Boston" marker) and the dates, then the
  * kind and the member's "Enrolling" / "Interested" pill. A long event (over
  * 14 days) is listed only on its start and end days, with "starts" / "ends"
  * after the title. A busier day ends with "N more in Locator →", which opens

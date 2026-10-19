@@ -1,6 +1,6 @@
 "use client";
 
-/* ThemeSwitch: the Light / Dim / Dark segmented control (docs/DESIGN-BRIEF.md §16).
+/* ThemeSwitch: the Light / Dim / Dark segmented control.
  * Used in the admin sidebar foot and mobile menu, and the members' top bar and menu. */
 
 import { CloudMoon, Moon, Sun, type LucideIcon } from "lucide-react";
@@ -24,7 +24,7 @@ const PREVIOUS_KEYS = ["ArrowLeft", "ArrowUp"];
 
 /* The group is 32px tall on pointer screens (26px segment + 2px padding +
    1px border, top and bottom). Below 640px each segment grows to the 44px
-   touch target from §0. */
+   touch target. */
 const SEGMENT =
   "inline-flex h-11 min-w-11 grow items-center justify-center gap-1 rounded-control text-sm transition-colors sm:h-6.5 sm:min-w-0";
 const SEGMENT_CHECKED = "bg-surface-2 text-ink";

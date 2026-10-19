@@ -4,7 +4,7 @@
  *
  * Esc and Cancel close it; focus returns to whatever had focus when it
  * opened (the trigger). Cancel has initial focus. Never open a dialog from a
- * dialog (brief §0).
+ * dialog.
  *
  * Two ways to confirm:
  *   - `action` (+ `fields`): the confirm button submits a <form action> with

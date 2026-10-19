@@ -1,9 +1,8 @@
 "use client";
 
-/* LocatorSection — one section of the Locator list (docs/DESIGN-BRIEF.md
- * §15): a MicroLabel heading with its count, then the rows in a ListTable.
- * A collapsed section (Past, Deadline passed) keeps its rows in the shared
- * Expand behind a text button: "Show 12 past hackathons" /
+/* LocatorSection — one section of the Locator list: a MicroLabel heading
+ * with its count, then the rows in a ListTable. A collapsed section (Past,
+ * Deadline passed) keeps its rows in the shared Expand behind a text button: "Show 12 past hackathons" /
  * "Hide past hackathons". */
 
 import * as React from "react";

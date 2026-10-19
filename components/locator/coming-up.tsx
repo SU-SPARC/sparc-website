@@ -1,8 +1,7 @@
-/* "Coming up for you" on the members' dashboard (docs/DESIGN-BRIEF.md §14,
- * point 3): the next five events the member is attending, or, when there
- * are none, the next five upcoming events with a hint. Each row: a date
+/* "Coming up for you" on the members' dashboard: the next five events the
+ * member is attending, or, when there are none, the next five upcoming events with a hint. Each row: a date
  * block, the title link, the kind, the place (with the "Outside Boston"
- * marker, §18) and a relative day. A long event (over 14 days) appears
+ * marker) and a relative day. A long event (over 14 days) appears
  * once, on whichever of its start or end comes next, with "starts" /
  * "ends" after the title. Left column, above My tasks. Server-safe, no
  * state.

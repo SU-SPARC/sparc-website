@@ -1,7 +1,6 @@
-/* ListingState — a listing's state word with its tone (docs/DESIGN-BRIEF.md
- * §13): "Closing soon" in warning, "Today" in accent text, Closed / Ended /
- * Deadline passed muted. Under it, the relative line for the primary date
- * ("closes in 7 days") and, for hackathons, the signup line ("Signup closes
+/* ListingState — a listing's state word with its tone: "Closing soon" in
+ * warning, "Today" in accent text, Closed / Ended / Deadline passed muted.
+ * Under it, the relative line for the primary date ("closes in 7 days") and, for hackathons, the signup line ("Signup closes
  * in 3 days"). `compact` (list rows) sets the word at text-xs and leaves
  * out the relative line: the row's meta already has the date. Server-safe. */
 

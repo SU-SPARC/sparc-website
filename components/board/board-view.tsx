@@ -1,6 +1,6 @@
 "use client";
 
-/* The Board tab (docs/DESIGN-BRIEF.md §8).
+/* The Board tab.
  *
  * Toolbar: sprint/iteration selector (grouped; PI groups for SAFe), assignee
  * filter (Anyone / Me), "New task". Columns scroll horizontally; ≤640px they

@@ -140,9 +140,9 @@
   --color-accent-quiet: var(--accent-quiet);
   --color-on-accent: var(--on-accent);
 
-  /* Status colours for the admin, dashboard and auth screens
-     (docs/DESIGN-BRIEF.md §11). Danger leans orange-red so it never reads as
-     the pink accent; every use also carries a word. */
+  /* Status colours for the admin, dashboard and auth screens. Danger leans
+     orange-red so it never reads as the pink accent; every use also carries
+     a word. */
   --color-danger: var(--danger);
   --color-danger-quiet: var(--danger-quiet);
   --color-on-danger: var(--on-danger);

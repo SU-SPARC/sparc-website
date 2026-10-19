@@ -1,4 +1,4 @@
-/* Pending project requests (docs/DESIGN-BRIEF.md §7, admin side). Editors
+/* Pending project requests. Editors
  * approve (the RPC builds the board from the methodology template) or
  * decline with a reason. loading/error come from ../ (admin/projects). */
 

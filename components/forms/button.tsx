@@ -1,7 +1,7 @@
 /* Button — the one button for admin, dashboard and auth screens.
  * Server-safe. Do not use the legacy components/ui/button.tsx.
  *
- * Variants (docs/DESIGN-BRIEF.md §0: one accent-filled control per view):
+ * Variants:
  *   primary         accent fill — the view's main action only
  *   outline         bordered, everything else
  *   text            no border, for low-weight actions ("Discard", "Sign out")

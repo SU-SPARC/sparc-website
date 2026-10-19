@@ -1,4 +1,4 @@
-/* ListTable + ListRow — the admin list pattern (brief §2).
+/* ListTable + ListRow — the admin list pattern.
  *
  * ≥640px: a real <table> (sr-only caption, column headers).
  * <640px: the same markup restyled as stacked blocks: thumb, then title +

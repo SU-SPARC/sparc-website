@@ -1,6 +1,6 @@
 "use client";
 
-/* One-time password screen (docs/DESIGN-BRIEF.md §5). Rendered in place of
+/* One-time password screen. Rendered in place of
  * the page content — a full page, not a modal, so a stray click can't
  * dismiss it. The password lives only in this component's props: it is not
  * stored, not in the URL, and gone on reload. Leaving any way other than

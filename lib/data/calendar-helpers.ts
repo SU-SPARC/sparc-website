@@ -1,6 +1,6 @@
-/* Pure date helpers for the members' dashboard Locator calendar
- * (docs/DESIGN-BRIEF.md §14): date arithmetic, the month grid and the day
- * labels. Client-safe: no "server-only". The CalendarEvent type and where
+/* Pure date helpers for the members' dashboard Locator calendar: date
+ * arithmetic, the month grid and the day labels. Client-safe: no
+ * "server-only". The CalendarEvent type and where
  * events land on the grid live in ./calendar-events.ts.
  *
  * Used by: lib/data/calendar.ts, lib/data/calendar-events.ts, the
@@ -87,7 +87,7 @@ export function monthGrid(year: number, month: number): DateOnly[][] {
 
 /* ─── Labels ──────────────────────────────────────────────────── */
 
-/** Adds the year only when it is not today's year (docs/DESIGN-BRIEF.md §13). */
+/** Adds the year only when it is not today's year. */
 function withYearIfOther(
   date: DateOnly,
   today: DateOnly,

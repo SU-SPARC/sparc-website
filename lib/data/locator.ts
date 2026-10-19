@@ -1,8 +1,8 @@
 /* Locator: pure helpers shared by the server and client components.
  * No "server-only" here; client components import this module directly
- * (lib/data/index.ts is server-only). See docs/LOCATOR.md.
+ * (lib/data/index.ts is server-only).
  *
- * The date words, the §13 date states and the list sections live in their
+ * The date words, the date states and the list sections live in their
  * own files and are re-exported here, so callers import from this module
  * only. */
 
@@ -79,8 +79,7 @@ export const JOB_TYPE_LABELS: Record<JobType, string> = {
 };
 
 /** The terms the Term chips, the form and the row pills show, in this order.
- *  The old 'coop' term is not one of them: co-ops are a job type now
- *  (docs/DESIGN-BRIEF.md §17). */
+ *  The old 'coop' term is not one of them: co-ops are a job type now. */
 export const TERM_ORDER: readonly InternshipTerm[] = ["summer", "fall", "spring", "winter", "semester_part_time"];
 
 export const TERM_LABELS: Record<InternshipTerm, string> = {
@@ -233,7 +232,7 @@ export function kindFromSlug(slug: string): OpportunityKind | null {
 }
 
 /** Whose screens: the editors' /admin/locator or the members' read-only
- *  /dashboard/locator (docs/LOCATOR.md, "Members view"). */
+ *  /dashboard/locator. */
 export type LocatorMode = "admin" | "member";
 
 const LOCATOR_BASE: Record<LocatorMode, string> = { admin: "/admin/locator", member: "/dashboard/locator" };
@@ -359,7 +358,7 @@ export function searchElsewhere(kind: OpportunityKind, query: string): { label: 
 }
 
 /** True for hackathons and networking events held in person somewhere other than
- *  Greater Boston (docs/DESIGN-BRIEF.md §18): they get the red "Outside Boston" word. */
+ *  Greater Boston: they get the red "Outside Boston" word. */
 export function isOutsideBoston(o: Pick<Opportunity, "kind" | "area">): boolean {
   return (o.kind === "hackathon" || o.kind === "networking") && o.area === "outside_boston";
 }

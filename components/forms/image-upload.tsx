@@ -1,6 +1,6 @@
 "use client";
 
-/* ImageUpload — single image field (docs/DESIGN-BRIEF.md §4).
+/* ImageUpload — single image field.
  *
  * States: empty drop box → compressing (preview + indeterminate bar) →
  * uploading → done (preview, "IMG_4412.jpg · 4.2 MB → 286 KB · 2000×1500",

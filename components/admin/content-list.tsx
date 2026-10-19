@@ -1,6 +1,6 @@
 "use client";
 
-/* ContentList — the shared admin list (docs/DESIGN-BRIEF.md §2) for every
+/* ContentList — the shared admin list for every
  * content type: header (h1 + count + "New x"), toolbar (search filtering
  * client-side + FilterChips: All / Published / Hidden + type extras),
  * status banner slot, then the ListTable with thumb, title-as-link, meta,

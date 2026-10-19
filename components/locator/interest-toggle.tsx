@@ -1,8 +1,7 @@
 "use client";
 
-/* "Your interest" rail card on the members' listing page (docs/LOCATOR.md,
- * "Hackathon details and member interest"). Two outline toggles, "I'm
- * interested" and "I'm enrolling"; the active one is accent-filled and
+/* "Your interest" rail card on the members' listing page. Two outline
+ * toggles, "I'm interested" and "I'm enrolling"; the active one is accent-filled and
  * pressing it again clears it. An optional one-line note travels with the
  * status. Below, "Members going": everyone's interest (InterestList).
  * Inline feedback only: "Saving…", then "Saved" for a few seconds. */

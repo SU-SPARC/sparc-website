@@ -1,6 +1,6 @@
 "use client";
 
-/* Members tab (docs/DESIGN-BRIEF.md §8): supervisor first (name, kind chip,
+/* Members tab: supervisor first (name, kind chip,
  * "Supervisor"), then members (avatar, name, Lead/Member chip, joined
  * date). Leads and editors add people (a select of every account not yet
  * on the project, plus a role) and remove them with a confirm. */

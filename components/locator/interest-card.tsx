@@ -1,5 +1,5 @@
-/* Member interest (0005_hackathon_interest.sql; docs/LOCATOR.md,
- * "Hackathon details and member interest").
+/* Member interest (0005_hackathon_interest.sql): hackathon details and who
+ * is going.
  *
  *   InterestList  one line per person: name, "Enrolling" / "Interested"
  *                 pill, their note, when. Names only, never emails (the

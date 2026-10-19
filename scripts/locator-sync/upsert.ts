@@ -1,6 +1,6 @@
 /* Locator sync: writes one source's items into `opportunities` under the
- * column-ownership rules of docs/LOCATOR-SYNC.md, closes listings a successful
- * full run no longer returns, and records `sync_runs`. Service role only.
+ * column-ownership rules below, closes listings a successful full run no
+ * longer returns, and records `sync_runs`. Service role only.
  *
  *   always from the source   title, url, location, pay, posting_site, posted_at,
  *                            starts_on, ends_on, deadline_on, last_seen_at

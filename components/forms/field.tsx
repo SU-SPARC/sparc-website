@@ -12,7 +12,7 @@
  *
  * Errors: `error` prop, or else the first message for `name` from the
  * nearest <FieldErrorsProvider>. Optional fields say "(optional)"; required
- * fields carry no marker (brief §3). */
+ * fields carry no marker. */
 
 import { CircleAlert } from "lucide-react";
 import * as React from "react";

@@ -1,7 +1,6 @@
 /* /join — the merged join + contact page. Server component, no client JS.
  *
- * /contact is deleted; next.config.ts redirects it here (owned by the
- * orchestrator, not touched from this file).
+ * /contact is deleted; next.config.ts redirects it here.
  *
  * CONTENT RULE. Every visible string on this page is lifted from the two
  * pages this one replaces — app/join/page.tsx and app/contact/page.tsx as

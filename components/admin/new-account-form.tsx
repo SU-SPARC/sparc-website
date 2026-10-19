@@ -1,6 +1,6 @@
 "use client";
 
-/* /admin/accounts/new (docs/DESIGN-BRIEF.md §5): email + display name,
+/* /admin/accounts/new: email + display name,
  * role, member card (existing / new / none), method (temporary password or
  * invite, the latter disabled until SMTP exists), "Create account". On
  * success with a temporary password, the page becomes the one-time

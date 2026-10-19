@@ -1,6 +1,6 @@
-/* Members' read-only listing (docs/LOCATOR.md, "Members view"): the facts
+/* Members' read-only listing: the facts
  * in OpportunityDetail, "View posting" as the main action, and in the rail
- * the At a glance card first (DESIGN-BRIEF §15), then the eligibility card,
+ * the At a glance card first, then the eligibility card,
  * then (event kinds) "Your interest" with everyone who is going. Published rows only; an unpublished or unknown id
  * is a 404 for everyone, editors included. */
 

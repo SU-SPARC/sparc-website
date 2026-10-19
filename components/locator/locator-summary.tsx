@@ -1,6 +1,5 @@
-/* "Your Locator" in the dashboard's right column (docs/DESIGN-BRIEF.md
- * §14): three plain lines, no tiles. "2 enrolling · 3 interested",
- * "4 deadlines in the next 14 days", "Open Locator →". Server-safe.
+/* "Your Locator" in the dashboard's right column: three plain lines, no
+ * tiles. "2 enrolling · 3 interested", "4 deadlines in the next 14 days", "Open Locator →". Server-safe.
  *
  * Used by: app/(members)/dashboard/page.tsx, with getLocatorSummary(). */
 

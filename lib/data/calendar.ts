@@ -1,4 +1,4 @@
-/* Locator reads for the members' dashboard (docs/DESIGN-BRIEF.md §14):
+/* Locator reads for the members' dashboard:
  * the calendar's events and the "Your Locator" counts. Server only; used by
  * app/(members)/dashboard/page.tsx.
  *
@@ -16,7 +16,7 @@ import { addDays } from "./calendar-helpers";
 import { kindPath } from "./locator";
 import type { DateOnly, InterestStatus, OpportunityKind } from "./types";
 
-/** How far ahead "deadlines soon" looks, in days (matches "Closing soon" in §13). */
+/** How far ahead "deadlines soon" looks, in days (matches "Closing soon"). */
 const DEADLINE_WINDOW_DAYS = 14;
 
 export type LocatorSummary = {

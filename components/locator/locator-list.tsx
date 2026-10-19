@@ -1,17 +1,15 @@
 "use client";
 
-/* LocatorList — one list for all four Locator kinds (docs/LOCATOR.md,
- * "List screen"; DESIGN-BRIEF §2, §13, §15, §17). Header with the open count,
- * search + FilterChips with counts (internships add a "Type" and a "Term"
+/* LocatorList — one list for all four Locator kinds. Header with the open
+ * count, search + FilterChips with counts (internships add a "Type" and a "Term"
  * row; one chip per row, combined with AND), "Search elsewhere", the ?notice= banner,
  * then the rows in sections: dated kinds This week, Later this month, one
  * per later month, Undated, Past; internships Closing this week, Open, No
  * deadline, Deadline passed. The past section starts collapsed. Each row is
  * a LocatorRow; deleting goes through a ConfirmDialog.
  *
- * `mode="member"` is the read-only list under /dashboard/locator
- * (docs/LOCATOR.md, "Members view"): no New button, no Published / Hidden /
- * Closed / Unreviewed chips, no state pills, rows link to the member
+ * `mode="member"` is the read-only list under /dashboard/locator: no New
+ * button, no Published / Hidden / Closed / Unreviewed chips, no state pills, rows link to the member
  * detail page.
  *
  * `today` comes from the server (America/New_York) so states and sections
@@ -87,7 +85,7 @@ type ChipRowId = keyof ActiveChips;
 
 const NO_FILTERS: ActiveChips = { status: "all", type: "all", term: "all" };
 
-/** The internships' "Type" and "Term" rows (docs/DESIGN-BRIEF.md §17); none for the other kinds. */
+/** The internships' "Type" and "Term" rows; none for the other kinds. */
 function namedRows(kind: OpportunityKind): { id: ChipRowId; label: string; chips: Chip[] }[] {
   const cfg = KIND_CONFIG[kind];
   const rows: { id: ChipRowId; label: string; chips: Chip[] }[] = [];

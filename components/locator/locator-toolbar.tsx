@@ -2,9 +2,8 @@
 
 /* LocatorToolbar — the Locator list's search input and status FilterChips
  * (with counts), any labelled chip rows under them (internships: "Type" and
- * "Term", docs/DESIGN-BRIEF.md §17), then the "Search elsewhere" links
- * carrying the query (docs/LOCATOR.md, "List screen"). The list owns the
- * query and each row's active chip; one chip is active per row. */
+ * "Term"), then the "Search elsewhere" links carrying the query. The list
+ * owns the query and each row's active chip; one chip is active per row. */
 
 import { Input } from "@/components/forms/input";
 import { FilterChip } from "@/components/ui/filter-chip";

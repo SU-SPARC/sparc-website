@@ -1,5 +1,5 @@
 /* Locator sync: the rules that turn a source's listing into a SyncItem.
- * Pure functions; no network. See docs/LOCATOR-SYNC.md "Normalised item". */
+ * Pure functions; no network. */
 
 import { createHash } from "node:crypto";
 
@@ -39,7 +39,7 @@ export function isStudentRole(title: string, structuredIntern = false): boolean 
 }
 
 /** "co-op" in the title → coop; "new grad", "university graduate", "early career",
- *  "campus hire" → new_grad; anything else → internship (docs/DESIGN-BRIEF.md §17). */
+ *  "campus hire" → new_grad; anything else → internship. */
 export function inferJobType(title: string): JobType {
   if (COOP_TITLE.test(title)) return "coop";
   if (NEW_GRAD_TITLE.test(title)) return "new_grad";

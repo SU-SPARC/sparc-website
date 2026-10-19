@@ -1,4 +1,4 @@
-/* Locator date states (docs/DESIGN-BRIEF.md §13): whether a listing is still
+/* Locator date states: whether a listing is still
  * live, in one word and a tone, shown the same way on rows, detail pages and
  * the calendar. Also the freshness lines next to it ("Listed 3d ago",
  * "Not verified since Sep 10"). `today` is always the server's
@@ -75,7 +75,7 @@ function datedState(o: StateFields, today: DateOnly): ListingStateInfo {
   return eventState(o, today);
 }
 
-/** The §13 state: Closed (`closed_at` set) wins; a hidden draft reads
+/** The listing state: Closed (`closed_at` set) wins; a hidden draft reads
  *  "Hidden" with the usual date line; everything else goes by its dates. */
 export function listingState(o: StateFields, today: DateOnly): ListingStateInfo {
   if (isClosedListing(o)) return closedState(o, today);

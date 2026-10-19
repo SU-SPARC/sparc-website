@@ -5,9 +5,9 @@
 # Run from the repo root:   bash scripts/verify.sh
 #
 # WHO OWNS THIS FILE
-#   The orchestrator, and nobody else. If you are a subagent working on a
-#   step, you may not edit this file — not to add a path, not to relax a
-#   check, not to silence a failure. Report the problem instead.
+#   The repo maintainers. Changes here are reviewed like any other code: do
+#   not add a path, relax a check or silence a failure just to get a green
+#   run. Fix the code the check flags instead.
 #
 # ─────────────────────────────────────────────────────────────────────────
 # THE MIGRATED-PATH LIST
@@ -31,9 +31,9 @@
 # An entry may be a file or a directory. A directory is expanded at run time
 # to every *.ts / *.tsx / *.css file under it (AppleDouble ._* files and
 # generated database types skipped), so new files in a migrated area are
-# covered the moment they land. Since the Supabase CMS build (agent F) the
-# whole app/ route-group tree, the form/admin/board components and lib/ are
-# on the list as directories.
+# covered the moment they land. Since the Supabase CMS build,
+# the whole app/ route-group tree, the form/admin/board components and lib/
+# are on the list as directories.
 
 MIGRATED=(
   app/globals.css               # S1 — token layer (exempt from the hex check)

@@ -29,14 +29,12 @@
 // (10,20,30,40,50,60), then everyone else in the `team` array's own order
 // (100,110,…160) — less 140, vacated when Margulan moved up to the e-board.
 //
-// status: club-supplied, confirmed Aug 2026 via the orchestrator (resolves
-// PLAN.md §5.1). The four Class-of-2026 members — Mohammed, Sarmad, Kyle and
+// status: club-supplied, confirmed Aug 2026. The four Class-of-2026 members — Mohammed, Sarmad, Kyle and
 // Anthony — are alumni; everyone else is current. This is SOURCED DATA, not
 // inference from class years: a future member classed 2026 would NOT
 // automatically be alumni, so do not derive this field — read it.
 //
-// badges + participated: club-supplied, confirmed Aug 2026 via the orchestrator
-// (resolves the SPEC "Content that does not exist yet" item). Three facts:
+// badges + participated: club-supplied, confirmed Aug 2026. Three facts:
 //   • all 12 members are founding members;
 //   • all 12 except Allan Nguyen did the CollegiateX internship;
 //   • all 12 participated in 2025 and 2026.

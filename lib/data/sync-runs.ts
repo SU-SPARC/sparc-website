@@ -1,4 +1,4 @@
-/* Locator sync summary for the admin overview (docs/LOCATOR-SYNC.md).
+/* Locator sync summary for the admin overview.
  * Session client: RLS lets editors read sync_runs and nobody else, so a
  * non-editor gets null. */
 

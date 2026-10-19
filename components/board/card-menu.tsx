@@ -1,7 +1,6 @@
 "use client";
 
-/* The card's "⋯" menu (docs/DESIGN-BRIEF.md §8, keyboard / no-drag
- * fallback). Panels:
+/* The card's "⋯" menu (keyboard / no-drag fallback). Panels:
  *   main   Open task · Move… · Delete…
  *   move   the columns (current one disabled) · Move to top / up / down /
  *          bottom · Move to sprint ▸

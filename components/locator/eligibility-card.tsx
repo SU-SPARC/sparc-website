@@ -1,7 +1,6 @@
 "use client";
 
-/* "Your eligibility" rail card (docs/LOCATOR.md, "Eligibility card";
- * R-L07, R-L13, R-L14, R-L15). States: not configured, no profile, idle,
+/* "Your eligibility" rail card. States: not configured, no profile, idle,
  * checking, result, error. The result is persisted by the action, so a
  * reload shows the same card. No modal, no toast, no progress ring.
  *
@@ -67,7 +66,7 @@ function GlyphList({
 }
 
 const NOT_CONFIGURED: Record<LocatorMode, string> = {
-  admin: "AI checks need the club’s Anthropic API key on the server. See docs/LOCATOR.md.",
+  admin: "AI checks need the club’s Anthropic API key on the server. See docs/CMS.md.",
   member: "AI eligibility checks aren’t set up on this site yet. Ask the e-board.",
 };
 

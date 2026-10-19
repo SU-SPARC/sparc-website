@@ -1,6 +1,6 @@
 "use client";
 
-/* A board card (docs/DESIGN-BRIEF.md §8): title (3-line clamp), then
+/* A board card: title (3-line clamp), then
  * priority glyph, points, due date, GitHub icon, and the assignee avatar
  * (or a dashed empty circle) pinned right. The card's main control is a
  * <button> that opens the task; it is also the drag activator (pointer: 4px

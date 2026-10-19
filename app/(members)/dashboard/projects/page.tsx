@@ -1,4 +1,4 @@
-/* Projects index for members (docs/DESIGN-BRIEF.md §7). */
+/* Projects index for members. */
 
 import type { Metadata } from "next";
 

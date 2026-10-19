@@ -1,8 +1,7 @@
 "use client";
 
-/* The compact "Locator calendar" card in the members' dashboard right column
- * (docs/DESIGN-BRIEF.md §14 and its amendment): a MicroLabel heading above
- * the card, then one header line (month and year, previous / next, Today),
+/* The compact "Locator calendar" card in the members' dashboard right column:
+ * a MicroLabel heading above the card, then one header line (month and year, previous / next, Today),
  * the month grid with 32px days (44px below 640px), a one-line two-dot
  * legend, and the selected day's events (at most three) under it. It moves
  * only inside the window the page loaded; at its first and last month a

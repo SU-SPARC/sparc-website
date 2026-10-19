@@ -1,7 +1,6 @@
 "use client";
 
-/* The 7-column month grid of the compact dashboard calendar
- * (docs/DESIGN-BRIEF.md §14, point 1, and its amendment): a tight row of
+/* The 7-column month grid of the compact dashboard calendar: a tight row of
  * weekday initials, then six weeks of 32px day buttons (44px below 640px,
  * narrowing to the column on a small phone). Each day shows an accent dot
  * when the member is attending something that day and a muted dot for any

@@ -1,6 +1,6 @@
 "use client";
 
-/* loading.tsx / error.tsx bodies for admin lists (brief §2): the header,
+/* loading.tsx / error.tsx bodies for admin lists: the header,
  * then five static rows of the real row height (no shimmer); errors say
  * what failed, show the message, and offer "Try again" (reset()). */
 

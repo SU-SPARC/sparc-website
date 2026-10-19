@@ -94,7 +94,7 @@ export type SparcEvent = {
  * `events.recording_url`, i.e. one recording attached to one event. The repo's
  * three Zoom recordings (Meeting 1/2/3, Feb 26 / Mar 24 / Apr 3 2026) do not
  * correspond to the three events (Feb 5 / Feb 12 / Mar 31), and nothing in the
- * repo maps one to the other. Per the orchestrator's decision they therefore
+ * repo maps one to the other. They therefore
  * ship as their own list with `recording_url` null on every event; attaching
  * them would be a guess.
  */

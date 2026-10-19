@@ -1,9 +1,9 @@
 "use client";
 
-/* Signed-in members shell top bar (docs/DESIGN-BRIEF.md §6): 56px, sticky.
+/* Signed-in members shell top bar: 56px, sticky.
  * Mark + "SPARC" → /dashboard; Dashboard · Projects · Locator · Profile
  * (+ Admin for editors) with the public navbar's active style; right:
- * "View site", the icon-only theme switch (§16) and the account menu.
+ * "View site", the icon-only theme switch and the account menu.
  * ≤1023px the nav collapses into the shared <Expand>, with the labelled
  * theme switch at the bottom.
  *
@@ -40,7 +40,7 @@ export function MembersTopbar({ email, role, isEditor }: { email: string; role: 
     // /dashboard/projects is built by agent G (project boards); it 404s
     // until that lands.
     { href: "/dashboard/projects", label: "Projects" },
-    // Read-only Locator for every member (docs/LOCATOR.md, "Members view").
+    // Read-only Locator for every member.
     { href: "/dashboard/locator", label: "Locator" },
     { href: "/dashboard/profile", label: "Profile" },
     ...(isEditor ? [{ href: "/admin", label: "Admin" }] : []),

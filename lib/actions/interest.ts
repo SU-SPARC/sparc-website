@@ -1,8 +1,7 @@
 "use server";
 
-/* Member interest in a Locator listing (0005_hackathon_interest.sql,
- * docs/LOCATOR.md, "Hackathon details and member interest"). Any signed-in
- * account; RLS lets each person write only their own row. */
+/* Member interest in a Locator listing (0005_hackathon_interest.sql). Any
+ * signed-in account; RLS lets each person write only their own row. */
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";

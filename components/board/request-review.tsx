@@ -1,8 +1,7 @@
 "use client";
 
 /* Approve / decline buttons for one request on /admin/projects/requests
- * (docs/DESIGN-BRIEF.md §7). "Approve…" confirms ref, methodology and
- * supervisor in a dialog, because approval builds the board from the
+ * "Approve…" confirms ref, methodology and supervisor in a dialog, because approval builds the board from the
  * template; "Decline…" asks for a reason the requester will see. */
 
 import { useRouter } from "next/navigation";

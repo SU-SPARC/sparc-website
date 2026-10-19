@@ -1,9 +1,9 @@
-/* Signed-in members shell (docs/DESIGN-BRIEF.md §6). Every route below
+/* Signed-in members shell. Every route below
  * requires a session; the role is re-checked here on the server (the proxy
  * redirect is a convenience, RLS is the guard).
  *
  * Nav routes: /dashboard (exact), /dashboard/projects, /dashboard/locator
- * (the members' read-only Locator, docs/LOCATOR.md), /dashboard/profile, and
+ * (the members' read-only Locator), /dashboard/profile, and
  * /admin for editors. Pages render their own <main>-level content inside
  * `max-w-page px-gutter`. */
 

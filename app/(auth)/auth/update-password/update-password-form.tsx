@@ -1,7 +1,7 @@
 "use client";
 
 /* Set / choose a new password (invite, recovery, or a member replacing a
- * temporary password). Brief §10.
+ * temporary password).
  *
  * `email` is null when there is no session yet. That happens when an invite
  * link used the implicit flow and the tokens arrived in the URL fragment

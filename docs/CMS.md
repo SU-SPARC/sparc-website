@@ -1,7 +1,7 @@
 # Running the SPARC website CMS
 
 This guide is for e-board members who look after the website. You don't need
-to have read the code. The design is explained in `docs/ARCHITECTURE.md`.
+to have read the code.
 
 ## 1. What lives where
 
@@ -23,7 +23,7 @@ refreshes them straight away.
 | Photo gallery (one "featured" photo) | `/admin/photos` | `/` strip, `/about` group photo |
 | Links (link-in-bio) | `/admin/links` | `/links` |
 | Accounts and roles (admin only) | `/admin/accounts` | none |
-| Locator: internships, conferences, networking events, hackathons (editors curate; members browse) | `/admin/locator/<kind>` | `/dashboard/locator` (signed-in members); see `docs/LOCATOR.md` |
+| Locator: internships, conferences, networking events, hackathons (editors curate; members browse) | `/admin/locator/<kind>` | `/dashboard/locator` (signed-in members) |
 
 These files stay in the repo because they aren't content: `public/advisor.webp`,
 `public/og.webp`, `public/wordmark/*` (footer masks), `public/logo/sparc-mark.svg`,
@@ -234,7 +234,7 @@ profile is readable only by you. Use **Mark verified today** after you
 re-check a listing; the seed data was verified on 16 October 2026 and events
 with unannounced dates say so in their dates note. Load or refresh the
 researched starter set with `npm run seed:locator` (it upserts by slug, so
-edits to other fields survive). Details: `docs/LOCATOR.md`.
+edits to other fields survive).
 
 **Hackathon details and who's going.** On a hackathon's edit page, fill in
 **Signup opens** and **Signup closes** (the registration window; the event's
@@ -266,8 +266,7 @@ pull request; to run the sync by hand, use the workflow's **Run workflow**
 button on GitHub, or locally `npm run locator:sync -- --dry-run` first. The
 overview page shows the last run and any failing source. LinkedIn, Indeed,
 Handshake and Built In cannot be read automatically (terms or login), so they
-stay as the "Search elsewhere" links on each list. Design and source list:
-`docs/LOCATOR-SYNC.md`.
+stay as the "Search elsewhere" links on each list.
 
 **Yearly handover.**
 1. Sign in as the shared login and change its password on `/dashboard/profile`.

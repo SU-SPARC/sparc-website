@@ -30,11 +30,6 @@ npm run dev                     # http://localhost:3000
 
 - [`docs/CMS.md`](docs/CMS.md): operations guide (hosted setup, Vercel,
   accounts, day-to-day editing, troubleshooting)
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): schema, roles, policies,
-  data layer and routing
-- [`docs/DESIGN-BRIEF.md`](docs/DESIGN-BRIEF.md): design patterns for the
-  admin, dashboard, board and `/links` screens
-- [`docs/LOCATOR.md`](docs/LOCATOR.md): the Locator (internships,
-  conferences, networking events, hackathons): schema, AI eligibility checks,
-  screens and Mobbin references
-- `PLAN.md`: the original redesign plan, kept as history
+- [`scripts/locator-sync/README.md`](scripts/locator-sync/README.md): the
+  scheduled Locator sync and how to add a source
+- [`scripts/seed/README.md`](scripts/seed/README.md): the one-time content seed

@@ -4,7 +4,7 @@
 public, machine-readable sources into `public.opportunities`, with source
 attribution (`source_name`, `source_url`, `external_id`), and closes listings
 that have disappeared. GitHub Actions runs it at 11:00 and 23:00 UTC
-(`.github/workflows/locator-sync.yml`). Design: `docs/LOCATOR-SYNC.md`.
+(`.github/workflows/locator-sync.yml`).
 
 ```
 npm run locator:sync                         # every enabled source

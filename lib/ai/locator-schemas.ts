@@ -24,7 +24,7 @@ const CONFIDENCES = ["low", "medium", "high"] as const satisfies readonly Confid
 const KIND_VALUES = ["internship", "conference", "networking", "hackathon"] as const satisfies readonly OpportunityKind[];
 // 'coop' stays so the model can say "co-op"; the import turns it into job_type 'coop' (lib/ai/locator.ts).
 const TERMS = ["summer", "fall", "spring", "winter", "semester_part_time", "coop"] as const satisfies readonly InternshipTerm[];
-const JOB_TYPES = ["internship", "coop", "new_grad"] as const satisfies readonly JobType[];
+const JOB_TYPES = ["internship", "coop", "externship", "new_grad"] as const satisfies readonly JobType[];
 const AREAS = ["suffolk", "boston", "outside_boston", "online"] as const satisfies readonly OpportunityArea[];
 const FORMATS = ["in_person", "online", "hybrid"] as const satisfies readonly OpportunityFormat[];
 

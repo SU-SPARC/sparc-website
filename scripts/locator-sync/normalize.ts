@@ -9,7 +9,8 @@ import type { DateOnly, InternshipTerm, JobType, OpportunityArea, OpportunityFor
 
 // ── job filters ──────────────────────────────────────────────────────────
 
-const INTERN_TITLE = /\b(intern|interns|internship|co-?op|apprentice|apprenticeship)\b/i;
+const INTERN_TITLE = /\b(intern(s|ship|ships)?|extern(s|ship|ships)?|co-?op|apprentice|apprenticeship)\b/i;
+const EXTERN_TITLE = /\bextern(s|ship|ships)?\b/i;
 const COOP_TITLE = /\bco-?op\b/i;
 const NEW_GRAD_TITLE = /\b(new grad(uate)?|university graduate|early career|campus hire)\b/i;
 const NOT_STUDENT = /\b(senior|staff|principal|manager|director|lead|freelance|freelancer)\b/i;
@@ -32,16 +33,18 @@ export function isEntryLevelTech(title: string): boolean {
   return !NOT_STUDENT.test(title) && isTechnicalField(title);
 }
 
-/** Title says intern/co-op/apprentice or new grad (or the source's structured type says intern),
+/** Title says intern/extern/co-op/apprentice or new grad (or the source's structured type says intern),
  *  is not a senior role, and is in a technical field. */
 export function isStudentRole(title: string, structuredIntern = false): boolean {
   if (!isEntryLevelTech(title)) return false;
   return structuredIntern || INTERN_TITLE.test(title) || NEW_GRAD_TITLE.test(title);
 }
 
-/** "co-op" in the title → coop; "new grad", "university graduate", "early career",
- *  "campus hire" → new_grad; anything else → internship (docs/DESIGN-BRIEF.md §17). */
+/** "extern"/"externship" in the title → externship (0007); "co-op" → coop; "new grad",
+ *  "university graduate", "early career", "campus hire" → new_grad; anything else →
+ *  internship (docs/DESIGN-BRIEF.md §17). */
 export function inferJobType(title: string): JobType {
+  if (EXTERN_TITLE.test(title)) return "externship";
   if (COOP_TITLE.test(title)) return "coop";
   if (NEW_GRAD_TITLE.test(title)) return "new_grad";
   return "internship";

@@ -6,7 +6,7 @@
  * (passed in by the edit page),
  * Verified, the interest card and the Source card (both passed in), Record.
  * Event kinds get a "Signup opens" date; hackathons a "Hackathon details"
- * section (team size, prizes, what's provided; 0005); internships a "Job
+ * section (team size, prizes, what's provided; 0005); jobs a "Job
  * type" choice in Basics and the Terms section (0006, DESIGN-BRIEF §17). Fields a kind does not
  * show travel as hidden inputs so a save keeps them. Sync rows carry a
  * note under Basics on which fields the sync keeps refreshing
@@ -61,6 +61,7 @@ const FORMATS: OpportunityFormat[] = ["in_person", "online", "hybrid"];
 const JOB_TYPE_HINTS: Record<JobType, string> = {
   internship: "A summer or term internship.",
   coop: "Full-time work for a semester or more.",
+  externship: "A short shadowing or project placement, days to a few weeks.",
   new_grad: "A full-time role after graduation.",
 };
 const SUMMARY_MAX = 200;
@@ -358,7 +359,7 @@ function TermsField({ defaultValue }: { defaultValue: InternshipTerm[] }) {
   const error = useFieldError("internship_terms");
   return (
     <fieldset className="flex flex-col" aria-describedby={error ? "terms-error" : undefined}>
-      <legend className="sr-only">Internship terms</legend>
+      <legend className="sr-only">Terms</legend>
       <div className="grid sm:grid-cols-2">
         {TERM_ORDER.map((t) => (
           <Checkbox key={t} name="internship_terms" value={t} label={TERM_LABELS[t]} defaultChecked={defaultValue.includes(t)} />

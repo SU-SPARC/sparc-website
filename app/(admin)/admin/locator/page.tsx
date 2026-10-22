@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 
+import { kindPath } from "@/lib/data/locator";
+
 export default function LocatorIndex() {
-  redirect("/admin/locator/internships");
+  redirect(kindPath("internship"));
 }

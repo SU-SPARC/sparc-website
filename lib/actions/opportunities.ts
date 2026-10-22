@@ -31,7 +31,7 @@ const TERMS = [
   "semester_part_time",
   "coop",
 ] as const satisfies readonly InternshipTerm[];
-const JOB_TYPES = ["internship", "coop", "new_grad"] as const satisfies readonly JobType[];
+const JOB_TYPES = ["internship", "coop", "externship", "new_grad"] as const satisfies readonly JobType[];
 
 /** Comma-separated tags → lowercase, trimmed, unique. */
 const zTags = z
@@ -77,7 +77,7 @@ const OpportunityShape = z.object({
   deadline_on: zOptDateOnly,
   dates_note: zMax(300),
   internship_terms: z.array(z.enum(TERMS, { error: "Pick a listed term." })),
-  // Internships only (0006); the other kinds' forms send the stored value, and a missing one is the default.
+  // Jobs only (0006, externship 0007); the other kinds' forms send the stored value, and a missing one is the default.
   job_type: z.enum(JOB_TYPES, { error: "Pick a job type." }).default("internship"),
   pay: zMax(120),
   eligibility: zMax(2000),
@@ -124,10 +124,10 @@ export async function saveOpportunity(_prev: FormState, fd: FormData): Promise<F
     extra.opens_on = ["Signup can't open after it closes."];
   }
   if (values.kind !== "internship" && values.internship_terms.length > 0) {
-    extra.internship_terms = ["Terms apply to internships only."];
+    extra.internship_terms = ["Terms apply to jobs only."];
   }
   if (values.kind !== "internship" && values.job_type !== "internship") {
-    extra.job_type = ["Job types apply to internships only."];
+    extra.job_type = ["Job types apply to jobs only."];
   }
   const taken = await slugTakenBy(supabase, values.slug, id);
   if (taken) extra.slug = [taken];

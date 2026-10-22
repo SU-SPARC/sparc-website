@@ -74,7 +74,7 @@ const Item = z
     dates_note: optText,
     internship_terms: z.array(z.enum(["summer", "fall", "spring", "winter", "semester_part_time", "coop"])),
     // Job type (0006). Optional: without it, jobTypeOf() decides from the terms.
-    job_type: z.enum(["internship", "coop", "new_grad"]).optional(),
+    job_type: z.enum(["internship", "coop", "externship", "new_grad"]).optional(),
     pay: optText,
     eligibility: optText,
     tags: z.array(z.string().regex(/^[a-z0-9][a-z0-9 .+#-]*$/, { error: "tags must be lowercase" })),

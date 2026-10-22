@@ -9,6 +9,7 @@
 import { formatDateOnly, isoDateOnly } from "./dates";
 import { dateStatus, deadlineStatus } from "./locator-dates";
 import { isPastListing } from "./locator-state";
+import { placeOf } from "./places";
 import type {
   DateOnly,
   EligibilityVerdict,
@@ -47,7 +48,8 @@ export type KindConfig = {
   /** false for internships (sorted by deadline); true for the event kinds (grouped by month) */
   dated: boolean;
   /** the kind's own FilterChips, after All / Published / Hidden / Closed.
-   *  `editorOnly` chips (Unreviewed) never reach the members' list. */
+   *  `editorOnly` chips (Unreviewed) never reach the members' list. Where a
+   *  listing is goes in the list's own "Place" row (lib/data/places.ts). */
   filters: FilterOption[];
   /** internships only: the "Type" chip row under the search box (after its own All) */
   typeFilters?: FilterOption[];
@@ -183,8 +185,6 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     filters: [
       { key: "upcoming", label: "Upcoming" },
       { key: "past", label: "Past" },
-      { key: "boston", label: AREA_LABELS.boston },
-      { key: "online", label: AREA_LABELS.online },
       { key: "ieee", label: "IEEE" },
       UNREVIEWED_CHIP,
     ],
@@ -200,10 +200,6 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     filters: [
       { key: "upcoming", label: "Upcoming" },
       { key: "past", label: "Past" },
-      { key: "suffolk", label: AREA_LABELS.suffolk },
-      { key: "boston", label: AREA_LABELS.boston },
-      { key: "outside_boston", label: AREA_LABELS.outside_boston },
-      { key: "online", label: AREA_LABELS.online },
       UNREVIEWED_CHIP,
     ],
   },
@@ -218,9 +214,6 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     filters: [
       { key: "upcoming", label: "Upcoming" },
       { key: "past", label: "Past" },
-      { key: "boston", label: AREA_LABELS.boston },
-      { key: "outside_boston", label: AREA_LABELS.outside_boston },
-      { key: "online", label: AREA_LABELS.online },
       UNREVIEWED_CHIP,
     ],
   },
@@ -296,12 +289,12 @@ function timingKeys(o: Opportunity, today: DateOnly): string[] {
 }
 
 /** Every filter key the row matches: its terms, its job type ('type:coop',
- *  internships only), its area, its timing key (above), 'ieee' when tagged,
+ *  internships only), its place ('place:boston', lib/data/places.ts), its timing key (above), 'ieee' when tagged,
  *  'unreviewed' (open sync rows nobody has reviewed) and 'closed'. */
 export function rowFilterKeys(o: Opportunity, today: DateOnly): string[] {
   const keys = new Set<string>(o.internship_terms);
   if (o.kind === "internship") keys.add(jobTypeKey(o.job_type));
-  keys.add(o.area);
+  keys.add(`place:${placeOf(o)}`);
   for (const key of timingKeys(o, today)) keys.add(key);
   if (o.tags.includes("ieee")) keys.add("ieee");
   if (isUnreviewed(o)) keys.add("unreviewed");

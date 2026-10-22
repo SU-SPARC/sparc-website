@@ -4,6 +4,7 @@
 import { createHash } from "node:crypto";
 
 import { CLUB_TZ, isoDateOnly } from "../../lib/data/dates";
+import { isNewYorkCity as isNewYorkCityPlace } from "../../lib/data/places";
 import type { DateOnly, InternshipTerm, JobType, OpportunityArea, OpportunityFormat } from "../../lib/data/types";
 
 // ── job filters ──────────────────────────────────────────────────────────
@@ -103,16 +104,9 @@ function otherState(loc: string): boolean {
   const name = [...loc.matchAll(new RegExp(STATE_NAMES.source, "gi"))].some((m) => m[1].toLowerCase() !== "massachusetts");
   return abbr || name;
 }
-const NYC_WORDS = /\b(new york city|nyc|manhattan|brooklyn|queens|bronx|staten island|long island city|jersey city|hoboken)\b/i;
-const NY_OTHER_CITY =
-  /\b(rochester|ithaca|albany|buffalo|syracuse|armonk|white plains|tarrytown|purchase|melville|hauppauge|poughkeepsie|yorktown|binghamton|troy|schenectady|utica)\b/i;
-
-/** New York City and its inner commuter towns: "New York, NY", "NYC", "Brooklyn, NY", "Jersey City, NJ".
- *  "New York" on its own counts unless another New York city is named ("Rochester, New York"). */
+/** New York City and its inner commuter towns (lib/data/places.ts), never a foreign place. */
 export function isNewYorkCity(loc: string): boolean {
-  if (isForeign(loc)) return false;
-  if (NYC_WORDS.test(loc)) return true;
-  return /\bnew york\b/i.test(loc) && !NY_OTHER_CITY.test(loc);
+  return !isForeign(loc) && isNewYorkCityPlace(loc);
 }
 
 /** A US place other than (or as well as) Massachusetts. */

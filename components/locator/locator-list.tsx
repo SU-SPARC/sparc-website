@@ -3,7 +3,9 @@
 /* LocatorList — one list for all four Locator kinds (docs/LOCATOR.md,
  * "List screen"; DESIGN-BRIEF §2, §13, §15, §17). Header with the open count,
  * search + FilterChips with counts (internships add a "Type" and a "Term"
- * row; one chip per row, combined with AND), "Search elsewhere", the ?notice= banner,
+ * row; one chip per row), the multi-select "Place" row (Boston by default,
+ * remembered per kind in localStorage), all combined with AND, "Search
+ * elsewhere", the ?notice= banner,
  * then the rows in sections: dated kinds This week, Later this month, one
  * per later month, Undated, Past; internships Closing this week, Open, No
  * deadline, Deadline passed. The past section starts collapsed. Each row is
@@ -37,11 +39,12 @@ import {
   sectionsForInternships,
 } from "@/lib/data/locator";
 import type { OpportunityWithCheck } from "@/lib/data/opportunities";
+import { DEFAULT_PLACES, type Place, PLACE_ORDER, parsePlaces, placeLabels, placeOf } from "@/lib/data/places";
 import type { DateOnly, OpportunityKind } from "@/lib/data/types";
 
 import { type CheckError, LocatorRow } from "./locator-row";
 import { LocatorSection } from "./locator-section";
-import { type Chip, type LabelledChipRow, LocatorToolbar } from "./locator-toolbar";
+import { type Chip, type LabelledChipRow, LocatorToolbar, type MultiChipRow } from "./locator-toolbar";
 import { SearchElsewhere } from "./search-elsewhere";
 
 export interface LocatorListProps {
@@ -96,14 +99,47 @@ function namedRows(kind: OpportunityKind): { id: ChipRowId; label: string; chips
   return rows;
 }
 
-/** The query when there is one ("No internships match “ml”."); one status or
- *  term chip ("No past hackathons.", "No summer internships."); otherwise
- *  "No internships match these filters." */
-function noMatchTitle(plural: string, query: string, active: ActiveChips, labelOf: (key: string) => string): string {
-  if (query.trim()) return `No ${plural} match “${query.trim()}”.`;
+/** The query when there is one ("No internships in NYC match “ml”."); one status
+ *  or term chip ("No past hackathons in Boston.", "No summer internships.");
+ *  otherwise "No hackathons in Boston or Online match these filters." The
+ *  places are named when any Place chip is on. */
+function noMatchTitle(
+  plural: string,
+  query: string,
+  active: ActiveChips,
+  labelOf: (key: string) => string,
+  placeNames: string[],
+): string {
+  const where = placeNames.length ? ` in ${placeNames.join(" or ")}` : "";
+  if (query.trim()) return `No ${plural}${where} match “${query.trim()}”.`;
   const chosen = Object.values(active).filter((key) => key !== "all");
-  if (chosen.length === 1 && active.type === "all") return `No ${labelOf(chosen[0]).toLowerCase()} ${plural}.`;
-  return `No ${plural} match these filters.`;
+  if (chosen.length === 1 && active.type === "all") return `No ${labelOf(chosen[0]).toLowerCase()} ${plural}${where}.`;
+  return `No ${plural}${where} match these filters.`;
+}
+
+/** The Place row's remembered chips, one key per kind (docs/LOCATOR.md, "List screen"). */
+function placesKey(kind: OpportunityKind): string {
+  return `sparc-locator-places:${kind}`;
+}
+
+/** The stored places, or null when there are none (or no storage). */
+function readPlaces(kind: OpportunityKind): Place[] | null {
+  try {
+    const raw = window.localStorage.getItem(placesKey(kind));
+    return raw === null ? null : parsePlaces(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+/** Stores the places; null forgets them. Storage is a convenience: failures are ignored. */
+function writePlaces(kind: OpportunityKind, places: Place[] | null) {
+  try {
+    if (places === null) window.localStorage.removeItem(placesKey(kind));
+    else window.localStorage.setItem(placesKey(kind), JSON.stringify(places));
+  } catch {
+    // private window, blocked storage: the list still works for this visit
+  }
 }
 
 /** Nothing listed yet: what the kind is for (editors) or "check back" (members). */
@@ -149,10 +185,18 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
   const router = useRouter();
   const [query, setQuery] = React.useState("");
   const [active, setActive] = React.useState<ActiveChips>(NO_FILTERS);
+  const [places, setPlaces] = React.useState<Place[]>(DEFAULT_PLACES);
   const [deleting, setDeleting] = React.useState<OpportunityWithCheck | null>(null);
   const [checking, setChecking] = React.useState<Record<string, boolean>>({});
   const [checkErrors, setCheckErrors] = React.useState<Record<string, CheckError>>({});
   const [, startTransition] = React.useTransition();
+
+  // The stored places load after mount, so the server render and the first
+  // client render agree (both Boston).
+  React.useEffect(() => {
+    const stored = readPlaces(kind);
+    if (stored) setPlaces(stored);
+  }, [kind]);
 
   const keysById = React.useMemo(() => new Map(rows.map((r) => [r.id, rowFilterKeys(r, today)])), [rows, today]);
   const filters = filterChips(kind, member);
@@ -163,21 +207,45 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
     if (key === "hidden") return !r.published;
     return (keysById.get(r.id) ?? []).includes(key);
   };
-  const matchesAll = (r: OpportunityWithCheck, chips: ActiveChips) =>
-    matchesFilter(r, chips.status) && matchesFilter(r, chips.type) && matchesFilter(r, chips.term);
+  // No Place chip on means every place.
+  const matchesPlaces = (r: OpportunityWithCheck, on: Place[]) =>
+    on.length === 0 || on.includes(placeOf(r));
+  const matchesAll = (r: OpportunityWithCheck, chips: ActiveChips, on: Place[]) =>
+    matchesFilter(r, chips.status) && matchesFilter(r, chips.type) && matchesFilter(r, chips.term) && matchesPlaces(r, on);
   // A chip's count: the rows it would show, keeping the other rows' active chips.
   const countFor = (row: ChipRowId) => (key: string) =>
-    rows.filter((r) => matchesAll(r, { ...active, [row]: key })).length;
+    rows.filter((r) => matchesAll(r, { ...active, [row]: key }, places)).length;
   const choose = (row: ChipRowId) => (key: string) => setActive((a) => ({ ...a, [row]: key }));
+  // A Place chip's count: the rows it would show on its own, so each chip says what that place adds.
+  const placeCount = (key: string) => rows.filter((r) => matchesAll(r, active, [key as Place])).length;
+  const updatePlaces = (next: Place[]) => {
+    setPlaces(next);
+    writePlaces(kind, next);
+  };
+  const togglePlace = (key: string) => {
+    const on = places.includes(key as Place) ? places.filter((p) => p !== key) : [...places, key as Place];
+    updatePlaces(PLACE_ORDER.filter((p) => on.includes(p)));
+  };
+  const labels = placeLabels(kind);
+  const placeRow: MultiChipRow = {
+    id: "place",
+    label: "Place",
+    chips: PLACE_ORDER.map((p) => ({ key: p, label: labels[p] })),
+    active: places,
+    onToggle: togglePlace,
+    countFor: placeCount,
+  };
 
   const q = query.trim().toLowerCase();
   const matchesQuery = (r: OpportunityWithCheck) =>
     !q || [r.title, r.organizer, r.location ?? "", r.posting_site ?? "", ...r.tags].join(" ").toLowerCase().includes(q);
-  const visible = rows.filter((r) => matchesAll(r, active) && matchesQuery(r));
+  const visible = rows.filter((r) => matchesAll(r, active, places) && matchesQuery(r));
   const allChips = [...filters, ...extraRows.flatMap((row) => row.chips)];
   const labelOf = (key: string) => allChips.find((c) => c.key === key)?.label ?? key;
   const clearFilters = () => {
     setActive(NO_FILTERS);
+    setPlaces(DEFAULT_PLACES);
+    writePlaces(kind, null);
     setQuery("");
   };
   const sections = cfg.dated ? sectionsForEvents(visible, today) : sectionsForInternships(visible, today);
@@ -235,13 +303,14 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
               countFor: countFor(row.id),
             }),
           )}
+          place={placeRow}
         />
       ) : null}
 
       {notice ? <StatusBanner clearParam="notice">{notice}</StatusBanner> : null}
 
       {rows.length === 0 ? <NoListings kind={kind} member={member} base={base} /> : null}
-      {rows.length > 0 && visible.length === 0 ? <NoMatches title={noMatchTitle(cfg.plural, query, active, labelOf)} onClear={clearFilters} /> : null}
+      {rows.length > 0 && visible.length === 0 ? <NoMatches title={noMatchTitle(cfg.plural, query, active, labelOf, places.map((p) => labels[p]))} onClear={clearFilters} /> : null}
       {visible.length > 0 ? (
         <div className="flex flex-col gap-8">
           {sections.map((section) => (

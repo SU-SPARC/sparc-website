@@ -23,7 +23,7 @@ refreshes them straight away.
 | Photo gallery (one "featured" photo) | `/admin/photos` | `/` strip, `/about` group photo |
 | Links (link-in-bio) | `/admin/links` | `/links` |
 | Accounts and roles (admin only) | `/admin/accounts` | none |
-| Locator: internships, conferences, networking events, hackathons (editors curate; members browse) | `/admin/locator/<kind>` | `/dashboard/locator` (signed-in members) |
+| Locator: jobs (internships, co-ops, externships, new-grad roles), conferences, networking events, hackathons (editors curate; members browse) | `/admin/locator/<kind>` | `/dashboard/locator` (signed-in members) |
 
 These files stay in the repo because they aren't content: `public/advisor.webp`,
 `public/og.webp`, `public/wordmark/*` (footer masks), `public/logo/sparc-mark.svg`,
@@ -37,7 +37,7 @@ These files stay in the repo because they aren't content: `public/advisor.webp`,
    ```
    npx supabase login
    npx supabase link --project-ref <ref>
-   npx supabase db push        # applies supabase/migrations/0001_cms.sql, 0002_project_management.sql and 0003_locator.sql
+   npx supabase db push        # applies every file in supabase/migrations, 0001 to 0007
    ```
 3. In **Storage**, check that a public bucket named `media` exists. The
    migration creates it.
@@ -222,16 +222,20 @@ and editors can edit it. The lead and editors add or remove members on the
 board's Members tab.
 
 **Locator** (`/admin/locator`, editors). Four lists the e-board keeps for
-members: Internships (filter by Co-op, Semester part-time, Summer, Winter),
-Conferences, Networking and Hackathons. Each row links to the posting or event
-page. Add an item with **New**, or paste the posting URL into **Import from a
-link** and let the club's AI fill the form; check every field before saving.
+members: Jobs (filter by Type: Internship, Co-op, Externship, New grad; by
+Term: Summer, Fall, Spring, Winter, Part-time; and by Place), Conferences,
+Networking and Hackathons. Each row links to the posting or event page. Add an
+item with **New**, or paste the posting URL into **Import from a link** and let
+the club's AI fill the form; check every field before saving. The Externship
+job type needs migration `0007_externships.sql` on the database: run
+`npx supabase db push` before deploying a build that has it, or saving an
+externship (in the form or from the sync) fails with an enum error.
 **Check my eligibility** on an item uses your own Locator profile
 (`/admin/locator/profile`: major, year, skills, goals, availability) and
 answers Eligible / Likely eligible / Unclear / Not eligible with reasons and a
 1–5 career-fit score; the result is cached and shown on the list. Your Locator
 profile is readable only by you. Use **Mark verified today** after you
-re-check a listing; the seed data was verified on 16 October 2026 and events
+re-check a listing; the seed data was verified on 16, 21 and 22 October 2026 and events
 with unannounced dates say so in their dates note. Load or refresh the
 researched starter set with `npm run seed:locator` (it upserts by slug, so
 edits to other fields survive).

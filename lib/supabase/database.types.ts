@@ -1346,7 +1346,7 @@ export type Database = {
       eligibility_verdict: "eligible" | "likely" | "unclear" | "not_eligible";
       internship_term:
         "coop" | "semester_part_time" | "summer" | "winter" | "spring" | "fall";
-      job_type: "internship" | "coop" | "new_grad";
+      job_type: "internship" | "coop" | "externship" | "new_grad";
       member_status: "current" | "alumni";
       methodology: "kanban" | "scrumban" | "scrum" | "safe";
       opportunity_area: "suffolk" | "boston" | "outside_boston" | "online";

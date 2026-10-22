@@ -2,12 +2,23 @@
 
 /* Admin shell navigation (docs/DESIGN-BRIEF.md §1).
  *
- * ≥1024px: 15rem sticky sidebar — head (mark, SPARC, ADMIN), groups
- * Overview / Content / Locator / Review / People, foot with "View site ↗",
- * "Dashboard", the theme switch (§16) and the account block (email, role
- * pill, Sign out POST).
- * <1024px: a 56px sticky top bar (mark, "Admin", current section, Menu)
- * opening the same nav in the shared <Expand>; it closes on navigation.
+ * ≥1024px: 15rem sticky sidebar — head (mark, SPARC, ADMIN), "Overview" as
+ * a bare first item, then the labelled groups Content / Locator / Review /
+ * People in a nav that scrolls on its own. The foot stays pinned: "View
+ * site ↗", "Dashboard", the one-line Theme row (§16) and the account block
+ * (email, role pill, Sign out POST).
+ * <1024px: a 56px sticky top bar (mark, "Admin", current section, MENU)
+ * opening the same nav in a left drawer — a native <dialog> via showModal()
+ * with its own scroll region. It used to open inside the sticky top bar
+ * through <Expand>, and a sticky header taller than the viewport cannot
+ * scroll, so Theme, the account block and Sign out were unreachable on
+ * phones. Esc, the backdrop, ×, navigation and the viewport growing past
+ * 1024px all close it; the page behind is locked while it is open (iOS
+ * Safari excepted); focus returns to MENU.
+ *
+ * Locator items come from KINDS / KIND_CONFIG / kindPath, so a kind renamed
+ * in the data layer renames here too, and the top bar's section name is
+ * derived from the groups rather than kept by hand.
  *
  * Current item: aria-current="page", bg-surface-2 — matched by prefix, so
  * /admin/events/<id> highlights Events (and /admin/projects/requests
@@ -29,6 +40,7 @@ import {
   UserCog,
   UserRound,
   Users,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -36,17 +48,26 @@ import { usePathname } from "next/navigation";
 import * as React from "react";
 
 import { ThemeSwitch } from "@/components/theme-switch";
-import { Expand } from "@/components/ui/expand";
 import { MicroLabel } from "@/components/ui/micro-label";
 import { Pill } from "@/components/ui/pill";
 import { SparcMark } from "@/components/ui/sparc-mark";
 import { signOut } from "@/lib/actions/auth";
+import { KIND_CONFIG, KINDS, kindPath, profilePath } from "@/lib/data/locator";
+import type { OpportunityKind } from "@/lib/data/types";
 import { cn } from "@/lib/utils";
 
 type Item = { href: string; label: string; icon: LucideIcon; exact?: boolean; count?: number };
-type Group = { label: string; items: Item[] };
+/* No label: a bare top-level item (Overview), rendered without a heading. */
+type Group = { label?: string; items: Item[] };
 
 const WIDTH_NORMAL: React.CSSProperties = { fontVariationSettings: '"wdth" var(--wdth-normal)' };
+
+const KIND_ICONS: Record<OpportunityKind, LucideIcon> = {
+  internship: Briefcase,
+  conference: Presentation,
+  networking: Handshake,
+  hackathon: Trophy,
+};
 
 export interface AdminSidebarProps {
   email: string;
@@ -56,7 +77,7 @@ export interface AdminSidebarProps {
 
 function groups(role: "editor" | "admin", pending: number): Group[] {
   const g: Group[] = [
-    { label: "Overview", items: [{ href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true }] },
+    { items: [{ href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true }] },
     {
       label: "Content",
       items: [
@@ -71,11 +92,8 @@ function groups(role: "editor" | "admin", pending: number): Group[] {
     {
       label: "Locator",
       items: [
-        { href: "/admin/locator/internships", label: "Internships", icon: Briefcase },
-        { href: "/admin/locator/conferences", label: "Conferences", icon: Presentation },
-        { href: "/admin/locator/networking", label: "Networking", icon: Handshake },
-        { href: "/admin/locator/hackathons", label: "Hackathons", icon: Trophy },
-        { href: "/admin/locator/profile", label: "Locator profile", icon: UserRound },
+        ...KINDS.map((k): Item => ({ href: kindPath(k), label: KIND_CONFIG[k].label, icon: KIND_ICONS[k] })),
+        { href: profilePath(), label: "Locator profile", icon: UserRound },
       ],
     },
     // /admin/projects/requests is agent G's page.
@@ -84,6 +102,16 @@ function groups(role: "editor" | "admin", pending: number): Group[] {
   if (role === "admin") g.push({ label: "People", items: [{ href: "/admin/accounts", label: "Accounts", icon: UserCog }] });
   return g;
 }
+
+/* Top-bar section name: the item whose href prefixes the path, longest href
+   first so /admin/projects/requests wins over /admin/projects. Built from the
+   full (admin) menu so it never drifts from the groups; the exact "/admin"
+   item is left out and falls through to "Overview". */
+const SECTION_NAMES: Array<[string, string]> = groups("admin", 0)
+  .flatMap((group) => group.items)
+  .filter((item) => !item.exact)
+  .map((item): [string, string] => [item.href, item.label])
+  .sort((a, b) => b[0].length - a[0].length);
 
 function useActive() {
   const pathname = usePathname();
@@ -99,10 +127,12 @@ function NavGroups({ role, pending, block }: { role: "editor" | "admin"; pending
   return (
     <div className="flex flex-col gap-5">
       {groups(role, pending).map((group) => (
-        <div key={group.label} className="flex flex-col gap-1">
-          <MicroLabel as="h2" className="px-3">
-            {group.label}
-          </MicroLabel>
+        <div key={group.label ?? "home"} className="flex flex-col gap-1">
+          {group.label ? (
+            <MicroLabel as="h2" className="px-3">
+              {group.label}
+            </MicroLabel>
+          ) : null}
           <ul className="flex flex-col">
             {group.items.map((item) => {
               const active = isActive(item);
@@ -161,8 +191,21 @@ function AccountBlock({ email, role, block }: { email: string; role: string; blo
   );
 }
 
-/* "Theme" label + Light / Dim / Dark switch, above the account block (§16). */
-function ThemeBlock() {
+/* "Theme" + the Light / Dim / Dark switch (§16). `compact`: one line, label
+   at the left and the icon-only switch at the right (the desktop foot);
+   otherwise the label sits above a full-width labelled switch (the drawer).
+   The label is aria-hidden because the switch is its own "Theme" radiogroup. */
+function ThemeBlock({ compact }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <div className="flex items-center justify-between px-3">
+        <MicroLabel as="p" aria-hidden="true">
+          Theme
+        </MicroLabel>
+        <ThemeSwitch compact />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-2">
       <MicroLabel as="p" aria-hidden="true" className="px-3">
@@ -196,51 +239,79 @@ function FootLinks({ block }: { block?: boolean }) {
 
 export function AdminSidebar({ email, role, pendingRequests }: AdminSidebarProps) {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-60 flex-none flex-col overflow-y-auto border-r border-line bg-surface-1 lg:flex">
-      <Link href="/admin" className="flex items-center gap-2 px-6 pt-6 pb-5 text-ink">
+    <aside className="sticky top-0 hidden h-dvh w-60 flex-none flex-col border-r border-line bg-surface-1 lg:flex">
+      <Link href="/admin" className="flex flex-none items-center gap-2 px-6 pt-6 pb-5 text-ink">
         <SparcMark className="h-6 w-auto text-accent" />
         <span className="text-sm font-semibold" style={WIDTH_NORMAL}>
           SPARC
         </span>
         <MicroLabel>Admin</MicroLabel>
       </Link>
-      <nav aria-label="Admin" className="flex-1 px-3">
+      {/* The nav is the scroll region; the head above and foot below stay put. */}
+      <nav aria-label="Admin" className="min-h-0 flex-1 overflow-y-auto px-3 pb-4">
         <NavGroups role={role} pending={pendingRequests} />
       </nav>
-      <div className="flex flex-col gap-3 border-t border-line px-3 py-4">
+      <div className="flex flex-none flex-col gap-3 border-t border-line px-3 py-4">
         <FootLinks />
-        <ThemeBlock />
+        <ThemeBlock compact />
         <AccountBlock email={email} role={role} />
       </div>
     </aside>
   );
 }
 
-const SECTION_NAMES: Array<[string, string]> = [
-  ["/admin/projects/requests", "Requests"],
-  ["/admin/members", "Members"],
-  ["/admin/projects", "Projects"],
-  ["/admin/events", "Events"],
-  ["/admin/news", "News"],
-  ["/admin/photos", "Photos"],
-  ["/admin/links", "Links"],
-  ["/admin/locator/profile", "Locator profile"],
-  ["/admin/locator/internships", "Internships"],
-  ["/admin/locator/conferences", "Conferences"],
-  ["/admin/locator/networking", "Networking"],
-  ["/admin/locator/hackathons", "Hackathons"],
-  ["/admin/accounts", "Accounts"],
-];
-
 export function AdminTopbar({ email, role, pendingRequests }: AdminSidebarProps) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const [lastPath, setLastPath] = React.useState(pathname);
+  // Navigation closes the drawer: the effect below turns this into close().
   if (pathname !== lastPath) {
     setLastPath(pathname);
     setOpen(false);
   }
+  const dialogRef = React.useRef<HTMLDialogElement>(null);
+  const returnFocus = React.useRef<HTMLElement | null>(null);
+  const dialogId = React.useId();
   const section = SECTION_NAMES.find(([p]) => pathname === p || pathname.startsWith(`${p}/`))?.[1] ?? "Overview";
+
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (!open) {
+      if (dialog.open) dialog.close();
+      return;
+    }
+    if (!dialog.open) {
+      returnFocus.current = document.activeElement as HTMLElement | null;
+      dialog.showModal();
+      // Start on the current page's item (else the first item), not the home link.
+      (dialog.querySelector<HTMLElement>('[aria-current="page"]') ?? dialog.querySelector<HTMLElement>("nav a"))?.focus();
+    }
+    // Lock the page behind the drawer (the backdrop is inert either way; iOS
+    // Safari still lets a touch scroll it); the drawer scrolls on its own.
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = "hidden";
+    // The header is display:none from 1024px (lg), and a modal dialog inside
+    // a hidden header stays open but invisible — an iPad rotated to landscape
+    // would be stuck with an inert page. Close it when the sidebar takes over.
+    const wide = window.matchMedia("(min-width: 64rem)");
+    const onWide = () => {
+      if (wide.matches) dialog.close();
+    };
+    wide.addEventListener("change", onWide);
+    return () => {
+      wide.removeEventListener("change", onWide);
+      root.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  // Fires for every close path (Esc, backdrop, ×, navigation).
+  const handleClose = () => {
+    setOpen(false);
+    const target = returnFocus.current;
+    if (target?.isConnected) setTimeout(() => target.focus(), 0);
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface lg:hidden">
@@ -257,8 +328,9 @@ export function AdminTopbar({ email, role, pendingRequests }: AdminSidebarProps)
         <span className="min-w-0 truncate text-sm text-ink-muted">{section}</span>
         <button
           type="button"
+          aria-haspopup="dialog"
           aria-expanded={open}
-          aria-controls="admin-nav-panel"
+          aria-controls={dialogId}
           onClick={() => setOpen((v) => !v)}
           className="ml-auto min-h-11 rounded-control border border-line px-3 text-label text-ink-muted hover:border-line-strong hover:text-ink"
           style={WIDTH_NORMAL}
@@ -266,16 +338,55 @@ export function AdminTopbar({ email, role, pendingRequests }: AdminSidebarProps)
           MENU
         </button>
       </div>
-      <Expand open={open} id="admin-nav-panel" className="px-gutter">
-        <nav aria-label="Admin menu" className="flex flex-col gap-4 border-t border-line pt-4 pb-5">
-          <NavGroups role={role} pending={pendingRequests} block />
-          <div className="flex flex-col gap-3 border-t border-line pt-3">
+      {/* Left drawer. The inner panel is the scroll region (not the dialog,
+          so a click on its scrollbar is not a backdrop click), and the whole
+          menu is reachable however short the viewport. The slide-in is a CSS
+          transition from @starting-style; reduced motion is covered by the
+          universal prefers-reduced-motion block in globals.css, which
+          flattens every transition-duration, so no JS guard is needed here. */}
+      <dialog
+        ref={dialogRef}
+        id={dialogId}
+        aria-label="Admin menu"
+        onClose={handleClose}
+        onClick={(e) => {
+          // p-0 and a panel that fills the dialog: only a backdrop click has
+          // the dialog element itself as its target.
+          if (e.target === e.currentTarget) e.currentTarget.close();
+        }}
+        className={cn(
+          "fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(20rem,85vw)] max-w-none overflow-hidden",
+          "border-r border-line bg-surface-1 p-0 text-ink backdrop:bg-ink/40 dark:backdrop:bg-surface/75",
+          "transition-transform duration-300 ease-drawer translate-x-0 starting:open:-translate-x-full",
+        )}
+      >
+        <div className="flex h-full flex-col overflow-y-auto overscroll-contain">
+          <div className="flex h-14 flex-none items-center gap-2 border-b border-line px-gutter">
+            <Link href="/admin" className="flex items-center gap-2 text-ink">
+              <SparcMark className="h-6 w-auto text-accent" />
+              <span className="text-sm font-semibold" style={WIDTH_NORMAL}>
+                Admin
+              </span>
+            </Link>
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={() => dialogRef.current?.close()}
+              className="ml-auto grid size-11 place-items-center rounded-control text-ink-muted hover:bg-surface-2 hover:text-ink"
+            >
+              <X aria-hidden="true" className="size-4" />
+            </button>
+          </div>
+          <nav aria-label="Admin" className="flex flex-col gap-4 px-3 py-4">
+            <NavGroups role={role} pending={pendingRequests} block />
+          </nav>
+          <div className="mt-auto flex flex-col gap-3 border-t border-line px-3 py-4">
             <FootLinks block />
             <ThemeBlock />
             <AccountBlock email={email} role={role} block />
           </div>
-        </nav>
-      </Expand>
+        </div>
+      </dialog>
     </header>
   );
 }

@@ -13,18 +13,32 @@
  *
  * The partial unique index on (source_name, external_id) cannot be named in a
  * PostgREST on_conflict, so the "upsert" is a read of the source's rows, an
- * insert of the new ones and an update per existing one. */
+ * insert of the new ones and an update per existing one.
+ *
+ * Curated rows win: an item whose posting key (normalize.ts postingKey) matches a
+ * seed / manual / import row is not inserted (counted as `skipped`), and an existing
+ * sync row that matches one is closed (`deduped`), so a listing is shown once. */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database, TablesInsert, TablesUpdate } from "../../lib/supabase/database.types";
-import { syncSlug } from "./normalize";
+import { postingKey, syncSlug } from "./normalize";
 import type { SyncItem } from "./types";
 
 type Db = SupabaseClient<Database>;
 type Existing = { id: string; external_id: string; editor_edited_at: string | null; closed_at: string | null };
 
-export type WriteCounts = { inserted: number; updated: number; closed: number; reopened: number; failed: number };
+export type WriteCounts = {
+  inserted: number;
+  updated: number;
+  closed: number;
+  reopened: number;
+  failed: number;
+  /** new items not inserted because a curated row has the same posting */
+  skipped: number;
+  /** existing rows of this source closed because a curated row has the same posting */
+  deduped: number;
+};
 
 const PAGE = 1000;
 const INSERT_CHUNK = 200;
@@ -47,6 +61,22 @@ async function existingRows(db: Db, sourceName: string, prefix: string): Promise
     if (error) throw new Error(`read existing rows: ${error.message}`);
     out.push(...(data as Existing[]));
     if (data.length < PAGE) return out;
+  }
+}
+
+/** Posting keys of every curated (non-sync) row: the listings an editor or the seed owns. */
+async function curatedKeys(db: Db): Promise<Set<string>> {
+  const keys = new Set<string>();
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await db
+      .from("opportunities")
+      .select("url")
+      .neq("source", "sync")
+      .order("id")
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`read curated rows: ${error.message}`);
+    for (const r of data as { url: string }[]) if (r.url) keys.add(postingKey(r.url));
+    if (data.length < PAGE) return keys;
   }
 }
 
@@ -116,7 +146,7 @@ export async function writeSource(
   o: { sourceId: string; sourceName: string; prefix: string; items: SyncItem[]; closeMissing: boolean; log: (m: string) => void },
 ): Promise<WriteCounts> {
   const now = new Date().toISOString();
-  const counts: WriteCounts = { inserted: 0, updated: 0, closed: 0, reopened: 0, failed: 0 };
+  const counts: WriteCounts = { inserted: 0, updated: 0, closed: 0, reopened: 0, failed: 0, skipped: 0, deduped: 0 };
 
   const items = new Map<string, SyncItem>();
   for (const i of o.items) {
@@ -127,9 +157,18 @@ export async function writeSource(
 
   const existing = await existingRows(db, o.sourceName, o.prefix);
   const byExternal = new Map(existing.map((r) => [r.external_id, r]));
+  const curated = await curatedKeys(db);
+  const duplicate = (i: SyncItem) => curated.has(postingKey(i.url));
 
-  // inserts
-  const fresh = [...items.values()].filter((i) => !byExternal.has(i.external_id)).map((i) => insertRow(o.sourceId, i, now));
+  // inserts (a new item that duplicates a curated row is skipped)
+  const fresh = [...items.values()]
+    .filter((i) => !byExternal.has(i.external_id))
+    .filter((i) => {
+      if (!duplicate(i)) return true;
+      counts.skipped++;
+      return false;
+    })
+    .map((i) => insertRow(o.sourceId, i, now));
   for (let k = 0; k < fresh.length; k += INSERT_CHUNK) {
     const chunk = fresh.slice(k, k + INSERT_CHUNK);
     const { error } = await db.from("opportunities").insert(chunk);
@@ -147,8 +186,22 @@ export async function writeSource(
     }
   }
 
+  // existing rows that now duplicate a curated row: close them, do not refresh them
+  const seenAll = [...items.values()].filter((i) => byExternal.has(i.external_id));
+  const dupes = seenAll.filter(duplicate).map((i) => byExternal.get(i.external_id)!).filter((r) => !r.closed_at);
+  for (let k = 0; k < dupes.length; k += INSERT_CHUNK) {
+    const chunk = dupes.slice(k, k + INSERT_CHUNK).map((r) => r.id);
+    const { data, error } = await db
+      .from("opportunities")
+      .update({ closed_at: now, published: false })
+      .in("id", chunk)
+      .select("id");
+    if (error) throw new Error(`dedupe: ${error.message}`);
+    counts.deduped += data.length;
+  }
+
   // updates
-  const seen = [...items.values()].filter((i) => byExternal.has(i.external_id));
+  const seen = seenAll.filter((i) => !duplicate(i));
   await mapLimit(seen, UPDATE_CONCURRENCY, async (i) => {
     const row = byExternal.get(i.external_id)!;
     const patch: TablesUpdate<"opportunities"> = {

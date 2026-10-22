@@ -9,6 +9,7 @@
 import { formatDateOnly, isoDateOnly } from "./dates";
 import { dateStatus, deadlineStatus } from "./locator-dates";
 import { isPastListing } from "./locator-state";
+import { placeOf } from "./places";
 import type {
   DateOnly,
   EligibilityVerdict,
@@ -28,7 +29,7 @@ export * from "./locator-state";
 
 export const KINDS: readonly OpportunityKind[] = ["internship", "conference", "networking", "hackathon"];
 
-export type KindSlug = "internships" | "conferences" | "networking" | "hackathons";
+export type KindSlug = "jobs" | "conferences" | "networking" | "hackathons";
 
 /** One FilterChip: its filter key and label. */
 export type FilterOption = { key: string; label: string; editorOnly?: boolean };
@@ -36,24 +37,25 @@ export type FilterOption = { key: string; label: string; editorOnly?: boolean };
 export type KindConfig = {
   kind: OpportunityKind;
   slug: KindSlug;
-  /** "Internships" */
+  /** "Jobs" */
   label: string;
-  /** "internship" → "New internship", "Delete internship" */
+  /** "job" → "New job", "Delete job" */
   noun: string;
-  /** "internships" */
+  /** "jobs" */
   plural: string;
   /** one line for the empty state */
   purpose: string;
-  /** false for internships (sorted by deadline); true for the event kinds (grouped by month) */
+  /** false for jobs (sorted by deadline); true for the event kinds (grouped by month) */
   dated: boolean;
   /** the kind's own FilterChips, after All / Published / Hidden / Closed.
-   *  `editorOnly` chips (Unreviewed) never reach the members' list. */
+   *  `editorOnly` chips (Unreviewed) never reach the members' list. Where a
+   *  listing is goes in the list's own "Place" row (lib/data/places.ts). */
   filters: FilterOption[];
-  /** internships only: the "Type" chip row under the search box (after its own All) */
+  /** jobs only: the "Type" chip row under the search box (after its own All) */
   typeFilters?: FilterOption[];
-  /** internships only: the "Term" chip row under the Type row (after its own All) */
+  /** jobs only: the "Term" chip row under the Type row (after its own All) */
   termFilters?: FilterOption[];
-  /** internships only: a muted line under the list's h1 */
+  /** jobs only: a muted line under the list's h1 */
   subtitle?: string;
 };
 
@@ -70,11 +72,12 @@ export const FORMAT_LABELS: Record<OpportunityFormat, string> = {
   hybrid: "Hybrid",
 };
 
-export const JOB_TYPES: readonly JobType[] = ["internship", "coop", "new_grad"];
+export const JOB_TYPES: readonly JobType[] = ["internship", "coop", "externship", "new_grad"];
 
 export const JOB_TYPE_LABELS: Record<JobType, string> = {
   internship: "Internship",
   coop: "Co-op",
+  externship: "Externship",
   new_grad: "New grad",
 };
 
@@ -97,8 +100,8 @@ export function jobTypeKey(type: JobType): string {
   return `type:${type}`;
 }
 
-/** An internship row's pills: the job type when it is not a plain internship
- *  ("Co-op", "New grad"), then its terms in TERM_ORDER ("Summer", "Fall"). */
+/** A job row's pills: the job type when it is not a plain internship
+ *  ("Co-op", "Externship", "New grad"), then its terms in TERM_ORDER ("Summer", "Fall"). */
 export function jobPillLabels(o: Pick<Opportunity, "job_type" | "internship_terms">): string[] {
   const labels = o.job_type === "internship" ? [] : [JOB_TYPE_LABELS[o.job_type]];
   for (const term of TERM_ORDER) {
@@ -157,11 +160,11 @@ export function closedOnLabel(o: Pick<Opportunity, "closed_at">): string | null 
 export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
   internship: {
     kind: "internship",
-    slug: "internships",
-    label: "Internships",
-    noun: "internship",
-    plural: "internships",
-    purpose: "Internships, co-ops and new-grad roles for members, by type, term and deadline.",
+    slug: "jobs",
+    label: "Jobs",
+    noun: "job",
+    plural: "jobs",
+    purpose: "Internships, co-ops, externships and new-grad roles for members, by type, term and deadline.",
     dated: false,
     filters: [
       { key: "closing_soon", label: "Closing soon" },
@@ -170,7 +173,7 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     ],
     typeFilters: JOB_TYPES.map((type) => ({ key: jobTypeKey(type), label: JOB_TYPE_LABELS[type] })),
     termFilters: TERM_ORDER.map((term) => ({ key: term, label: TERM_LABELS[term] })),
-    subtitle: "Internships, co-ops and new-grad roles",
+    subtitle: "Internships, co-ops, externships and new-grad roles",
   },
   conference: {
     kind: "conference",
@@ -183,8 +186,6 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     filters: [
       { key: "upcoming", label: "Upcoming" },
       { key: "past", label: "Past" },
-      { key: "boston", label: AREA_LABELS.boston },
-      { key: "online", label: AREA_LABELS.online },
       { key: "ieee", label: "IEEE" },
       UNREVIEWED_CHIP,
     ],
@@ -200,10 +201,6 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     filters: [
       { key: "upcoming", label: "Upcoming" },
       { key: "past", label: "Past" },
-      { key: "suffolk", label: AREA_LABELS.suffolk },
-      { key: "boston", label: AREA_LABELS.boston },
-      { key: "outside_boston", label: AREA_LABELS.outside_boston },
-      { key: "online", label: AREA_LABELS.online },
       UNREVIEWED_CHIP,
     ],
   },
@@ -218,15 +215,15 @@ export const KIND_CONFIG: Record<OpportunityKind, KindConfig> = {
     filters: [
       { key: "upcoming", label: "Upcoming" },
       { key: "past", label: "Past" },
-      { key: "boston", label: AREA_LABELS.boston },
-      { key: "outside_boston", label: AREA_LABELS.outside_boston },
-      { key: "online", label: AREA_LABELS.online },
       UNREVIEWED_CHIP,
     ],
   },
 };
 
 const BY_SLUG = new Map<string, OpportunityKind>(KINDS.map((k) => [KIND_CONFIG[k].slug, k]));
+// The Jobs list was "Internships" until October 2026 and that URL was linked from Discord: next.config.ts
+// redirects it, and the legacy slug stays valid here so the old links never 404.
+BY_SLUG.set("internships", "internship");
 
 export function kindFromSlug(slug: string): OpportunityKind | null {
   return BY_SLUG.get(slug) ?? null;
@@ -238,7 +235,7 @@ export type LocatorMode = "admin" | "member";
 
 const LOCATOR_BASE: Record<LocatorMode, string> = { admin: "/admin/locator", member: "/dashboard/locator" };
 
-/** "/admin/locator/internships", or "/dashboard/locator/internships" for members. */
+/** "/admin/locator/jobs", or "/dashboard/locator/jobs" for members. */
 export function kindPath(kind: OpportunityKind, mode: LocatorMode = "admin"): string {
   return `${LOCATOR_BASE[mode]}/${KIND_CONFIG[kind].slug}`;
 }
@@ -282,7 +279,7 @@ export function interestLabel(n: number): string | null {
 }
 
 /** The timing chip a row matches. Event kinds: 'past' (Closed or Ended) or
- *  'upcoming' (upcoming or under way). Internships: 'deadline_passed'
+ *  'upcoming' (upcoming or under way). Jobs: 'deadline_passed'
  *  (Closed or past the deadline) or 'closing_soon'. A past row gets only
  *  its past key, so the chip shows exactly the collapsed section. */
 function timingKeys(o: Opportunity, today: DateOnly): string[] {
@@ -296,12 +293,12 @@ function timingKeys(o: Opportunity, today: DateOnly): string[] {
 }
 
 /** Every filter key the row matches: its terms, its job type ('type:coop',
- *  internships only), its area, its timing key (above), 'ieee' when tagged,
+ *  jobs only), its place ('place:boston', lib/data/places.ts), its timing key (above), 'ieee' when tagged,
  *  'unreviewed' (open sync rows nobody has reviewed) and 'closed'. */
 export function rowFilterKeys(o: Opportunity, today: DateOnly): string[] {
   const keys = new Set<string>(o.internship_terms);
   if (o.kind === "internship") keys.add(jobTypeKey(o.job_type));
-  keys.add(o.area);
+  keys.add(`place:${placeOf(o)}`);
   for (const key of timingKeys(o, today)) keys.add(key);
   if (o.tags.includes("ieee")) keys.add("ieee");
   if (isUnreviewed(o)) keys.add("unreviewed");

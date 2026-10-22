@@ -1,8 +1,8 @@
 /* SimplifyJobs lists: the raw listings.json behind the GitHub README
  * (https://raw.githubusercontent.com/<repo>/<branch>/.github/scripts/listings.json, ~13 MB),
  * for the internship list and the New-Grad list. The repo has no licence file, so rows only
- * link out to the employer's posting. Kept: active && is_visible, a Massachusetts or US-remote
- * location, and at least one term that has not already ended. The job type is the source's
+ * link out to the employer's posting. Kept: active && is_visible, a Massachusetts, New York City
+ * or US-remote location, and at least one term that has not already ended. The job type is the source's
  * `job_type` when set (new_grad for the New-Grad list), else read from the title. New-grad
  * rows also have to pass the not-senior and technical-field rules, since that list carries
  * some "Senior Software Engineer" and non-technical roles. */
@@ -113,7 +113,7 @@ export const simplify: Adapter<"simplify"> = {
           job_type: jobType,
           pay: null,
           eligibility: eligibility(l),
-          tags: [...new Set([...s.tags, ...category.map((c) => c.toLowerCase().replace(/[^a-z0-9 .+#-]/g, " ").replace(/\s+/g, " ").trim())])].filter(Boolean).slice(0, 6),
+          tags: [...new Set([...s.tags, ...(place.nyc ? ["nyc"] : []), ...category.map((c) => c.toLowerCase().replace(/[^a-z0-9 .+#-]/g, " ").replace(/\s+/g, " ").trim())])].filter(Boolean).slice(0, 6),
           posted_at: isoOrNull(l.date_posted ? l.date_posted * 1000 : null),
         },
       ];

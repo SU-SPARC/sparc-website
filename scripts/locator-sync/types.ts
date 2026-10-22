@@ -37,7 +37,7 @@ export type SyncItem = {
   deadline_on: DateOnly | null;
   dates_note: string | null;
   internship_terms: InternshipTerm[];
-  /** internships: internship, co-op or new grad (0006). Event adapters leave it out (the column default). */
+  /** internships: internship, co-op, externship or new grad (0006, 0007). Event adapters leave it out (the column default). */
   job_type?: JobType;
   pay: string | null;
   eligibility: string | null;
@@ -67,7 +67,7 @@ const base = {
   enabled: z.boolean().default(true),
   note: z.string().optional(),
   tags: z.array(tag).default([]),
-  /** "local" boards run first and are what the list is for; "national" boards only add MA/remote roles */
+  /** "local" boards run first and are what the list is for; "national" boards only add MA / NYC / US-remote roles */
   priority: z.enum(["local", "national"]).default("local"),
 };
 const company = {
@@ -102,7 +102,7 @@ export const SimplifySource = z
     branch: z.string().default("dev"),
     path: z.string().default(".github/scripts/listings.json"),
     /** every listing in this list is this job type (the New-Grad list); otherwise read from each title */
-    job_type: z.enum(["internship", "coop", "new_grad"]).optional(),
+    job_type: z.enum(["internship", "coop", "externship", "new_grad"]).optional(),
   })
   .strict();
 export const DevpostSource = z

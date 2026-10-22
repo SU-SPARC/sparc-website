@@ -1,7 +1,8 @@
 # Locator sync
 
-`npm run locator:sync` pulls internships, hackathons and networking events from
-public, machine-readable sources into `public.opportunities`, with source
+`npm run locator:sync` pulls jobs (internships, co-ops, externships and new-grad
+roles), hackathons and networking events from public, machine-readable sources
+into `public.opportunities`, with source
 attribution (`source_name`, `source_url`, `external_id`), and closes listings
 that have disappeared. GitHub Actions runs it at 11:00 and 23:00 UTC
 (`.github/workflows/locator-sync.yml`).
@@ -22,7 +23,7 @@ Add one object to `jobs` in `sources.json`. `id` is lowercase-with-hyphens and
 starts every slug the source creates; `company` becomes `organizer`; `office`
 (e.g. `"Somerville, MA"`) counts as local even when a posting's location text
 does not say Massachusetts; `priority: "national"` for boards outside Boston,
-which only contribute Massachusetts or US-remote roles. Check it with
+which only contribute Massachusetts, New York City or US-remote roles. Check it with
 `npm run locator:sync -- --source <id> --dry-run`. Set `"enabled": false` with a
 `note` instead of deleting a source that stopped working, so nobody re-adds it.
 Two sources may not write the same external-id prefix; the command refuses to start
@@ -35,17 +36,25 @@ if they would.
 
 ## What is kept
 
-Jobs: the title says intern / internship / co-op / apprentice or new grad / new
-graduate / university graduate / early career / campus hire (or the source's
-structured employment type says intern) and not senior / staff / principal /
-manager / director / lead; a location in Massachusetts (or the source's office) or
-US remote (non-US places such as "Cambridge, UK" or "Remote in Canada" are
-dropped); and not only for terms that have already ended ("Winter 2026"). Events:
+Jobs: the title says intern / internship / extern / externship / co-op /
+apprentice or new grad / new graduate / university graduate / early career /
+campus hire (or the source's structured employment type says intern) and not
+senior / staff / principal / manager / director / lead / freelance; a location in
+Massachusetts (or the source's office), New York City (tagged `nyc`, area
+"outside_boston") or US remote (non-US
+places such as "Cambridge, UK" or "Remote in Canada" are dropped); and not only for
+terms that have already ended ("Winter 2026"). A listing whose posting (same ATS job
+id, or the same URL without tracking parameters) already exists as a seed, manual or
+import row is not inserted, and an existing sync row that matches one is closed, so
+each posting shows once (`skipped … (curated)` / `deduped …` in the run line). Events:
 not yet over and inside the source's day window. Each source's run is one row in
 `sync_runs`.
 
-Each job gets a `job_type` from its title: co-op → `coop`; new grad, new graduate,
-university graduate, early career, campus hire → `new_grad`; else `internship`.
+Each job gets a `job_type` from its title: extern, externship → `externship`;
+co-op → `coop`; new grad, new graduate, university graduate, early career,
+campus hire → `new_grad`; else `internship`. The `externship` value needs
+migration `0007_externships.sql` applied (`npx supabase db push`) before this
+version of the sync runs, or the insert fails with an enum error.
 Terms come from the title (else the text): summer, fall/autumn → fall, spring,
 winter/january, part-time/year-round → `semester_part_time`. A co-op can have a
 season ("Co-op (Spring 2027)" → `coop`, `spring`). A dry run prints the count per

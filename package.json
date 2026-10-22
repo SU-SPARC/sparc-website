@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --import tsx --test \"lib/**/[a-z]*.test.ts\" \"scripts/**/[a-z]*.test.ts\"",
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types --local --lang typescript > lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts",

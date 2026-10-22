@@ -4,14 +4,16 @@
 import { createHash } from "node:crypto";
 
 import { CLUB_TZ, isoDateOnly } from "../../lib/data/dates";
+import { isNewYorkCity as isNewYorkCityPlace } from "../../lib/data/places";
 import type { DateOnly, InternshipTerm, JobType, OpportunityArea, OpportunityFormat } from "../../lib/data/types";
 
 // ── job filters ──────────────────────────────────────────────────────────
 
-const INTERN_TITLE = /\b(intern|interns|internship|co-?op|apprentice|apprenticeship)\b/i;
+const INTERN_TITLE = /\b(intern(s|ship|ships)?|extern(s|ship|ships)?|co-?op|apprentice|apprenticeship)\b/i;
+const EXTERN_TITLE = /\bextern(s|ship|ships)?\b/i;
 const COOP_TITLE = /\bco-?op\b/i;
 const NEW_GRAD_TITLE = /\b(new grad(uate)?|university graduate|early career|campus hire)\b/i;
-const NOT_STUDENT = /\b(senior|staff|principal|manager|director|lead)\b/i;
+const NOT_STUDENT = /\b(senior|staff|principal|manager|director|lead|freelance|freelancer)\b/i;
 
 /* The club is Programming, AI & Research, so a posting also has to be in a
  * technical field. A title that names a non-technical function (HR, sales,
@@ -26,21 +28,23 @@ export function isTechnicalField(title: string): boolean {
   return !NON_TECH.test(title) || TECH_HINT.test(title);
 }
 
-/** Not a senior role (senior, staff, principal, manager, director, lead) and in a technical field. */
+/** Not a senior role (senior, staff, principal, manager, director, lead) or freelance gig, and in a technical field. */
 export function isEntryLevelTech(title: string): boolean {
   return !NOT_STUDENT.test(title) && isTechnicalField(title);
 }
 
-/** Title says intern/co-op/apprentice or new grad (or the source's structured type says intern),
+/** Title says intern/extern/co-op/apprentice or new grad (or the source's structured type says intern),
  *  is not a senior role, and is in a technical field. */
 export function isStudentRole(title: string, structuredIntern = false): boolean {
   if (!isEntryLevelTech(title)) return false;
   return structuredIntern || INTERN_TITLE.test(title) || NEW_GRAD_TITLE.test(title);
 }
 
-/** "co-op" in the title → coop; "new grad", "university graduate", "early career",
- *  "campus hire" → new_grad; anything else → internship (docs/DESIGN-BRIEF.md §17). */
+/** "extern"/"externship" in the title → externship (0007); "co-op" → coop; "new grad",
+ *  "university graduate", "early career", "campus hire" → new_grad; anything else →
+ *  internship (docs/DESIGN-BRIEF.md §17). */
 export function inferJobType(title: string): JobType {
+  if (EXTERN_TITLE.test(title)) return "externship";
   if (COOP_TITLE.test(title)) return "coop";
   if (NEW_GRAD_TITLE.test(title)) return "new_grad";
   return "internship";
@@ -103,26 +107,36 @@ function otherState(loc: string): boolean {
   const name = [...loc.matchAll(new RegExp(STATE_NAMES.source, "gi"))].some((m) => m[1].toLowerCase() !== "massachusetts");
   return abbr || name;
 }
+/** New York City and its inner commuter towns (lib/data/places.ts), never a foreign place. */
+export function isNewYorkCity(loc: string): boolean {
+  return !isForeign(loc) && isNewYorkCityPlace(loc);
+}
+
 /** A US place other than (or as well as) Massachusetts. */
 export function isUnitedStates(loc: string): boolean {
   if (isForeign(loc)) return false;
   return US_MENTION.test(loc) || STATE_NAMES.test(loc) || STATE_ABBR.test(loc) || isMassachusetts(loc);
 }
 
-export type Placement = { area: OpportunityArea; format: OpportunityFormat; location: string };
+/** `nyc` marks a New York City placement (area stays "outside_boston"); adapters add the "nyc" tag. */
+export type Placement = { area: OpportunityArea; format: OpportunityFormat; location: string; nyc?: boolean };
 
-/** Jobs: keep Massachusetts (or the source's office), or US remote; drop everything else.
+/** Jobs: keep Massachusetts (or the source's office), New York City, or US remote; drop everything else.
  *  `text` is the posting text, consulted only for "hybrid". */
 export function placeJob(locations: string[], opts: { office?: string; text?: string } = {}): Placement | null {
   const locs = [...new Set(locations.map((l) => clean(l)).filter(Boolean))];
   const officeCity = opts.office?.split(/[,/(]/)[0].trim().toLowerCase();
   const local = locs.filter(
-    (l) => isMassachusetts(l) || (officeCity && officeCity.length > 2 && l.toLowerCase().includes(officeCity) && !isForeign(l)),
+    (l) =>
+      isMassachusetts(l) ||
+      isNewYorkCity(l) ||
+      (officeCity && officeCity.length > 2 && l.toLowerCase().includes(officeCity) && !isForeign(l)),
   );
   const hybrid = locs.some((l) => HYBRID.test(l)) || HYBRID.test((opts.text ?? "").slice(0, 4000));
   if (local.length) {
     const area: OpportunityArea = local.some(isMassachusetts) ? "boston" : "outside_boston";
-    return { area, format: hybrid ? "hybrid" : "in_person", location: joinLocations(local) };
+    const nyc = area === "outside_boston" && local.some(isNewYorkCity);
+    return { area, format: hybrid ? "hybrid" : "in_person", location: joinLocations(local), ...(nyc ? { nyc: true } : {}) };
   }
   const remote = locs.filter((l) => REMOTE.test(l) && !isForeign(l));
   if (remote.length) return { area: "online", format: "online", location: joinLocations(remote) };
@@ -333,6 +347,37 @@ export function syncSlug(sourceId: string, title: string, externalId: string): s
 }
 
 // ── misc ─────────────────────────────────────────────────────────────────
+
+/** A stable key for "the same posting" across sources: the ATS job id when the URL shows
+ *  one (Greenhouse, Lever, Ashby, Workday), else the URL without tracking parameters,
+ *  fragment, trailing slash or "www.", lower-cased. The sync uses it to skip rows that
+ *  duplicate a curated (seed / manual / import) listing. */
+export function postingKey(url: string): string {
+  let u: URL;
+  try {
+    u = new URL(url.trim());
+  } catch {
+    return url.trim().toLowerCase();
+  }
+  const host = u.hostname.toLowerCase().replace(/^www\./, "");
+  const path = u.pathname.replace(/\/+$/, "");
+  const ghJid = u.searchParams.get("gh_jid");
+  const ghId = ghJid && /^\d+$/.test(ghJid) ? ghJid : /greenhouse\.io$/.test(host) ? (path.match(/\/jobs\/(\d+)/)?.[1] ?? null) : null;
+  if (ghId) return `greenhouse:${ghId}`;
+  const uuid = path.match(/\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\b/i)?.[1]?.toLowerCase();
+  if (uuid && /lever\.co$/.test(host)) return `lever:${uuid}`;
+  if (uuid && /ashbyhq\.com$/.test(host)) return `ashby:${uuid}`;
+  if (/myworkday(jobs|site)\.com$/.test(host)) {
+    const req = path.match(/_([A-Za-z0-9-]+)$/)?.[1];
+    if (req) return `workday:${host.split(".")[0]}:${req.toUpperCase()}`;
+  }
+  for (const k of [...u.searchParams.keys()]) {
+    if (/^(utm_|ref$|src$|source$|gh_src$|lever-source|ashby_jid$|fbclid$|gclid$)/i.test(k)) u.searchParams.delete(k);
+  }
+  u.searchParams.sort();
+  const q = u.searchParams.toString();
+  return `${host}${path.toLowerCase()}${q ? `?${q.toLowerCase()}` : ""}`;
+}
 
 /** "Greenhouse", "Lever", … from a posting URL's host; else the bare host. */
 export function postingSiteOf(url: string): string | null {

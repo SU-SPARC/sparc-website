@@ -39,6 +39,11 @@ const nextConfig: NextConfig = {
     return [
       { source: "/team", destination: "/about", permanent: true },
       { source: "/contact", destination: "/join", permanent: true },
+      /* The Locator's Internships list was renamed Jobs (October 2026) and the
+         old URLs were linked from Discord, so they must not 404 either.
+         lib/data/locator.ts also still accepts the legacy slug. */
+      { source: "/admin/locator/internships/:path*", destination: "/admin/locator/jobs/:path*", permanent: true },
+      { source: "/dashboard/locator/internships/:path*", destination: "/dashboard/locator/jobs/:path*", permanent: true },
     ];
   },
 };

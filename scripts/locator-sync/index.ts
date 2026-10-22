@@ -147,7 +147,12 @@ async function runOne(s: SourceConfig, db: SupabaseClient<Database> | null): Pro
       ok,
       error: w.failed ? `${w.failed} row(s) failed: ${notes.slice(0, 3).join(" | ")}` : null,
     });
-    const extra = [w.reopened ? `reopened ${w.reopened}` : "", w.failed ? `failed ${w.failed}` : ""].filter(Boolean);
+    const extra = [
+      w.reopened ? `reopened ${w.reopened}` : "",
+      w.skipped ? `skipped ${w.skipped} (curated)` : "",
+      w.deduped ? `deduped ${w.deduped}` : "",
+      w.failed ? `failed ${w.failed}` : "",
+    ].filter(Boolean);
     const line = `${label}: fetched ${fetched}, kept ${kept}, inserted ${w.inserted}, updated ${w.updated}, closed ${w.closed}${extra.length ? `, ${extra.join(", ")}` : ""}`;
     return { id: s.id, ok, kind: adapter.kind, inserted: w.inserted, line: [line, ...notes.map((n) => `    ${n}`)].join("\n") };
   } catch (e) {

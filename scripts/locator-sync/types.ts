@@ -67,7 +67,7 @@ const base = {
   enabled: z.boolean().default(true),
   note: z.string().optional(),
   tags: z.array(tag).default([]),
-  /** "local" boards run first and are what the list is for; "national" boards only add MA/remote roles */
+  /** "local" boards run first and are what the list is for; "national" boards only add MA / NYC / US-remote roles */
   priority: z.enum(["local", "national"]).default("local"),
 };
 const company = {

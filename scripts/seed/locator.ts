@@ -4,8 +4,8 @@
  *
  * Reads the four research files (a missing one is skipped with a warning),
  * validates every item, and upserts on slug with source = 'seed',
- * source_name = 'Research (16 Oct 2026)', the item's source_url (where the
- * research read it) and created_by = null. Idempotent: a second run writes
+ * source_name = 'Research (<verified_on>)' (e.g. 'Research (21 Oct 2026)'),
+ * the item's source_url (where the research read it) and created_by = null. Idempotent: a second run writes
  * the same values. Uses the secret key (bypasses RLS), so the editor-edit
  * trigger from 0004 leaves editor_edited_at alone. The hackathon keys from
  * 0005 (opens_on, team_size, prizes, provided) are optional and written only
@@ -36,8 +36,14 @@ const db = createClient<Database>(URL, SECRET, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
 });
 
-/** `opportunities.source_name` for every seeded row (0004_locator_sync.sql backfills the same value). */
-const SOURCE_NAME = "Research (16 Oct 2026)";
+/** `opportunities.source_name` for a seeded row, from its verified_on: "Research (21 Oct 2026)"
+ *  (0004_locator_sync.sql backfilled the first batch as "Research (16 Oct 2026)"); "Research" without a date. */
+function sourceNameOf(verifiedOn: string | null): string {
+  if (!verifiedOn) return "Research";
+  const [y, m, d] = verifiedOn.split("-").map(Number);
+  const month = new Date(Date.UTC(y, m - 1, d)).toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+  return `Research (${d} ${month} ${y})`;
+}
 
 const DIR = path.join(process.cwd(), "scripts", "seed", "locator");
 // Only these names: the drive also holds `._*.json` AppleDouble files.
@@ -147,7 +153,7 @@ async function main() {
         job_type: jobTypeOf(item),
         tags: [...new Set(item.tags)],
         source: "seed",
-        source_name: SOURCE_NAME,
+        source_name: sourceNameOf(item.verified_on),
         created_by: null,
       });
     });

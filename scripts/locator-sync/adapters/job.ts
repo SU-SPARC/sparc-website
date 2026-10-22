@@ -39,7 +39,7 @@ export type JobInput = {
   trustTitle?: boolean;
 };
 
-/** null when the posting is not a student role, not in Massachusetts / US remote, or for a term that is over. */
+/** null when the posting is not a student role, not in Massachusetts / New York City / US remote, or for a term that is over. */
 export function buildJob(j: JobInput, now: Date): SyncItem | null {
   const title = j.title.replace(/\s+/g, " ").trim();
   if (!title || titleTermsAllPast(title, now)) return null;
@@ -73,7 +73,7 @@ export function buildJob(j: JobInput, now: Date): SyncItem | null {
     job_type: jobType,
     pay: j.pay ?? null,
     eligibility: j.eligibility ?? null,
-    tags: j.tags ?? [],
+    tags: [...new Set([...(j.tags ?? []), ...(place.nyc ? ["nyc"] : [])])],
     posted_at: j.posted_at,
   };
 }

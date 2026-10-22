@@ -231,7 +231,7 @@ link** and let the club's AI fill the form; check every field before saving.
 answers Eligible / Likely eligible / Unclear / Not eligible with reasons and a
 1–5 career-fit score; the result is cached and shown on the list. Your Locator
 profile is readable only by you. Use **Mark verified today** after you
-re-check a listing; the seed data was verified on 16 October 2026 and events
+re-check a listing; the seed data was verified on 16, 21 and 22 October 2026 and events
 with unannounced dates say so in their dates note. Load or refresh the
 researched starter set with `npm run seed:locator` (it upserts by slug, so
 edits to other fields survive).

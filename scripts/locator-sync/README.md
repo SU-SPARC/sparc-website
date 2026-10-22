@@ -22,7 +22,7 @@ Add one object to `jobs` in `sources.json`. `id` is lowercase-with-hyphens and
 starts every slug the source creates; `company` becomes `organizer`; `office`
 (e.g. `"Somerville, MA"`) counts as local even when a posting's location text
 does not say Massachusetts; `priority: "national"` for boards outside Boston,
-which only contribute Massachusetts or US-remote roles. Check it with
+which only contribute Massachusetts, New York City or US-remote roles. Check it with
 `npm run locator:sync -- --source <id> --dry-run`. Set `"enabled": false` with a
 `note` instead of deleting a source that stopped working, so nobody re-adds it.
 Two sources may not write the same external-id prefix; the command refuses to start
@@ -38,9 +38,13 @@ if they would.
 Jobs: the title says intern / internship / co-op / apprentice or new grad / new
 graduate / university graduate / early career / campus hire (or the source's
 structured employment type says intern) and not senior / staff / principal /
-manager / director / lead; a location in Massachusetts (or the source's office) or
-US remote (non-US places such as "Cambridge, UK" or "Remote in Canada" are
-dropped); and not only for terms that have already ended ("Winter 2026"). Events:
+manager / director / lead / freelance; a location in Massachusetts (or the source's
+office), New York City (tagged `nyc`, area "outside_boston") or US remote (non-US
+places such as "Cambridge, UK" or "Remote in Canada" are dropped); and not only for
+terms that have already ended ("Winter 2026"). A listing whose posting (same ATS job
+id, or the same URL without tracking parameters) already exists as a seed, manual or
+import row is not inserted, and an existing sync row that matches one is closed, so
+each posting shows once (`skipped … (curated)` / `deduped …` in the run line). Events:
 not yet over and inside the source's day window. Each source's run is one row in
 `sync_runs`.
 

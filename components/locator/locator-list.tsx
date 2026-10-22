@@ -2,10 +2,11 @@
 
 /* LocatorList — one list for all four Locator kinds (docs/LOCATOR.md,
  * "List screen"; DESIGN-BRIEF §2, §13, §15, §17). Header with the open count,
- * search + FilterChips with counts (internships add a "Type" and a "Term"
- * row; one chip per row), the multi-select "Place" row (Boston by default,
- * remembered per kind in localStorage), all combined with AND, "Search
- * elsewhere", the ?notice= banner,
+ * status FilterChips with counts, then the search box beside filter menus
+ * (internships add "Type" and "Term", one value each) and the multi-select
+ * "Place" menu (Boston by default, remembered per kind in localStorage), all
+ * combined with AND, a "Reset filters" button while anything narrows the
+ * list, "Search elsewhere", the ?notice= banner,
  * then the rows in sections: dated kinds This week, Later this month, one
  * per later month, Undated, Past; internships Closing this week, Open, No
  * deadline, Deadline passed. The past section starts collapsed. Each row is
@@ -90,7 +91,7 @@ type ChipRowId = keyof ActiveChips;
 
 const NO_FILTERS: ActiveChips = { status: "all", type: "all", term: "all" };
 
-/** The internships' "Type" and "Term" rows (docs/DESIGN-BRIEF.md §17); none for the other kinds. */
+/** The internships' "Type" and "Term" filters (docs/DESIGN-BRIEF.md §17), shown as menus; none for the other kinds. */
 function namedRows(kind: OpportunityKind): { id: ChipRowId; label: string; chips: Chip[] }[] {
   const cfg = KIND_CONFIG[kind];
   const rows: { id: ChipRowId; label: string; chips: Chip[] }[] = [];
@@ -117,7 +118,14 @@ function noMatchTitle(
   return `No ${plural}${where} match these filters.`;
 }
 
-/** The Place row's remembered chips, one key per kind (docs/LOCATOR.md, "List screen"). */
+/** Do the two lists name the same places, in any order? */
+function samePlaces(a: Place[], b: Place[]): boolean {
+  if (a.length !== b.length) return false;
+  const sortedB = [...b].sort();
+  return [...a].sort().every((p, i) => p === sortedB[i]);
+}
+
+/** The Place menu's remembered places, one key per kind (docs/LOCATOR.md, "List screen"). */
 function placesKey(kind: OpportunityKind): string {
   return `sparc-locator-places:${kind}`;
 }
@@ -171,7 +179,7 @@ function NoMatches({ title, onClear }: { title: string; onClear: () => void }) {
       title={title}
       action={
         <Button variant="text" onClick={onClear}>
-          Clear filters
+          Reset filters
         </Button>
       }
     />
@@ -248,6 +256,9 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
     writePlaces(kind, null);
     setQuery("");
   };
+  // Something narrows the list beyond the defaults, so the toolbar offers "Reset filters".
+  const narrowed =
+    q !== "" || Object.values(active).some((key) => key !== "all") || !samePlaces(places, DEFAULT_PLACES);
   const sections = cfg.dated ? sectionsForEvents(visible, today) : sectionsForInternships(visible, today);
   const openCount = rows.filter((r) => !isPastListing(r, today)).length;
 
@@ -304,6 +315,8 @@ export function LocatorList({ kind, rows, today, notice, aiConfigured, mode = "a
             }),
           )}
           place={placeRow}
+          active={narrowed}
+          onClear={clearFilters}
         />
       ) : null}
 

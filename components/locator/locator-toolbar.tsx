@@ -1,15 +1,20 @@
 "use client";
 
-/* LocatorToolbar — the Locator list's search input and status FilterChips
- * (with counts), any labelled chip rows under them (internships: "Type" and
- * "Term", docs/DESIGN-BRIEF.md §17), the multi-select "Place" row, then the
- * "Search elsewhere" links carrying the query (docs/LOCATOR.md, "List
- * screen"). The list owns the query and each row's active chips; one chip is
- * active per ChipRow, any number per MultiChipRow. */
+/* LocatorToolbar — the Locator list's filter area (docs/LOCATOR.md, "List
+ * screen"; docs/DESIGN-BRIEF.md §17), three rows:
+ *   1. the status FilterChips with counts (All / Published / Hidden / …),
+ *      one active; they scroll sideways on phones and wrap from 640px;
+ *   2. the search input, then one FilterMenu per labelled row (internships:
+ *      "Type" and "Term", one value each), the multi-select "Place" menu,
+ *      and a "Reset filters" button while anything narrows the list;
+ *   3. the "Search elsewhere" links carrying the query.
+ * The list owns the query, each row's active chips and what clearing does;
+ * one chip is active per ChipRow, any number per MultiChipRow. */
 
+import { Button } from "@/components/forms/button";
 import { Input } from "@/components/forms/input";
 import { FilterChip } from "@/components/ui/filter-chip";
-import { MicroLabel } from "@/components/ui/micro-label";
+import { FilterMenu, type FilterMenuOption } from "@/components/ui/filter-menu";
 import { KIND_CONFIG } from "@/lib/data/locator";
 import type { OpportunityKind } from "@/lib/data/types";
 
@@ -25,10 +30,10 @@ export type ChipRow = {
   countFor: (key: string) => number;
 };
 
-/** A chip row with a name shown before it ("Type", "Term"). */
+/** A chip row with a name ("Type", "Term"); shown as a single-select menu. */
 export type LabelledChipRow = ChipRow & { id: string; label: string };
 
-/** A named row of toggle chips, any number on at once ("Place"). */
+/** A named row of toggle chips, any number on at once ("Place"); shown as a multi-select menu. */
 export type MultiChipRow = {
   id: string;
   label: string;
@@ -38,26 +43,15 @@ export type MultiChipRow = {
   countFor: (key: string) => number;
 };
 
-/** Both row shapes as one: is a chip on, and what pressing it does. */
-type ChipSet = { chips: Chip[]; isOn: (key: string) => boolean; press: (key: string) => void; countFor: (key: string) => number };
-
-function single(row: ChipRow): ChipSet {
-  return { chips: row.chips, isOn: (key) => row.active === key, press: row.onActiveChange, countFor: row.countFor };
-}
-
-function multi(row: MultiChipRow): ChipSet {
-  return { chips: row.chips, isOn: (key) => row.active.includes(key), press: row.onToggle, countFor: row.countFor };
-}
-
-/** The row's chips; scrolls sideways on phones, wraps from 640px. */
-function Chips({ row, className }: { row: ChipSet; className: string }) {
+/** The status chips; scroll sideways on phones, wrap from 640px. */
+function Chips({ row, className }: { row: ChipRow; className: string }) {
   return (
     <div className={`flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0 ${className}`}>
       {row.chips.map((chip) => (
         <FilterChip
           key={chip.key}
-          pressed={row.isOn(chip.key)}
-          onPressedChange={() => row.press(chip.key)}
+          pressed={row.active === chip.key}
+          onPressedChange={() => row.onActiveChange(chip.key)}
           count={row.countFor(chip.key)}
           className="flex-none"
         >
@@ -68,20 +62,20 @@ function Chips({ row, className }: { row: ChipSet; className: string }) {
   );
 }
 
-/** "TYPE  All 40 · Internship 31 · Co-op 6 · New grad 3" as a named group. */
-function NamedChips({ id, label, row }: { id: string; label: string; row: ChipSet }) {
-  const labelId = `locator-chips-${id}`;
-  return (
-    <div role="group" aria-labelledby={labelId} className="flex items-center gap-3">
-      <MicroLabel id={labelId} className="w-12 flex-none">
-        {label}
-      </MicroLabel>
-      <Chips row={row} className="-mr-gutter min-w-0 pr-gutter sm:mr-0 sm:pr-0" />
-    </div>
-  );
+/** A labelled row's chips as menu options; its "All" chip reads "All types" / "All terms". */
+function rowOptions(row: LabelledChipRow): FilterMenuOption[] {
+  return row.chips.map((chip) => ({
+    key: chip.key,
+    label: chip.key === "all" ? `All ${row.label.toLowerCase()}s` : chip.label,
+    count: row.countFor(chip.key),
+  }));
 }
 
-/** Search input + status chips, the labelled chip rows, the Place row, then "Search elsewhere". */
+function multiOptions(row: MultiChipRow): FilterMenuOption[] {
+  return row.chips.map((chip) => ({ key: chip.key, label: chip.label, count: row.countFor(chip.key) }));
+}
+
+/** Status chips; search input + filter menus + "Reset filters"; then "Search elsewhere". */
 export function LocatorToolbar({
   kind,
   query,
@@ -89,21 +83,27 @@ export function LocatorToolbar({
   status,
   rows = [],
   place,
+  active,
+  onClear,
 }: {
   kind: OpportunityKind;
   query: string;
   onQueryChange: (query: string) => void;
-  /** All / Published / Hidden / … beside the search box */
+  /** All / Published / Hidden / … — the top row */
   status: ChipRow;
-  /** rows under the search box, in order */
+  /** the single-select menus beside the search box, in order */
   rows?: LabelledChipRow[];
-  /** the multi-select "Place" row, last */
+  /** the multi-select "Place" menu, after them */
   place?: MultiChipRow;
+  /** something narrows the list, so "Reset filters" shows */
+  active: boolean;
+  onClear: () => void;
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="sm:w-72 sm:flex-none">
+      <Chips row={status} className="-mx-gutter px-gutter sm:mx-0 sm:px-0" />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="w-full sm:w-72 sm:flex-none">
           <label htmlFor="locator-search" className="sr-only">
             Search {KIND_CONFIG[kind].plural}
           </label>
@@ -115,12 +115,32 @@ export function LocatorToolbar({
             onChange={(e) => onQueryChange(e.target.value)}
           />
         </div>
-        <Chips row={single(status)} className="-mx-gutter px-gutter sm:mx-0 sm:px-0" />
+        {rows.map((row) => (
+          <FilterMenu
+            key={row.id}
+            label={row.label}
+            options={rowOptions(row)}
+            select={{ kind: "single", value: row.active, onChange: row.onActiveChange, allKey: "all" }}
+          />
+        ))}
+        {place ? (
+          <FilterMenu
+            label={place.label}
+            options={multiOptions(place)}
+            select={{
+              kind: "multi",
+              values: place.active,
+              onToggle: place.onToggle,
+              emptyLabel: `Any ${place.label.toLowerCase()}`,
+            }}
+          />
+        ) : null}
+        {active ? (
+          <Button variant="text" size="sm" onClick={onClear}>
+            Reset filters
+          </Button>
+        ) : null}
       </div>
-      {rows.map((row) => (
-        <NamedChips key={row.id} id={row.id} label={row.label} row={single(row)} />
-      ))}
-      {place ? <NamedChips id={place.id} label={place.label} row={multi(place)} /> : null}
       <SearchElsewhere kind={kind} query={query} />
     </div>
   );
